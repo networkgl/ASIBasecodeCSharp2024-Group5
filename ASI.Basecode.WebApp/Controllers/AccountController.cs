@@ -1,11 +1,9 @@
 ﻿using ASI.Basecode.Data.Models;
 using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.Services.Manager;
-using ASI.Basecode.Services.ServiceModels;
 using ASI.Basecode.WebApp.Authentication;
-using ASI.Basecode.WebApp.Models;
-using ASI.Basecode.WebApp.Mvc;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,19 +11,20 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using static ASI.Basecode.Resources.Constants.Enums;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
-    public class AccountController : ControllerBase<AccountController>
+    public class AccountController : BaseController
     {
         private readonly SessionManager _sessionManager;
         private readonly SignInManager _signInManager;
         private readonly TokenValidationParametersFactory _tokenValidationParametersFactory;
         private readonly TokenProviderOptionsFactory _tokenProviderOptionsFactory;
         private readonly IConfiguration _appConfiguration;
-        private readonly IUserService _userService;
+        //private readonly IUserService _userService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountController"/> class.
@@ -45,16 +44,16 @@ namespace ASI.Basecode.WebApp.Controllers
                             ILoggerFactory loggerFactory,
                             IConfiguration configuration,
                             IMapper mapper,
-                            IUserService userService,
+                            //IUserService userService,
                             TokenValidationParametersFactory tokenValidationParametersFactory,
-                            TokenProviderOptionsFactory tokenProviderOptionsFactory) : base(httpContextAccessor, loggerFactory, configuration, mapper)
+                            TokenProviderOptionsFactory tokenProviderOptionsFactory) : base (httpContextAccessor)
         {
             this._sessionManager = new SessionManager(this._session);
             this._signInManager = signInManager;
             this._tokenProviderOptionsFactory = tokenProviderOptionsFactory;
             this._tokenValidationParametersFactory = tokenValidationParametersFactory;
             this._appConfiguration = configuration;
-            this._userService = userService;
+            //this._userService = userService;
         }
 
         /// <summary>
@@ -63,12 +62,29 @@ namespace ASI.Basecode.WebApp.Controllers
         /// <returns>Created response view</returns>
         [HttpGet]
         [AllowAnonymous]
-        public ActionResult Login()
+        public IActionResult Login()
         {
             TempData["returnUrl"] = System.Net.WebUtility.UrlDecode(HttpContext.Request.Query["ReturnUrl"]);
             this._sessionManager.Clear();
             this._session.SetString("SessionId", System.Guid.NewGuid().ToString());
-            return this.View();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                switch (User.FindFirst("UserRole")?.Value)
+                {
+                    case "superadmin":
+                        return RedirectToAction("Index", "SuperAdminDashboard");
+                    case "administrator":
+                        return RedirectToAction("Index", "AdminDashboard");
+                    case "user":
+                        return RedirectToAction("Index", "UserDashboard");
+                    case "support agent":
+                        return RedirectToAction("Index", "AgentDashboard");
+                    default:
+                        return View();
+                }
+            }
+            return View();
         }
 
         /// <summary>
@@ -79,61 +95,66 @@ namespace ASI.Basecode.WebApp.Controllers
         /// <returns> Created response view </returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(Models.LoginViewModel model, string returnUrl)
+        public async Task<IActionResult> Login(User u, string rememberMe)
         {
             this._session.SetString("HasSession", "Exist");
 
-            MUser user = null;
+            var user = _db.VwUserRoleViews.Where(m => m.Email == u.Email && m.Password == u.Password).FirstOrDefault();
 
-            //User user = new() { Id = 0, UserId = "0", Name = "Name", Password = "Password" };
-
-            //await this._signInManager.SignInAsync(user);
-            //this._session.SetString("UserName", model.UserId);
-
-            //return RedirectToAction("Index", "Home");
-            var loginResult = _userService.AuthenticateUser(model.UserCode, model.Password, ref user);
-            if (loginResult == LoginResult.Success)
+            if (user == null)
             {
-                // 認証OK
-                await this._signInManager.SignInAsync(user);
-                this._session.SetString("UserName", string.Join(" ", user.FirstName, user.LastName));
-                return RedirectToAction("Index", "Home");
-            }
-            else
-            {
-                // 認証NG
-                TempData["ErrorMessage"] = "Incorrect UserId or Password";
+                TempData["ErrorMsg"] = "Invalid credentials, please try again";
                 return View();
             }
-            //return View();
+
+            // 認証OK
+            var isPersistent = !string.IsNullOrEmpty(rememberMe) && rememberMe.ToLower() == "on" ? true : false;
+            await _signInManager.SignInAsync(user, isPersistent);
+            this._session.SetString("UserName", user.Name);
+
+            switch (user.RoleName)
+            {
+                case "superadmin":
+                    return RedirectToAction("Index", "SuperAdminDashboard");
+                case "administrator":
+                    return RedirectToAction("Index", "AdminDashboard");
+                case "user":
+                    return RedirectToAction("Index", "UserDashboard");
+                case "support agent":
+                    return RedirectToAction("Index", "AgentDashboard");
+                default:
+                    // 認証NG
+                    TempData["ErrorMsg"] = "An error has occured, please try again";
+                    return View();
+            }
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Register()
-        {
-            return View();
-        }
+        //[HttpGet]
+        //[AllowAnonymous]
+        //public IActionResult Register()
+        //{
+        //    return View();
+        //}
 
-        [HttpPost]
-        [AllowAnonymous]
-        public IActionResult Register(Services.ServiceModels.LoginViewModel model)
-        {
-            try
-            {
-                //_userService.AddUser(model);
-                return RedirectToAction("Login", "Account");
-            }
-            catch(InvalidDataException ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-            }
-            catch(Exception ex)
-            {
-                TempData["ErrorMessage"] = Resources.Messages.Errors.ServerError;
-            }
-            return View();
-        }
+        //[HttpPost]
+        //[AllowAnonymous]
+        //public IActionResult Register(User model)
+        //{
+        //    try
+        //    {
+        //        //_userService.AddUser(model);
+        //        return RedirectToAction("Login", "Account");
+        //    }
+        //    catch(InvalidDataException ex)
+        //    {
+        //        TempData["ErrorMessage"] = ex.Message;
+        //    }
+        //    catch(Exception)
+        //    {
+        //        TempData["ErrorMessage"] = Resources.Messages.Errors.ServerError;
+        //    }
+        //    return View();
+        //}
 
         /// <summary>
         /// Sign Out current account and return login view.

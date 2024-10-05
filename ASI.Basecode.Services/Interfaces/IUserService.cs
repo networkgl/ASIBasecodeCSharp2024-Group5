@@ -12,7 +12,7 @@ namespace ASI.Basecode.Services.Interfaces
         void Add(UserViewModel model);
         void Update(UserViewModel model);
         void Delete(int id);
-        LoginResult AuthenticateUser(string userCode, string password, ref MUser user);
+        LoginResult AuthenticateUser(string userId, string password, ref MUser user);
         //void AddUser(UserViewModel model);
     }
 }

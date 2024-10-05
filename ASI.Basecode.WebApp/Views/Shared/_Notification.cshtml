@@ -1,0 +1,35 @@
+﻿@using ASI.Basecode.Data.Interfaces
+@using ASI.Basecode.Data.Models.CustomModels
+@{
+    var resMsg = TempData["ResMsg"] as AlertMessageContent;
+
+    if (resMsg != null)
+    {
+            <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
+            <script src="~/toastr/toastr.min.js"></script>
+
+        if (resMsg.Status == ErrorCode.Success)
+        {
+                <script type="text/javascript">
+                    toastr.options = {
+                        closeButton: true,
+                        closeDuration: 2000,
+                        positionClass: "toast-top-center",
+                    }
+                    toastr.success("@resMsg.Message")
+                </script>
+        }
+
+        if (resMsg.Status == ErrorCode.Error)
+        {
+                <script type="text/javascript">
+                    toastr.options = {
+                        closeButton: true,
+                        closeDuration: 2000,
+                    positionClass: "toast-top-center",
+                    }
+                    toastr.error("@resMsg.Message")
+                </script>
+        }
+    }
+}

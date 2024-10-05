@@ -49,18 +49,24 @@ namespace ASI.Basecode.WebApp
 
             this._services.AddAuthorization(options =>
             {
-                options.AddPolicy("RequireAuthenticatedUser", policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                });
-                options.AddPolicy("AdminOnly", policy =>
-                      policy.RequireClaim("UserRole", "9"));
+                options.AddPolicy("SuperAdminPolicy", policy =>
+                    policy.RequireRole("superadmin"));
+
+                options.AddPolicy("AdminPolicy", policy =>
+                    policy.RequireRole("administrator"));
+
+                options.AddPolicy("SupportAgentPolicy", policy =>
+                    policy.RequireRole("support agent"));
+
+                options.AddPolicy("UserPolicy", policy =>
+                    policy.RequireRole("user"));
+                options.AddPolicy("SuperAdminAndAdminPolicy", policy =>
+                    policy.RequireRole("superadmin", "administrator"));
+                options.AddPolicy("AdminAndAgentPolicy", policy =>
+                    policy.RequireRole("administrator", "support agent"));
             });
 
-            this._services.AddMvc(options =>
-            {
-                options.Filters.Add(new AuthorizeFilter("RequireAuthenticatedUser"));
-            });
+            this._services.AddMvc();
         }
     }
 }

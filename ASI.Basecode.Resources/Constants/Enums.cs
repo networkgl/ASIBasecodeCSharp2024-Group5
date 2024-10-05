@@ -8,7 +8,7 @@
         /// <summary>
         /// API Result Status
         /// </summary>
-        public enum Status
+        public enum ErrorStatus
         {
             Success,
             Error,

@@ -1,0 +1,112 @@
+﻿@using ASI.Basecode.Data.Models.CustomModels
+@model ASI.Basecode.Data.Models.CustomModels.CustomTicket
+
+@{
+    ViewData["Title"] = "Edit";
+    var resMsg = TempData["ResMsg"] as AlertMessageContent;
+    var userType = ViewData["UserType"];
+    var root = ViewData["root"] as string;
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+    <h6 class="fw-semibold mb-0">Update Ticket</h6>
+    <ul class="d-flex align-items-center gap-2">
+        <li class="fw-medium">
+            <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
+                <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                Dashboard
+            </a>
+        </li>
+        <li>-</li>
+        <li class="fw-medium">Update Ticket</li>
+    </ul>
+</div>
+
+<div class="card h-100 p-0 radius-12">
+    <div class="card-body p-24">
+        <div class="row justify-content-center">
+            <div class="col-xxl-6 col-xl-8 col-lg-10">
+                <div class="card border">
+                    <div class="card-body">
+                        <form asp-action="Edit" enctype="multipart/form-data">
+                            <input type="hidden" asp-for="ticket.TicketId" />
+                            <input type="hidden" id="removedOriginalImg" asp-for="RemovedOriginalImg" />
+                            <div class="mb-20">
+                                <label asp-for="ticket.CategoryId" class="form-label fw-semibold text-primary-light text-sm mb-8">Issue Type <span class="text-danger-600">*</span></label>
+                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="ticket.CategoryId">
+                                    @foreach (var item in Model.category)
+                                    {
+                                        <option class="form-control radius-8" value="@item.CategoryId">@item.CategoryName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-20">
+                                <label asp-for="ticket.IssueDescription" class="form-label fw-semibold text-primary-light text-sm mb-8">Issue Description <span class="text-danger-600">*</span></label>
+                                <textarea id="editor" asp-for="ticket.IssueDescription" class="form-control radius-8" maxlength="255" rows="4"></textarea>
+                            </div>
+                            <div class="mb-20">
+                                <label asp-for="formFile" class="form-label fw-semibold text-primary-light text-sm mb-8">Attach file</label>
+                                <input asp-for="formFile" type="file" class="form-control radius-8" accept="image/png, image/gif, image/jpeg" id="file" value="@Model.ticket.AttachmentPath">
+                                @if (string.IsNullOrEmpty(Model.ticket.AttachmentPath))
+                                {
+                                    <img class="w-240-px h-240-px mt-1" id="filePreview" style="display:none" />
+                                } else
+                                {
+                                    <img class="w-240-px h-240-px mt-1" id="filePreview" src="@Model.ticket.AttachmentPath" style="display:block" />
+                                    <button type="button" id="removeImgBtn" onclick="removeImg()" class="btn btn-danger mt-1">Remove Image</button>
+                                }
+                            </div>
+                            <div class="mb-20">
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <a asp-action="Index" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
+                                    Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        document.getElementById('file').addEventListener('change', function (event) {
+            var input = event.target;
+            var reader = new FileReader();
+            var removeImgBtn = document.getElementById("removeImgBtn");
+            removeImgBtn.style.display = 'block';
+            reader.onload = function () {
+                var imgElement = document.getElementById('filePreview');
+                imgElement.src = reader.result;
+                imgElement.style.display = 'block';
+            };
+
+            if (input.files && input.files[0]) {
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+    });
+
+    function removeImg() {
+        var img = document.getElementById("filePreview");
+        var removeImgBtn = document.getElementById("removeImgBtn");
+        var file = document.getElementById("file");
+        var removedOriginalImg = document.getElementById("removedOriginalImg");
+        img.src = "";
+        img.style.display = 'none';
+        removeImgBtn.style.display = 'none';
+        file.value = null;
+        removedOriginalImg.value = 'true';
+    }
+</script>
+
+@* @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} *@

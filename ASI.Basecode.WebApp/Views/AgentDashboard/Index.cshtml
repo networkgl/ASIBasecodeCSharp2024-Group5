@@ -1,0 +1,79 @@
+﻿@model ASI.Basecode.Data.Models.CustomModels.CustomDashoardViewModel
+
+<div class="row row-cols-xxxl-4 row-cols-lg-4 row-cols-sm-2 row-cols-1 gy-4">
+    <div class="col">
+        <div class="card shadow-none border bg-gradient-start-1 h-100">
+            <div class="card-body p-20">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <p class="fw-medium text-primary-light mb-1">Total Users</p>
+                        <h6 class="mb-0">@Model.UserCount</h6>
+                    </div>
+                    <div class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
+                        <iconify-icon icon="gridicons:multiple-users" class="text-white text-2xl mb-0"></iconify-icon>
+                    </div>
+                </div>
+            </div>
+        </div><!-- card end -->
+    </div>
+    <div class="col">
+        <div class="card shadow-none border bg-gradient-start-1 h-100">
+            <div class="card-body p-20">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <p class="fw-medium text-primary-light mb-1">Total Support Agents</p>
+                        <h6 class="mb-0">@Model.AgentCount</h6>
+                    </div>
+                    <div class="w-50-px h-50-px bg-cyan rounded-circle d-flex justify-content-center align-items-center">
+                        <iconify-icon icon="gridicons:multiple-users" class="text-white text-2xl mb-0"></iconify-icon>
+                    </div>
+                </div>
+            </div>
+        </div><!-- card end -->
+    </div>
+    <div class="col">
+        <div class="card shadow-none border bg-gradient-start-2 h-100">
+            <div class="card-body p-20">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <p class="fw-medium text-primary-light mb-1">Tickets Assigned to You</p>
+                        <h6 class="mb-0">@Model.TicketsResolvedCount</h6>
+                    </div>
+                    <div class="w-50-px h-50-px bg-purple rounded-circle d-flex justify-content-center align-items-center">
+                        <iconify-icon icon="mdi:clipboard-text-outline" class="text-white text-2xl mb-0"></iconify-icon>
+                    </div>
+                </div>
+            </div>
+        </div><!-- card end -->
+    </div>
+    <div class="col">
+        <div class="card shadow-none border bg-gradient-start-4 h-100">
+            <div class="card-body p-20">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <p class="fw-medium text-primary-light mb-1">Tickets You've Reassigned </p>
+                        <h6 class="mb-0">@Model.TicketsAssignedByMeCount</h6>
+                    </div>
+                    <div class="w-50-px h-50-px bg-success-main rounded-circle d-flex justify-content-center align-items-center">
+                        <iconify-icon icon="mdi:refresh" class="text-white text-2xl mb-0"></iconify-icon>
+                    </div>
+                </div>
+            </div>
+        </div><!-- card end -->
+    </div>
+    <div class="col">
+        <div class="card shadow-none border bg-gradient-start-3 h-100">
+            <div class="card-body p-20">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <p class="fw-medium text-primary-light mb-1">Your Average resolution time</p>
+                        <h6 class="mb-0">28</h6>
+                    </div>
+                    <div class="w-50-px h-50-px bg-info rounded-circle d-flex justify-content-center align-items-center">
+                        <iconify-icon icon="mdi:clock-time-three-outline" class="text-white text-2xl mb-0"></iconify-icon>
+                    </div>
+                </div>
+            </div>
+        </div><!-- card end -->
+    </div>
+</div>
