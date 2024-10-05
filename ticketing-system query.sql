@@ -456,6 +456,8 @@ inner join [Role] r on r.RoleId = ur.RoleId
 where ur.RoleId = 2
 go
 
+select * from vw_UserRoleView
+
 create view vw_TotalTicketResolvedByAgent
 as
 select Count(*)
@@ -588,4 +590,16 @@ select *
 from vw_UserRoleView
 go
 
-select * from Notification
+select u.Email, u.UserId, t.TicketId, t.PriorityId from AssignedTicket at
+inner join [User] u on u.UserId = at.AssignerId
+inner join [UserTicket] ut on ut.TicketId = at.UserTicketId
+inner join [Ticket] t on t.TicketId = ut.TicketId
+go
+
+select * from Priority
+go
+
+select * from AssignedTicket
+go
+
+select * from vw_TicketAssignment
