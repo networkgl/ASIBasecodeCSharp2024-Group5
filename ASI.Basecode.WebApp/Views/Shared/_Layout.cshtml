@@ -124,12 +124,20 @@
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Tickets</span>
                         </a>
+                        <a asp-controller="ManageArticle" asp-action="Index">
+                            <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
+                            <span>Manage Articles</span>
+                        </a>
                     } 
                     else if (@User.IsInRole("support agent"))
                     {
                         <a asp-controller="AgentManageTicket" asp-action="Index">
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Tickets</span>
+                        </a>
+                        <a asp-controller="AdminManageTicket" asp-action="Index">
+                            <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
+                            <span>Manage Articles</span>
                         </a>
                     }
                     else if (@User.IsInRole("user"))
