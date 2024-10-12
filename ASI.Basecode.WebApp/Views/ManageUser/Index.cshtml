@@ -102,7 +102,7 @@
                     document.getElementById('confirmYes').addEventListener('click', async function () {
                         console.log('Confirmed delete for UserId:', userId);
                         try {
-                            const url = `/ManageUser/Delete/${userId}`;
+                            const url = `/ManageUser/Delete/?id=${userId}`;
                             const response = await fetch(url, { method: "get" });
 
                             window.location.href = `@Url.ActionLink("Index", "ManageUser")`;

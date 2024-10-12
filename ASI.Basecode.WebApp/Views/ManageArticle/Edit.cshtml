@@ -1,0 +1,59 @@
+﻿@using ASI.Basecode.Data.Models.CustomModels
+@model ASI.Basecode.Data.Models.Article
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Edit Article";
+    var resMsg = TempData["ResMsg"] as string;
+    var resStatus = TempData["ResStatus"] as string;
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+    <h6 class="fw-semibold mb-0">Edit Article</h6>
+    <ul class="d-flex align-items-center gap-2">
+        <li class="fw-medium">
+            <a asp-action="Index" class="d-flex align-items-center gap-1 hover-text-primary">
+                <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                Dashboard
+            </a>
+        </li>
+        <li>-</li>
+        <li class="fw-medium">Edit Article</li>
+    </ul>
+</div>
+
+@if (!string.IsNullOrEmpty(resMsg))
+{
+    <div class="alert alert-@(resStatus.ToLower())" role="alert">
+        @resMsg
+    </div>
+}
+
+<div class="card h-100 p-0 radius-12">
+    <div class="card-body p-24">
+        <div class="row justify-content-center">
+            <div class="col-xxl-6 col-xl-8 col-lg-10">
+                <div class="card border">
+                    <div class="card-body">
+                        <form asp-action="Edit" method="post">
+                            <input type="hidden" asp-for="ArticleId" /> <!-- Bind the ArticleId -->
+                            <div class="mb-20">
+                                <label asp-for="Content" class="form-label fw-semibold text-primary-light text-sm mb-8">Content <span class="text-danger-600">*</span></label>
+                                <textarea asp-for="Content" class="form-control radius-8" rows="5" placeholder="Enter your article content here..." required>@Model.Content</textarea>
+                            </div>
+                            <input type="hidden" asp-for="UserId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" />
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <a asp-action="Index" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
+                                    Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

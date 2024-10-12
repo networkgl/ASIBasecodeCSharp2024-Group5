@@ -105,6 +105,17 @@
                         </a>
                     </li>
                 }
+
+                @if (!User.IsInRole("admin") && !User.IsInRole("support agent"))
+                {
+                    <li>
+                        <a asp-controller="ManageArticle" asp-action="Index">
+                            <iconify-icon icon="solar:document-add-outline" class="menu-icon"></iconify-icon>
+                            <span>Manage Articles</span>
+                        </a>
+                    </li>
+
+                }
     
                 <li>
                     @if (@User.IsInRole("superadmin"))
@@ -124,10 +135,10 @@
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Tickets</span>
                         </a>
-                        <a asp-controller="ManageArticle" asp-action="Index">
+                        @* <a asp-controller="ManageArticle" asp-action="Index">
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Articles</span>
-                        </a>
+                        </a> *@
                     } 
                     else if (@User.IsInRole("support agent"))
                     {
