@@ -25,6 +25,7 @@ namespace ASI.Basecode.WebApp.Controllers
         public BaseRepository<AssignedTicket> _assignedTicketRepo;
         public BaseRepository<Notification> _notifRepo;
         public BaseRepository<Category> _catRepo;
+        public BaseRepository<Article> _articleRepo;
 
         public BaseController(IHttpContextAccessor httpContextAccessor)
         {
@@ -39,7 +40,8 @@ namespace ASI.Basecode.WebApp.Controllers
             _assignedTicketRepo = new BaseRepository<AssignedTicket>();
             _notifRepo = new BaseRepository<Notification>();
             _catRepo = new BaseRepository<Category>();
-    }
+            _articleRepo = new BaseRepository<Article>();
+        }
         public BaseController()
         {
             _db = new TicketingSystemDBContext();

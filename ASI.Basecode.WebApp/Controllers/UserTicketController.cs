@@ -314,6 +314,7 @@ namespace ASI.Basecode.WebApp.Controllers
             customTicket.ticket = myTicket;
             return View(customTicket);
         }
+
         public IActionResult Delete(int id)
         {
             TempData["temp"] = "delete";

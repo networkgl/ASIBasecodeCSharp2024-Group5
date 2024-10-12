@@ -140,7 +140,7 @@
                     document.getElementById('confirmYes').addEventListener('click', async function () {
                         console.log('Confirmed delete for TicketId:', ticketId);
                         try {
-                            const url = `/UserTicket/Delete/${ticketId}`;
+                            const url = `/UserTicket/Delete/?id=${ticketId}`;
                             const response = await fetch(url, { method: "get" });
 
                             window.location.href = `@Url.ActionLink("Index", "UserTicket")`;

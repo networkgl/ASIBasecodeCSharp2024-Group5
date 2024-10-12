@@ -38,6 +38,7 @@ namespace ASI.Basecode.WebApp.Controllers
             var users = _db.VwUsersAndAgentsViews.ToList();
             return View(users);
         }
+
         [HttpGet]
         public IActionResult Create()
         {
@@ -201,6 +202,7 @@ namespace ASI.Basecode.WebApp.Controllers
             var adminUsers = _db.VwAdminUsersViews.ToList();
             return View(adminUsers);
         }
+
         public IActionResult Delete(int id)
         {
             TempData["temp"] = "delete";

@@ -37,6 +37,7 @@ namespace ASI.Basecode.WebApp.Controllers
             var adminUsers = _db.VwAdminUsersViews.ToList();
             return View(adminUsers);
         }
+
         public IActionResult Edit(int id)
         {
             ViewData["UserType"] = "Admin";
@@ -139,7 +140,6 @@ namespace ASI.Basecode.WebApp.Controllers
             return View(adminUser);
         }
 
-
         [HttpGet]
         public IActionResult Create() 
         {
@@ -203,6 +203,7 @@ namespace ASI.Basecode.WebApp.Controllers
             var adminUsers = _db.VwAdminUsersViews.ToList();
             return View(adminUsers);
         }
+
         public IActionResult Delete(int id)
         {
             TempData["temp"] = "delete";
