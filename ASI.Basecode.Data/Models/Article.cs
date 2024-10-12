@@ -8,6 +8,7 @@ namespace ASI.Basecode.Data.Models
         public int ArticleId { get; set; }
         public int? UserId { get; set; }
         public string Content { get; set; }
+        public string Title { get; set; }
 
         public virtual User User { get; set; }
     }

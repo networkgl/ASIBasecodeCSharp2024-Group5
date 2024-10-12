@@ -30,7 +30,7 @@
 
 <div class="mb-3">
     <form asp-action="Index" method="get" class="d-flex">
-        <input type="text" name="searchTerm" class="form-control me-2" placeholder="Search articles..." />
+        <input type="text" name="searchTerm" class="form-control me-2" placeholder="Search article title..." />
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
 </div>
@@ -43,7 +43,7 @@
         <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body">
-                    @* <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5> *@
+                    <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
                     <p class="card-text">@Html.DisplayFor(modelItem => item.Content)</p>
                     <p class="card-text"><strong>Author(user ID): </strong>@Html.DisplayFor(modelItem => item.UserId)</p>
                     <div class="card-footer text-end">
