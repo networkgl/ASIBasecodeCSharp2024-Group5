@@ -40,7 +40,7 @@
                                     }
                                 </select>
                             </div>
-                            @if(Model.AssignedTicket.AgentId is not null){
+                            @if(Model.AssignedTicket is not null){
                                 <div class="mb-20">
                                     <label asp-for="Ticket.PriorityId" class="form-label fw-semibold text-primary-light text-sm mb-8">Priority Level <span class="text-danger-600"></span></label>
                                     <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Ticket.PriorityId">

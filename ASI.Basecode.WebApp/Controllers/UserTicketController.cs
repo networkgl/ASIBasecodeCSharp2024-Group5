@@ -28,21 +28,34 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             if (TempData["temp"] != null)
             {
-                if (TempData["status"] as int? == 0)
+                if ((object)TempData["ResMsg"] == "TicketCreated")
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    if (User.Identity.IsAuthenticated)
                     {
-                        Status = ErrorCode.Success,
-                        Message = "A ticket has deleted successfully!"
-                    };
+                        var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+                        var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).ToList();
+
+                        return View(myTickets);
+                    }
                 }
                 else
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    if (TempData["status"] as int? == 0)
                     {
-                        Status = ErrorCode.Error,
-                        Message = "An error has occured upon deleting the ticket."
-                    };
+                        TempData["ResMsg"] = new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Success,
+                            Message = "A ticket has deleted successfully!"
+                        };
+                    }
+                    else
+                    {
+                        TempData["ResMsg"] = new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error has occured upon deleting the ticket."
+                        };
+                    }
                 }
             }
             if (User.Identity.IsAuthenticated)
@@ -144,11 +157,11 @@ namespace ASI.Basecode.WebApp.Controllers
                         {
                             TempData["ResMsg"] = new AlertMessageContent()
                             {
-                                Status = ErrorCode.Success,
-                                Message = successMsg
+                                Status = "Ticket Created",
+                                Message = successMsg,
                             };
                         }
-                        return View(customTicket);
+                        return RedirectToAction("Index");
                     }
                 }
             } 
@@ -168,11 +181,11 @@ namespace ASI.Basecode.WebApp.Controllers
                         {
                             TempData["ResMsg"] = new AlertMessageContent()
                             {
-                                Status = ErrorCode.Success,
+                                Status = "Ticket Created",
                                 Message = successMsg
                             };
                         }
-                        return View(customTicket);
+                        return RedirectToAction("Index");
                     }
                 }
             }

@@ -1,0 +1,67 @@
+        //Reminder notif message
+        public const string TICKET_MESSAGE_REMINDER = "Ticket Reminder: A ticket for {0} with Ticket Id: {1} is due on {2} with priority level {3}. Please resolved it immediately ";
+
+Scaffold-DbContext "Data Source=.\sqlexpress;Initial Catalog=TicketingSystemDB;Integrated Security=True;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer -o Models -ContextDir . -project ASI.Basecode.Data -f
+
+
+       public ErrorCode PushNotificationReminder(out string errorMsg, out string successMsg)
+  {
+
+      errorMsg = successMsg = string.Empty;
+      try
+      {
+
+          //DateTime d = new DateTime();
+          //d.AddDays(1);
+
+          //var a = d.AddHours(1);
+          var tickets = _db.VwReminderNotifViews.Where(m => m.DateAssigned.Value.AddHours((double)m.ResolveTime) <= Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow));
+
+          var users = _db.VwUserRoleViews.Where(m => m.RoleId == 2 || m.RoleId == 3).Select(m => m.UserId).ToList();
+
+          foreach (var user in users)
+          {
+              var userNotif = new Notification()
+              {
+                  Content = string.Format
+                          (Utils.Constant.TICKET_MESSAGE_REMINDER
+                          ),
+              };
+
+              if (_notifRepo.Create(userNotif) == ErrorCode.Error)
+              {
+                  return ErrorCode.Error;
+              }
+          }
+      }
+      catch (Exception e)
+      {
+          errorMsg = e.InnerException == null || e.InnerException.InnerException == null ? e.Message : e.InnerException.InnerException.Message;
+          return ErrorCode.Error;
+
+      }
+
+      return ErrorCode.Success;
+  }
+
+select 
+t.TicketId,
+c.CategoryId,
+c.CategoryName,
+t.IssueDescription,
+p.PriorityName,
+s.StatusName,
+at.DateAssigned,
+p.ResolveTime
+from Ticket t
+inner join
+	Priority p on p.PriorityId = t.PriorityId
+inner join 
+	Category c on c.CategoryId = t.CategoryId
+inner join 
+	Status s on s.StatusId = t.StatusId
+inner join
+	UserTicket ut on ut.TicketId = t.TicketId
+inner join 
+	AssignedTicket at on at.UserTicketId = ut.UserTicketId
+where s.StatusName = 'In Progress' 		

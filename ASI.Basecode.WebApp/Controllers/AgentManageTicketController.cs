@@ -118,7 +118,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 return BadRequest();
             }
 
-            if (customTicket.AssignedTicket.Agent is null)
+            if (customTicket.AssignedTicket.AgentId is null)
             {
                 TempData["ResMsg"] = new AlertMessageContent()
                 {
@@ -238,6 +238,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         customTicket.Ticket = ticket;
                         customTicket.AssignedTicket = assignedTicket;
                         customTicket.Agent = userAgent;
+                        customTicket.Category = categories;
                         return View(customTicket);
                     }
                 }
@@ -281,7 +282,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         }
 
 
-                        return View(customTicket);
+                        return RedirectToAction("Index");
                     }
                 }
             }
