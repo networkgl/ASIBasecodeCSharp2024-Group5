@@ -41,7 +41,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                articles = articles.Where(a => a.Title.Contains(searchTerm)).ToList();
+                articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
                 
             }
             return View(articles);
