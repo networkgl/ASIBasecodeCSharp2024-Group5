@@ -36,12 +36,17 @@
                 <div class="card border">
                     <div class="card-body">
                         <form asp-action="Create" method="post">
-                            <!-- Ensure the method is POST -->
+
+                            @* <div class="mb-20">
+                            <label asp-for="Title" class="form-label fw-semibold text-primary-light text-sm mb-8">Content <span class="text-danger-600">*</span></label>
+                            <input asp-for="Title" class="form-control placeholder="Enter your article title..." required/>
+                            </div> *@
+
                             <div class="mb-20">
                                 <label asp-for="Content" class="form-label fw-semibold text-primary-light text-sm mb-8">Content <span class="text-danger-600">*</span></label>
                                 <textarea asp-for="Content" class="form-control radius-8" rows="5" placeholder="Enter your article content here..." required></textarea>
                             </div>
-                            <input type="hidden" asp-for="UserId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" /> <!-- Assuming UserId is stored as NameIdentifier -->
+                            <input type="hidden" asp-for="UserId" value="@User.FindFirst(ClaimTypes.NameIdentifier)?.Value" />
                             <div class="d-flex align-items-center justify-content-center gap-3">
                                 <a asp-action="Index" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
                                     Cancel

@@ -4,7 +4,7 @@
 
 @{
     ViewData["Title"] = "Manage Article";
-    var resMsg = TempData["ResMsg"] as string; // Changed to string to accommodate alert messages
+    var resMsg = TempData["ResMsg"] as string;
 }
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
@@ -28,8 +28,6 @@
     </div>
 }
 
-
-<!-- Search Bar -->
 <div class="mb-3">
     <form asp-action="Index" method="get" class="d-flex">
         <input type="text" name="searchTerm" class="form-control me-2" placeholder="Search articles..." />
@@ -45,19 +43,14 @@
         <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">@Html.DisplayFor(modelItem => item.Content)</h5>
-                    <p class="card-text">User ID: @Html.DisplayFor(modelItem => item.UserId)</p>
-                    <div class="d-flex justify-content-between">
+                    @* <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5> *@
+                    <p class="card-text">@Html.DisplayFor(modelItem => item.Content)</p>
+                    <p class="card-text"><strong>Author(user ID): </strong>@Html.DisplayFor(modelItem => item.UserId)</p>
+                    <div class="card-footer text-end">
                         <a asp-action="Edit" asp-route-id="@item.ArticleId" class="btn btn-outline-primary">
-                            Edit
+                            <i class="bi bi-pencil-square"> </i>
                         </a>
                         <a href="#" onclick="confirmDelete('@item.ArticleId'); return false;" id="@item.ArticleId"><i class="bi bi-trash" style="color:red"></i></a>
-                        @* <form asp-action="Delete" asp-route-id="@item.ArticleId" method="post" style="display:inline;">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-outline-danger" style="border: none; background: none; padding: 0;">
-                                <i class="bi bi-trash" style="color:red"></i>
-                            </button>
-                        </form> *@
                     </div>
                 </div>
             </div>
@@ -74,7 +67,7 @@
         toastr.options = {
             closeButton: true,
             timeOut: 0,
-                extendedTimeOut: 0,
+            extendedTimeOut: 0,
             positionClass: "toast-top-center",
         };
 
@@ -87,23 +80,23 @@
                     document.getElementById('confirmYes').addEventListener('click', async function () {
                         console.log('Confirmed delete for ArticleId:', articleId);
                         try {
-                        const url = `/ManageArticle/Delete/?id=${articleId}`;
-                        const response = await fetch(url, { method: "get" });
+                            const url = `/ManageArticle/Delete/?id=${articleId}`;
+                            const response = await fetch(url, { method: "get" });
 
-                        window.location.href = `@Url.ActionLink("Index", "ManageArticle")`;
-                    } catch (error) {
-                        console.error('Fetch error:', error);
-                        window.location.reload();
-                    }
+                            window.location.href = `@Url.ActionLink("Index", "ManageArticle")`;
+                        } catch (error) {
+                            console.error('Fetch error:', error);
+                            window.location.reload();
+                        }
                         toastr.clear(toast);
-                });
+                    });
 
-                document.getElementById('confirmNo').addEventListener('click', function () {
-                    console.log('Canceled delete');
+                    document.getElementById('confirmNo').addEventListener('click', function () {
+                        console.log('Canceled delete');
                         toastr.clear(toast);
-                });
+                    });
+                }
             }
-        }
         );
     }
 </script>

@@ -36,7 +36,11 @@
                 <div class="card border">
                     <div class="card-body">
                         <form asp-action="Edit" method="post">
-                            <input type="hidden" asp-for="ArticleId" /> <!-- Bind the ArticleId -->
+                            <input type="hidden" asp-for="ArticleId" />
+                            @* <div class="mb-20">
+                            <label asp-for="Title" class="form-label fw-semibold text-primary-light text-sm mb-8">Content <span class="text-danger-600">*</span></label>
+                            <input asp-for="Title" class="form-control placeholder="Enter your article title..." required />
+                            </div> *@
                             <div class="mb-20">
                                 <label asp-for="Content" class="form-label fw-semibold text-primary-light text-sm mb-8">Content <span class="text-danger-600">*</span></label>
                                 <textarea asp-for="Content" class="form-control radius-8" rows="5" placeholder="Enter your article content here..." required>@Model.Content</textarea>
