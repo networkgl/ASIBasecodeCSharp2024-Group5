@@ -45,7 +45,6 @@
                 <div class="card-body">
                     <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
                     <p class="card-text">@Html.DisplayFor(modelItem => item.Content)</p>
-                    <p class="card-text"><strong>Author(user ID): </strong>@Html.DisplayFor(modelItem => item.UserId)</p>
                     <div class="card-footer text-end">
                         <a asp-action="Edit" asp-route-id="@item.ArticleId" class="btn btn-outline-primary">
                             <i class="bi bi-pencil-square"> </i>

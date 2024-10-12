@@ -42,6 +42,7 @@ namespace ASI.Basecode.WebApp.Controllers
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 articles = articles.Where(a => a.Title.Contains(searchTerm)).ToList();
+                
             }
             return View(articles);
         }
