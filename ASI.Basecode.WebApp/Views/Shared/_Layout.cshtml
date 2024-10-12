@@ -8,7 +8,7 @@
 @{
     var tableId = ViewBag.TableId;
     var role = User.FindFirst("UserRole")?.Value;
-}   
+}
 
 <!-- meta tags and other links -->
 <!DOCTYPE html>
@@ -78,7 +78,7 @@
                         <a asp-action="Index" asp-controller="AdminDashboard">
                             <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
                             <span>Dashboard</span>
-                        </a>                        
+                        </a>
                     }
                     else if (@User.IsInRole("support agent"))
                     {
@@ -94,7 +94,7 @@
                             <span>Dashboard</span>
                         </a>
                     }
-                    
+
                 </li>
                 @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
                 {
@@ -106,17 +106,7 @@
                     </li>
                 }
 
-                @if (!User.IsInRole("admin") && !User.IsInRole("support agent"))
-                {
-                    <li>
-                        <a asp-controller="ManageArticle" asp-action="Index">
-                            <iconify-icon icon="solar:document-add-outline" class="menu-icon"></iconify-icon>
-                            <span>Manage Articles</span>
-                        </a>
-                    </li>
 
-                }
-    
                 <li>
                     @if (@User.IsInRole("superadmin"))
                     {
@@ -135,21 +125,22 @@
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Tickets</span>
                         </a>
-                        @* <a asp-controller="ManageArticle" asp-action="Index">
-                            <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
+                        <a asp-controller="ManageArticle" asp-action="Index">
+                            <iconify-icon icon="solar:document-add-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Articles</span>
-                        </a> *@
-                    } 
+                        </a>
+                    }
                     else if (@User.IsInRole("support agent"))
                     {
                         <a asp-controller="AgentManageTicket" asp-action="Index">
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Tickets</span>
                         </a>
-                        <a asp-controller="AdminManageTicket" asp-action="Index">
-                            <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
+                        <a asp-controller="ManageArticle" asp-action="Index">
+                            <iconify-icon icon="solar:document-add-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Articles</span>
                         </a>
+
                     }
                     else if (@User.IsInRole("user"))
                     {
@@ -228,15 +219,15 @@
                                             Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow) - (notif.CreatedAt ?? DateTime.UtcNow), notif.CreatedAt ?? DateTime.UtcNow);
 
                                             <a href="javascript:void(0)"
-                                            class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
+                                               class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
                                                 <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
                                                     <span class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
                                                         <iconify-icon icon="bitcoin-icons:verify-outline" class="icon text-xxl"></iconify-icon>
                                                     </span>
                                                     <div>
-                                                   @*      @{
-                                                            var actorName = "User - " + notif.FromUserId == null ? "System Message" : _userManager.GetUserNameById((int)notif.FromUserId);
-                                                        } *@
+                                                        @*      @{
+                                                var actorName = "User - " + notif.FromUserId == null ? "System Message" : _userManager.GetUserNameById((int)notif.FromUserId);
+                                                } *@
                                                         <h6 class="text-md fw-semibold mb-4">@("User - actorName")</h6>
                                                         <p class="mb-0 text-sm text-secondary-light text-w-200-px">
                                                             @notif.Content
@@ -259,7 +250,7 @@
 
                             <!-- Notification dropdown end -->
                         }
-          
+
                         <div class="dropdown">
                             <button class="d-flex justify-content-center align-items-center rounded-circle" type="button"
                                     data-bs-toggle="dropdown">
@@ -273,7 +264,7 @@
                                             @if (User.Identity.IsAuthenticated)
                                             {
                                                 @User.Identity.Name
-                                                <br/>
+                                                <br />
                                                 <span class="text-secondary-light fw-medium text-sm">@role.ToUpper()</span>
                                             }
                                             else
@@ -324,7 +315,7 @@
         </div>
 
         <div class="dashboard-main-body">
-            <partial name="_Notification"/>
+            <partial name="_Notification" />
             @RenderBody()
         </div>
 
@@ -346,7 +337,7 @@
     <script src="~/assets/js/lib/bootstrap.bundle.min.js"></script>
     <!-- Apex Chart js -->
     <script src="~/assets/js/lib/apexcharts.min.js"></script>
-@*     <!-- Data Table js -->
+    @*     <!-- Data Table js -->
     <script src="~/assets/js/lib/dataTables.min.js"></script> *@
     <script src="~/datatables/datatables.js"></script>
     <!-- Iconify Font js -->
