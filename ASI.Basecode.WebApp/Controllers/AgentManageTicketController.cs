@@ -118,6 +118,16 @@ namespace ASI.Basecode.WebApp.Controllers
                 return BadRequest();
             }
 
+            if (customTicket.AssignedTicket.Agent is null)
+            {
+                TempData["ResMsg"] = new AlertMessageContent()
+                {
+                    Status = ErrorCode.Error,
+                    Message = "Cant update the priority if this ticket is unassigned!"
+                };
+                return View();
+            }
+
             //current ticket
             var ticket = _db.Tickets.Where(m => m.TicketId == customTicket.Ticket.TicketId).FirstOrDefault();
 
