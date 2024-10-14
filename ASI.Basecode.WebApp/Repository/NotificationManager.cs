@@ -84,6 +84,16 @@ namespace ASI.Basecode.WebApp.Repository
             errorMsg = successsMsg = string.Empty;
             try
             {
+                var assignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
+
+                if(assignedTicket is null)
+                {
+                    return ErrorCode.Error;
+                }
+
+                //the assigned agent of the current ticket before updating the assignedticket (which the agent will be possibly updated/changed)
+                var previousAssignedAgent = assignedTicket.AgentId;
+
                 if (isAssigning)
                 {
                     var userAssignedNotif = new Notification()
@@ -111,7 +121,7 @@ namespace ASI.Basecode.WebApp.Repository
                         return ErrorCode.Error;
                     }
 
-                    successsMsg = $"Ticket is successfully assigned to agent: {toUserName}";
+                    successsMsg = previousAssignedAgent == assignedToId ? "Ticket is updated successfully!" : $"Ticket is successfully assigned to agent: {toUserName}";
                 }
                 else //meaning update ra ang ticket base sa new supp agent nga ma assign nan ani...
                 {
@@ -139,8 +149,7 @@ namespace ASI.Basecode.WebApp.Repository
                     {
                         return ErrorCode.Error;
                     }
-
-                    successsMsg = $"Ticket is successfully re-assigned to another agent: {toUserName}";
+                    successsMsg = previousAssignedAgent == assignedToId ? "Ticket is updated successfully!" : $"Ticket is successfully re-assigned to another agent: {toUserName}";
                 }
                 
             }

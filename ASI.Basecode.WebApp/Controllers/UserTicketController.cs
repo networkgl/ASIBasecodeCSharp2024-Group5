@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Data;
 using System.IO;
@@ -26,35 +27,64 @@ namespace ASI.Basecode.WebApp.Controllers
         }
         public IActionResult Index()
         {
-            if (TempData["temp"] != null)
+            if (TempData["temp"] is not null)
             {
-                if ((object)TempData["ResMsg"] == "TicketCreated")
+                if((string)TempData["temp"] == "create")
                 {
-                    if (User.Identity.IsAuthenticated)
-                    {
-                        var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-                        var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).ToList();
+                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
 
-                        return View(myTickets);
+                    if(resMsg is not null)
+                    {
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                            {
+                                Status = resMsg.Status,
+                                Message = resMsg.Message
+                            });
+                            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+                            var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).ToList();
+
+                            return View(myTickets);
+                        }
                     }
                 }
-                else
+                if ((string)TempData["temp"] == "delete")
                 {
                     if (TempData["status"] as int? == 0)
                     {
-                        TempData["ResMsg"] = new AlertMessageContent()
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                         {
                             Status = ErrorCode.Success,
                             Message = "A ticket has deleted successfully!"
-                        };
+                        });
                     }
                     else
                     {
-                        TempData["ResMsg"] = new AlertMessageContent()
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent() 
+                        { 
+                            Status = ErrorCode.Error, 
+                            Message = "An error has occured upon deleting the ticket." 
+                        });
+                    }
+                }
+
+                if((string)TempData["temp"] == "update")
+                {
+                    if (TempData["status"] as int? == 0)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Success,
+                            Message = "Ticket updated successfully!"
+                        });
+                    } else
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                         {
                             Status = ErrorCode.Error,
-                            Message = "An error has occured upon deleting the ticket."
-                        };
+                            Message = "An error has occured when updating your ticket, pls try again."
+                        });
                     }
                 }
             }
@@ -104,13 +134,15 @@ namespace ASI.Basecode.WebApp.Controllers
 
             if (customTicket.ticket.CategoryId is null || string.IsNullOrEmpty(customTicket.ticket.IssueDescription)) 
             {
-                TempData["ResMsg"] = new AlertMessageContent()
-                {
-                    Status = ErrorCode.Error,
-                    Message = "Please fill out all required fields."
-                };
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent() 
+                { 
+                    Status = ErrorCode.Error, 
+                    Message = "Please fill out all required fields." 
+                });
                 return View(customTicket);
             }
+
+            customTicket.ticket.CreateAt = DateTimeToday();
 
             var imageFile = customTicket.formFile;
             var root = Path.Combine(_webHostEnvironment.WebRootPath, "images");
@@ -155,11 +187,12 @@ namespace ASI.Basecode.WebApp.Controllers
 
                         if (_notifManager.CreateTicketNotif(Convert.ToInt32(userId), userName, (int)customTicket.ticket.CategoryId, userTicket.UserTicketId, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
-                            TempData["ResMsg"] = new AlertMessageContent()
+                            TempData["temp"] = "create";
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                             {
-                                Status = "Ticket Created",
+                                Status = ErrorCode.Success,
                                 Message = successMsg,
-                            };
+                            });
                         }
                         return RedirectToAction("Index");
                     }
@@ -179,22 +212,22 @@ namespace ASI.Basecode.WebApp.Controllers
 
                         if (_notifManager.CreateTicketNotif(Convert.ToInt32(userId), userName, (int)customTicket.ticket.CategoryId, userTicket.UserTicketId, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
-                            TempData["ResMsg"] = new AlertMessageContent()
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                             {
-                                Status = "Ticket Created",
+                                Status = ErrorCode.Success,
                                 Message = successMsg
-                            };
+                            });
                         }
                         return RedirectToAction("Index");
                     }
                 }
             }
 
-            TempData["ResMsg"] = new AlertMessageContent()
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
             {
                 Status = ErrorCode.Error,
                 Message = string.IsNullOrEmpty(errorMsg) == true ? "An error has occured upon submitting the ticket, pls try again." : errorMsg
-            };
+            });
             return View(customTicket);
         }
 
@@ -280,6 +313,7 @@ namespace ASI.Basecode.WebApp.Controllers
             var status = _db.Statuses.ToList();
             customTicket.status = status;
 
+            customTicket.ticket.LastModified = DateTimeToday();
 
             myTicket.IssueDescription = customTicket.ticket.IssueDescription;
             myTicket.CategoryId = customTicket.ticket.CategoryId;
@@ -309,23 +343,17 @@ namespace ASI.Basecode.WebApp.Controllers
             }
             myTicket.LastModified = DateTimeToday();
 
+            TempData["temp"] = "update";
+
             if (_ticketRepo.Update(myTicket.TicketId, myTicket) == ErrorCode.Success)
             {
-                TempData["ResMsg"] = new AlertMessageContent()
-                {
-                    Status = ErrorCode.Success,
-                    Message = "Ticket updated successfully!"
-                };
+                TempData["status"] = 0;
                 customTicket.ticket = myTicket;
-                return View(customTicket);
+                return RedirectToAction("Index");
             }
-            TempData["ResMsg"] = new AlertMessageContent()
-            {
-                Status = ErrorCode.Error,
-                Message = "An error has occured when updating your ticket, pls try again."
-            };
+            TempData["status"] = 1;
             customTicket.ticket = myTicket;
-            return View(customTicket);
+            return RedirectToAction("Index");
         }
 
         public IActionResult Delete(int id)

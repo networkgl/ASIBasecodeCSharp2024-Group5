@@ -12,7 +12,7 @@ namespace ASI.Basecode.Data.Models
 
         public int PriorityId { get; set; }
         public string PriorityName { get; set; }
-        public int? DueDate { get; set; }
+        public int? ResolutionTime { get; set; }
 
         public virtual ICollection<Ticket> Tickets { get; set; }
     }

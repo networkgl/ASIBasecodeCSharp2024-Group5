@@ -64,6 +64,8 @@ namespace ASI.Basecode.WebApp
                     policy.RequireRole("superadmin", "administrator"));
                 options.AddPolicy("AdminAndAgentPolicy", policy =>
                     policy.RequireRole("administrator", "support agent"));
+                options.AddPolicy("AllRoleTypePolicy", policy =>
+                    policy.RequireRole("administrator", "support agent", "superadmin", "user"));
             });
 
             this._services.AddMvc();

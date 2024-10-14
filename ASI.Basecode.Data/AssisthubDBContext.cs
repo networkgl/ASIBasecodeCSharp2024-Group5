@@ -6,13 +6,13 @@ using ASI.Basecode.Data.Models;
 
 namespace ASI.Basecode.Data
 {
-    public partial class TicketingSystemDBContext : DbContext
+    public partial class AssisthubDBContext : DbContext
     {
-        public TicketingSystemDBContext()
+        public AssisthubDBContext()
         {
         }
 
-        public TicketingSystemDBContext(DbContextOptions<TicketingSystemDBContext> options)
+        public AssisthubDBContext(DbContextOptions<AssisthubDBContext> options)
             : base(options)
         {
         }
@@ -47,7 +47,7 @@ namespace ASI.Basecode.Data
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("workstation id=AssisthubDB.mssql.somee.com;packet size=4096;user id=XAssistHubX_SQLLogin_1;pwd=tpu83eivqf;data source=AssisthubDB.mssql.somee.com;persist security info=False;initial catalog=AssisthubDB;TrustServerCertificate=True");
+                optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Trust Server Certificate=True");
             }
         }
 
@@ -67,7 +67,7 @@ namespace ASI.Basecode.Data
                     .WithMany(p => p.Articles)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK__Article__UserId__73BA3083");
+                    .HasConstraintName("FK__Article__UserId__4E88ABD4");
             });
 
             modelBuilder.Entity<AssignedTicket>(entity =>
@@ -85,18 +85,18 @@ namespace ASI.Basecode.Data
                 entity.HasOne(d => d.Agent)
                     .WithMany(p => p.AssignedTicketAgents)
                     .HasForeignKey(d => d.AgentId)
-                    .HasConstraintName("FK__Resolve__AgentId__114A936A");
+                    .HasConstraintName("FK__AssignedT__Agent__5070F446");
 
                 entity.HasOne(d => d.Assigner)
                     .WithMany(p => p.AssignedTicketAssigners)
                     .HasForeignKey(d => d.AssignerId)
-                    .HasConstraintName("FK__Resolve__AdminId__10566F31");
+                    .HasConstraintName("FK__AssignedT__Assig__4F7CD00D");
 
                 entity.HasOne(d => d.UserTicket)
                     .WithMany(p => p.AssignedTickets)
                     .HasForeignKey(d => d.UserTicketId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK__Resolve__UserTic__0F624AF8");
+                    .HasConstraintName("FK__AssignedT__UserT__5165187F");
             });
 
             modelBuilder.Entity<Category>(entity =>
@@ -118,7 +118,7 @@ namespace ASI.Basecode.Data
                     .WithMany(p => p.Feedbacks)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK__Feedback__UserId__76969D2E");
+                    .HasConstraintName("FK__Feedback__UserId__52593CB8");
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -151,7 +151,7 @@ namespace ASI.Basecode.Data
             {
                 entity.ToTable("Priority");
 
-                entity.HasIndex(e => e.PriorityName, "UQ__Priority__346EBED66C22B5A1")
+                entity.HasIndex(e => e.PriorityName, "UQ__Priority__346EBED69A6FB293")
                     .IsUnique();
 
                 entity.Property(e => e.PriorityName)
@@ -163,7 +163,7 @@ namespace ASI.Basecode.Data
             {
                 entity.ToTable("Role");
 
-                entity.HasIndex(e => e.RoleName, "UQ__Role__8A2B61600F5C4C2D")
+                entity.HasIndex(e => e.RoleName, "UQ__Role__8A2B61600B938209")
                     .IsUnique();
 
                 entity.Property(e => e.RoleName)
@@ -175,7 +175,7 @@ namespace ASI.Basecode.Data
             {
                 entity.ToTable("Status");
 
-                entity.HasIndex(e => e.StatusName, "UQ__Status__05E7698AA633D2C9")
+                entity.HasIndex(e => e.StatusName, "UQ__Status__05E7698A818E6FCB")
                     .IsUnique();
 
                 entity.Property(e => e.StatusName)
@@ -219,10 +219,10 @@ namespace ASI.Basecode.Data
             {
                 entity.ToTable("User");
 
-                entity.HasIndex(e => e.Name, "UQ__User__737584F6BEDC2FA5")
+                entity.HasIndex(e => e.Name, "UQ__User__737584F638687D46")
                     .IsUnique();
 
-                entity.HasIndex(e => e.Email, "UQ__User__A9D10534540E4C7A")
+                entity.HasIndex(e => e.Email, "UQ__User__A9D10534CF54E8FD")
                     .IsUnique();
 
                 entity.Property(e => e.Email)
@@ -246,13 +246,13 @@ namespace ASI.Basecode.Data
                     .WithMany(p => p.UserRoles)
                     .HasForeignKey(d => d.RoleId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK__UserRole__RoleId__693CA210");
+                    .HasConstraintName("FK__UserRole__RoleId__5812160E");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.UserRoles)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK__UserRole__UserId__68487DD7");
+                    .HasConstraintName("FK__UserRole__UserId__59063A47");
             });
 
             modelBuilder.Entity<UserTicket>(entity =>
@@ -263,7 +263,7 @@ namespace ASI.Basecode.Data
                     .WithMany(p => p.UserTickets)
                     .HasForeignKey(d => d.TicketId)
                     .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK__UserTicke__Ticke__7A672E12");
+                    .HasConstraintName("FK__UserTicke__Ticke__59FA5E80");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.UserTickets)

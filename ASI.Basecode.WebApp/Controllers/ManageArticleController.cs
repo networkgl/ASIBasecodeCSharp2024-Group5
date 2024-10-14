@@ -4,37 +4,71 @@ using ASI.Basecode.Data.Models.CustomModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Security.Claims;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
-    [Authorize(Policy = "AdminAndAgentPolicy")]
     public class ManageArticleController : BaseController
     {
         public ManageArticleController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
         {
         }
+        [Authorize(Policy = "AllRoleTypePolicy")]
         public IActionResult Index(string searchTerm)
         {
-            if (TempData["temp"] != null)
+            if (TempData["temp"] is not null)
             {
-                if (TempData["status"] as int? == 0)
+                if ((string)TempData["temp"] == "create")
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+
+                    if (resMsg is not null)
                     {
-                        Status = ErrorCode.Success,
-                        Message = "An article has been deleted successfully!"
-                    };
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                            {
+                                Status = resMsg.Status,
+                                Message = resMsg.Message
+                            });
+                        }
+                    }
                 }
-                else
+                if ((string)TempData["temp"] == "delete")
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    if (TempData["status"] as int? == 0)
                     {
-                        Status = ErrorCode.Error,
-                        Message = "An error has occurred upon deleting the article."
-                    };
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Success,
+                            Message = "A ticket has deleted successfully!"
+                        });
+                    }
+                    else
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error has occured upon deleting the ticket."
+                        });
+                    }
+                }
+
+                if ((string)TempData["temp"] == "update")
+                {
+                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+
+                    if (resMsg is not null)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = resMsg.Status,
+                            Message = resMsg.Message
+                        });
+                    }
                 }
             }
             var articles = _articleRepo.GetAll().ToList();
@@ -48,38 +82,51 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Create()
         {
             return View(new Article());
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Create(Article article)
         {
-
+            TempData["temp"] = "create";
             article.UserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
             if (string.IsNullOrEmpty(article.Content))
             {
-                TempData["ResMsg"] = "Please provide the article content.";
-                TempData["ResStatus"] = "Error";
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Error,
+                    Message = "Please provide the article content."
+                });
                 return View(article);
             }
 
             if (article == null)
             {
-                TempData["ResMsg"] = "An error has occurred upon creating the article.";
-                TempData["ResStatus"] = "Error";
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Error,
+                    Message = "An error has occurred upon creating the article."
+                });
                 return View(article);
             }
 
             var result = _articleRepo.Create(article);
-            TempData["ResMsg"] = result == ErrorCode.Success ? "Article created successfully!" : "An error occurred while creating the article.";
-            TempData["ResStatus"] = result == ErrorCode.Success ? "Success" : "Error";
+
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+            {
+                Status = result == ErrorCode.Success ? ErrorCode.Success : ErrorCode.Error,
+                Message = result == ErrorCode.Success ? "Article created successfully!" : "An error has occurred upon creating the article."
+            });
 
             return RedirectToAction("Index");
         }
 
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Edit(int id)
         {
             var article = _articleRepo.Get(id);
@@ -99,6 +146,7 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Edit(Article article)
         {
             if (!ModelState.IsValid)
@@ -114,13 +162,13 @@ namespace ASI.Basecode.WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-
         public IActionResult Details(int id)
         {
             var article = _articleRepo.Get(id);
             return View(article);
         }
 
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Delete(int id)
         {
             var result = _articleRepo.Delete(id);

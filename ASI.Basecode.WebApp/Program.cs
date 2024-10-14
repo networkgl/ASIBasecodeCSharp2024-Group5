@@ -21,7 +21,7 @@ var appBuilder = WebApplication.CreateBuilder(new WebApplicationOptions
 
 appBuilder.Services.AddDbContext<TicketingSystemDBContext>(options =>
 {
-    var connectionString = appBuilder.Configuration.GetConnectionString("Defau");
+    var connectionString = appBuilder.Configuration.GetConnectionString("RemoteConnection");
     options.UseSqlServer(connectionString);
 });
 
