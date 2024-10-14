@@ -5,11 +5,11 @@ namespace ASI.Basecode.Data.Models
 {
     public partial class VwUserTicketView
     {
-        public string CategoryName { get; set; }
-        public string StatusName { get; set; }
         public int TicketId { get; set; }
         public int? CategoryId { get; set; }
         public int? PriorityId { get; set; }
+        public string CategoryName { get; set; }
+        public string StatusName { get; set; }
         public int? StatusId { get; set; }
         public string IssueDescription { get; set; }
         public string AttachmentPath { get; set; }
@@ -21,5 +21,7 @@ namespace ASI.Basecode.Data.Models
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+        public string PriorityName { get; set; }
+        public int? ResolutionTime { get; set; }
     }
 }

@@ -40,14 +40,11 @@
                                     }
                                 </select>
                             </div>
-                            @if(Model.AssignedTicket is not null){
+                            @* @if(Model.AssignedTicket is not null){ *@
                                 <div class="mb-20">
                                     <label asp-for="Ticket.PriorityId" class="form-label fw-semibold text-primary-light text-sm mb-8">Priority Level <span class="text-danger-600"></span></label>
                                     <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Ticket.PriorityId">
-                                        @if (Model.Ticket.PriorityId is null)
-                                        {
-                                            <option class="form-control radius-8" selected>Not Set</option>
-                                        }
+                                        <option class="form-control radius-8" Model.Ticket.PriorityId is null ? selected : value="@null">Not Set</option>
                                         @foreach (var item in Model.Priority)
                                         {
                                             <option class="form-control radius-8" value="@item.PriorityId">@item.PriorityName</option>
@@ -55,7 +52,7 @@
 
                                     </select>
                                 </div>
-                            } else
+                            @* } else
                             {
                                 <div class="mb-20">
                                     <label asp-for="Ticket.PriorityId" class="form-label fw-semibold text-primary-light text-sm mb-8">Priority Level <span class="text-danger-600"></span></label>
@@ -71,7 +68,7 @@
 
                                     </select>
                                 </div>
-                            }
+                            } *@
                             <div class="mb-20">
                                 <label asp-for="AssignedTicket.AgentId" class="form-label fw-semibold text-primary-light text-sm mb-8">Assign to <span class="text-danger-600"></span></label>
                                 <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="AssignedTicket.AgentId">

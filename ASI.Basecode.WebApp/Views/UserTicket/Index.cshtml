@@ -45,6 +45,9 @@
                     @Html.DisplayName("Issue Description")
                 </th>
                 <th>
+                    @Html.DisplayName("Priority")
+                </th>
+                <th>
                     @Html.DisplayName("Status")
                 </th>
                 <th>
@@ -71,8 +74,11 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.CategoryName)
                     </td>
-                    <td text-align:left">
+                    <td style="text-align:left">
                         @Html.DisplayFor(modelItem => item.IssueDescription)
+                    </td>
+                    <td style="text-align:left">
+                        @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.StatusName)

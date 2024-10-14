@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ASI.Basecode.Data.Models
 {
-    public partial class VwTicketAssignment
+    public partial class VwTicketDetailsView
     {
         public int? AssignedTicketId { get; set; }
         public int TicketId { get; set; }

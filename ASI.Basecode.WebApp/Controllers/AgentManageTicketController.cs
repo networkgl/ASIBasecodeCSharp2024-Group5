@@ -4,6 +4,7 @@ using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.WebApp.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -17,29 +18,66 @@ namespace ASI.Basecode.WebApp.Controllers
         }
         public IActionResult Index()
         {
-            if (TempData["temp"] != null)
+            if (TempData["temp"] is not null)
             {
-                if (TempData["status"] as int? == 0)
+                if ((string)TempData["temp"] == "create")
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+
+                    if (resMsg is not null)
                     {
-                        Status = ErrorCode.Success,
-                        Message = "A ticket has deleted successfully!"
-                    };
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                            {
+                                Status = resMsg.Status,
+                                Message = resMsg.Message
+                            });
+                            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+                            var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).ToList();
+
+                            return View(myTickets);
+                        }
+                    }
                 }
-                else
+                if ((string)TempData["temp"] == "delete")
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    if (TempData["status"] as int? == 0)
                     {
-                        Status = ErrorCode.Error,
-                        Message = "An error has occured upon deleting the ticket."
-                    };
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Success,
+                            Message = "A ticket has deleted successfully!"
+                        });
+                    }
+                    else
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error has occured upon deleting the ticket."
+                        });
+                    }
+                }
+
+                if ((string)TempData["temp"] == "update")
+                {
+                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+                    
+                    if(resMsg is not null)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = resMsg.Status,
+                            Message = resMsg.Message
+                        });
+                    }
                 }
             }
             if (User.Identity.IsAuthenticated)
             {
                 var userId = User.FindFirst("UserId")?.Value;
-                var myTickets = _db.VwTicketAssignments.ToList();
+                var myTickets = _db.VwTicketDetailsViews.ToList();
 
                 return View(myTickets);
             }
@@ -51,7 +89,7 @@ namespace ASI.Basecode.WebApp.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 var customTicket = new CustomEditTicketAssignment();
-                var ticketAssignment = _db.VwTicketAssignments.Where(m => m.TicketId == id).FirstOrDefault();
+                var ticketAssignment = _db.VwTicketDetailsViews.Where(m => m.TicketId == id).FirstOrDefault();
 
                 if (ticketAssignment == null)
                 {
@@ -118,15 +156,15 @@ namespace ASI.Basecode.WebApp.Controllers
                 return BadRequest();
             }
 
-            if (customTicket.AssignedTicket.AgentId is null)
-            {
-                TempData["ResMsg"] = new AlertMessageContent()
-                {
-                    Status = ErrorCode.Error,
-                    Message = "Cant update the priority if this ticket is unassigned!"
-                };
-                return View();
-            }
+            //if (customTicket.AssignedTicket.AgentId is null)
+            //{
+            //    TempData["ResMsg"] = new AlertMessageContent()
+            //    {
+            //        Status = ErrorCode.Error,
+            //        Message = "Cant update the priority if this ticket is unassigned!"
+            //    };
+            //    return View();
+            //}
 
             //current ticket
             var ticket = _db.Tickets.Where(m => m.TicketId == customTicket.Ticket.TicketId).FirstOrDefault();
@@ -166,36 +204,35 @@ namespace ASI.Basecode.WebApp.Controllers
             ticket.CategoryId = customTicket.Ticket.CategoryId;
             ticket.StatusId = customTicket.Ticket.StatusId;
 
-            //basis for choosing between create new or update Resolve, if null then we create, otherwise we update
+            //basis for choosing between create new or update AssignedTicket, if null then we create, otherwise we update
             var assignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == userTicket.UserTicketId).FirstOrDefault();
 
+            TempData["temp"] = "update";
+
+            ticket.LastModified = DateTimeToday();
             //if no agent is selected then just update the ticket immediately
             if (customTicket.AssignedTicket.AgentId is null || customTicket.AssignedTicket.AgentId == 0)
             {
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
-                    {
-                        Status = ErrorCode.Success,
-                        Message = "Ticket is updated successfully!"
-                    };
                     customTicket.Ticket = ticket;
                     customTicket.Agent = null;
-                    return View(customTicket);
+                    return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                     {
                         Status = ErrorCode.Error,
                         Message = "An error has occured upon updating the ticket, pls try again."
-                    };
-                    return View(customTicket);
+                    });
+                    return RedirectToAction("Index");
                 }
             }
 
             var AssignerId = User.FindFirst("UserId")?.Value;
-            //if resolve is null then we create new resolve, otherwise update existing resolve
+
+            //if assignedTicket is null then we create new resolve, otherwise update existing assignedTicket
             if (assignedTicket is null)
             {
                 assignedTicket = new AssignedTicket()
@@ -226,11 +263,11 @@ namespace ASI.Basecode.WebApp.Controllers
                         if (_notificationManger.AssignOrReAssignTicketNotif(true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, fromUserName, toUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
-                            TempData["ResMsg"] = new AlertMessageContent()
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                             {
                                 Status = ErrorCode.Success,
-                                Message = "Ticket is updated successfully",
-                            };
+                                Message = $"Ticket is successfully assigned to Agent: {userAgent.Name}",
+                            });
 
                         }
        
@@ -239,12 +276,15 @@ namespace ASI.Basecode.WebApp.Controllers
                         customTicket.AssignedTicket = assignedTicket;
                         customTicket.Agent = userAgent;
                         customTicket.Category = categories;
-                        return View(customTicket);
+                        return RedirectToAction("Index");
                     }
                 }
             }
             else
             {
+                //the assigned agent of the current ticket before updating the assignedticket (which the agent will be possibly updated/changed)
+                var previousAssignedAgent = assignedTicket.AgentId;
+
                 assignedTicket.LastModified = DateTimeToday();
                 assignedTicket.AssignerId = Convert.ToInt32(AssignerId);
                 assignedTicket.AgentId = customTicket.AssignedTicket.AgentId;
@@ -255,8 +295,10 @@ namespace ASI.Basecode.WebApp.Controllers
                     return BadRequest();
                 }
 
+                ticket.LastModified = DateTimeToday();
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
                 {
+                    assignedTicket.LastModified = DateTimeToday();
                     if (_assignedTicketRepo.Update(assignedTicket.AssignedTicketId, assignedTicket) == ErrorCode.Success)
                     {
         
@@ -273,15 +315,13 @@ namespace ASI.Basecode.WebApp.Controllers
                         if (_notificationManger.AssignOrReAssignTicketNotif(true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, toUserName, fromUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
-                            TempData["ResMsg"] = new AlertMessageContent()
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                             {
                                 Status = ErrorCode.Success,
-                                Message = successMsg,
-                            };
+                                Message = assignedTicket.AgentId == previousAssignedAgent ? successMsg : $"Ticket is successfully reassigned to Agent: {userAgent.Name}",
+                            });
 
                         }
-
-
                         return RedirectToAction("Index");
                     }
                 }

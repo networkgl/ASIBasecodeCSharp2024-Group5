@@ -39,7 +39,7 @@ namespace ASI.Basecode.WebApp.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 var userId = User.FindFirst("UserId")?.Value;
-                var myTickets = _db.VwTicketAssignments.ToList();
+                var myTickets = _db.VwTicketDetailsViews.ToList();
 
                 return View(myTickets);
             }
@@ -51,7 +51,7 @@ namespace ASI.Basecode.WebApp.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 var customTicket = new CustomEditTicketAssignment();
-                var ticketAssignment = _db.VwTicketAssignments.Where(m => m.TicketId == id).FirstOrDefault();
+                var ticketAssignment = _db.VwTicketDetailsViews.Where(m => m.TicketId == id).FirstOrDefault();
 
                 if (ticketAssignment == null) 
                 {
@@ -155,6 +155,7 @@ namespace ASI.Basecode.WebApp.Controllers
             //if no agent is selected then just update the ticket immediately
             if (customTicket.AssignedTicket.AgentId is null || customTicket.AssignedTicket.AgentId == 0)
             {
+                ticket.LastModified = DateTimeToday();
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
                 {
                     TempData["ResMsg"] = new AlertMessageContent()
@@ -248,7 +249,7 @@ namespace ASI.Basecode.WebApp.Controllers
             if (User.Identity.IsAuthenticated)  
             {
                 var customTicket = new CustomEditTicketAssignment();
-                var ticketAssignment = _db.VwTicketAssignments.Where(m => m.TicketId == id).FirstOrDefault();
+                var ticketAssignment = _db.VwTicketDetailsViews.Where(m => m.TicketId == id).FirstOrDefault();
 
                 if (ticketAssignment == null)
                 {

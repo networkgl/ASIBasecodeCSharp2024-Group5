@@ -90,7 +90,7 @@ namespace ASI.Basecode.WebApp
                     sqlServerOptions => sqlServerOptions.CommandTimeout(120));
             });
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddSessionStateTempDataProvider();
             services.AddRazorPages().AddRazorRuntimeCompilation();
 
             //Configuration
