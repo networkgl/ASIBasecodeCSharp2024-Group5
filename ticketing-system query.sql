@@ -456,8 +456,6 @@ inner join [Role] r on r.RoleId = ur.RoleId
 where ur.RoleId = 2
 go
 
-select * from vw_UserRoleView
-
 create view vw_TotalTicketResolvedByAgent
 as
 select Count(*)
@@ -583,23 +581,47 @@ FROM            dbo.Ticket AS t INNER JOIN
                          dbo.[User] AS u ON u.UserId = ut.UserId INNER JOIN
                          dbo.Category AS c ON c.CategoryId = t.CategoryId INNER JOIN
                          dbo.Status AS s ON s.StatusId = t.StatusId
-go;
+go
 
 		
 select *
 from vw_UserRoleView
 go
 
-select u.Email, u.UserId, t.TicketId, t.PriorityId from AssignedTicket at
-inner join [User] u on u.UserId = at.AssignerId
-inner join [UserTicket] ut on ut.TicketId = at.UserTicketId
-inner join [Ticket] t on t.TicketId = ut.TicketId
+select * from Notification
 go
 
-select * from Priority
+select * from vw_TicketAssignment
+go
+
+select * from Ticket
+go
+
+select * from UserTicket
+go
+
+delete from Ticket where TicketId = 33
 go
 
 select * from AssignedTicket
 go
 
-select * from vw_TicketAssignment
+-- this view only returns the ticket that is already assigned to an agent
+alter view vw_AssignedTicketView
+as
+select at.AssignedTicketId, at.UserTicketId, at.AssignerId, at.AgentId, at.DateAssigned, at.LastModified 'AssignedTicketLastModified', t.*, s.StatusName, c.CategoryName, p.PriorityName, p.ResolutionTime, u.*
+from AssignedTicket at
+inner join UserTicket ut on at.UserTicketId = ut.UserTicketId
+inner join Ticket t on t.TicketId = ut.TicketId
+inner join [User] u on u.UserId = ut.UserId
+inner join Category c on t.CategoryId = c.CategoryId
+left join Priority p on p.PriorityId = t.PriorityId
+inner join Status s on s.StatusId = t.StatusId
+go
+
+-- this view returns the details of users with their tickets
+select * from vw_UserTicketView
+go
+
+select * from vw_AssignedTicketView
+go
