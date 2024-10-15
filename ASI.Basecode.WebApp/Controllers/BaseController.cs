@@ -3,11 +3,13 @@ using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.Data.Repositories;
+using ASI.Basecode.WebApp.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Configuration;
+using System.Drawing;
 using System.Linq;
 
 namespace ASI.Basecode.WebApp.Controllers
@@ -16,6 +18,7 @@ namespace ASI.Basecode.WebApp.Controllers
     {
         protected ISession _session;
         public TicketingSystemDBContext _db;
+        public AssisthubDBContext _db1; //temporary rani
         public BaseRepository<User> _userRepo;
         public BaseRepository<VwUserRoleView> _vw_UserRoleView;
         public BaseRepository<UserRole> _userRoleRepo;
@@ -31,6 +34,7 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             _session = httpContextAccessor.HttpContext.Session;
             _db = new TicketingSystemDBContext();
+            _db1 = new AssisthubDBContext();
             _userRepo = new BaseRepository<User>();
             _vw_UserRoleView = new BaseRepository<VwUserRoleView>();
             _userRoleRepo = new BaseRepository<UserRole>();
@@ -41,10 +45,18 @@ namespace ASI.Basecode.WebApp.Controllers
             _notifRepo = new BaseRepository<Notification>();
             _catRepo = new BaseRepository<Category>();
             _articleRepo = new BaseRepository<Article>();
+
+            // Only call RemindTicketNotif if the user is authenticated
+            if (httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                string errorMsg, successMsg;
+                RemindTicketNotif(out errorMsg, out successMsg);
+            }
         }
         public BaseController()
         {
             _db = new TicketingSystemDBContext();
+            _db1 = new AssisthubDBContext();
             _userRepo = new BaseRepository<User>();
             _vw_UserRoleView = new BaseRepository<VwUserRoleView>();
             _userRoleRepo = new BaseRepository<UserRole>();
@@ -54,11 +66,105 @@ namespace ASI.Basecode.WebApp.Controllers
             _assignedTicketRepo = new BaseRepository<AssignedTicket>();
             _notifRepo = new BaseRepository<Notification>();
             _catRepo = new BaseRepository<Category>();
+
+            // Only call RemindTicketNotif if the user is authenticated
+            //if (HttpContext.User.Identity.IsAuthenticated)
+            //{
+            //    string errorMsg, successMsg;
+            //    RemindTicketNotif(out errorMsg, out successMsg);
+            //}
         }
+
+        public ErrorCode RemindTicketNotif(out string errorMsg, out string successMsg)
+        {
+            errorMsg = successMsg = string.Empty;
+
+            try
+            {
+                // Fetch the current UTC time, converted to the application's timezone
+                // Fetch the current UTC time, converted to the application's timezone
+                var currentTime = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow);
+
+                // Simulate advancing time by adding hours
+                int hoursToAdvance = 1; // Adjust this value as needed for your tests
+                currentTime = currentTime.AddHours(hoursToAdvance);
+
+                var tickets = _db1.VwNotificationViews
+                    .Where(m => m.AgentId.HasValue && m.DateAssigned.HasValue && m.ResolutionTime.HasValue && (m.StatusName.Equals("In Progress")))
+                    .ToList(); // only get ticket that already has agent assigned
+                
+                if (tickets.Count == 0)
+                {
+                    return ErrorCode.Error;
+                }
+
+                // Sending reminders before the due date...
+                foreach (var ticket in tickets)
+                {
+                    // Fetch the ticket's DateAssigned and keep it in UTC or local based on your needs
+                    DateTime ticketAssignedTime = ticket.DateAssigned.Value; // Keep it in its original format
+
+                    // Calculate the due date for the ticket (DateAssigned + ResolutionTime)
+                    var dueDate = ticketAssignedTime.AddHours((double)ticket.ResolutionTime); // Use local time for due date calculations
+
+                    int hoursBeforeTrigger = 7; // Fixed hours before due date (STATIC declared)
+                    var reminderThreshold = TimeSpan.FromHours(hoursBeforeTrigger);
+
+                    // Determine the reminder date (when the notification should be sent)
+                    var reminderDate = dueDate - reminderThreshold;
+
+                    // Check if the current time is within the reminder window (and the ticket is not yet overdue)
+                    if (currentTime >= reminderDate && currentTime < dueDate)
+                    {
+                        // Send reminder to the assigned user
+                        var suppAgentNotif = new Notification()
+                        {
+                            ToUserId = ticket.AgentId,  // Notify the assigned support agent
+                            UserTicketId = ticket.TicketId,
+                            Content = $"Unresolved Ticket Reminder for Ticket ID: {ticket.TicketId} Date Assigned: {ticketAssignedTime} Hours To Be Resolve: {ticket.ResolutionTime}. Please resolve this ticket within {hoursBeforeTrigger} hours immediately!",
+                        };
+
+                        if (_notifRepo.Create(suppAgentNotif) == ErrorCode.Error)
+                        {
+                            return ErrorCode.Error;
+                        }
+
+                        // Notify also the user who owns the ticket...
+                        var userNotif = new Notification()
+                        {
+                            ToUserId = ticket.UserId,  // Notify the user also 
+                            UserTicketId = ticket.TicketId,
+                            Content = $"We have noticed that your concerned with Ticket ID: {ticket.TicketId} has not been resolved. We already notified the assigned agent for this matter and promised to resolve this urgently. Thank you for your patience!",
+                        };
+
+                        if (_notifRepo.Create(userNotif) == ErrorCode.Error)
+                        {
+                            return ErrorCode.Error;
+                        }
+                    }
+                }
+
+                successMsg = "Upcoming due date reminders sent successfully.";
+            }
+            catch (Exception e)
+            {
+                // Handle exceptions and set error message
+                errorMsg = e.InnerException?.InnerException?.Message ?? e.Message;
+                return ErrorCode.Error;
+            }
+
+            return ErrorCode.Success;
+        }
+
+
+
+
         public enum CustomErrorCode {
             Success,
             InvalidRoleId,
         }
+
+
         public AlertMessageContent CreateNewUser(User user, int roleId, object? modelParam)
         {
             /* ROLE

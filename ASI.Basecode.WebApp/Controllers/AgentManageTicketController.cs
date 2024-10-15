@@ -2,6 +2,7 @@
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.WebApp.Repository;
+using ASI.Basecode.WebApp.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -240,8 +241,9 @@ namespace ASI.Basecode.WebApp.Controllers
                     UserTicketId = userTicket.UserTicketId,
                     AssignerId = Convert.ToInt32(AssignerId),
                     AgentId = customTicket.AssignedTicket.AgentId,
-                    DateAssigned = DateTimeToday(),
-                    LastModified = DateTimeToday(),
+                    //DateAssigned = DateTimeToday(),
+                    DateAssigned = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow),
+                    LastModified = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow),
                 };
 
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
@@ -305,7 +307,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 //the assigned agent of the current ticket before updating the assignedticket (which the agent will be possibly updated/changed)
                 var previousAssignedAgent = assignedTicket.AgentId;
 
-                assignedTicket.LastModified = DateTimeToday();
+                assignedTicket.LastModified = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow);
                 assignedTicket.AssignerId = Convert.ToInt32(AssignerId);
                 assignedTicket.AgentId = customTicket.AssignedTicket.AgentId;
                 var userAgent = _db.Users.Where(m => m.UserId == assignedTicket.AgentId).FirstOrDefault();

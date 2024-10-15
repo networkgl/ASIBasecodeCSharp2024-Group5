@@ -15,6 +15,7 @@ namespace ASI.Basecode.WebApp.Repository
         public NotificationManager()
         {
         }
+
         protected List<Notification> GetUserAssociatedNotif(int? userId)
         {
             return _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
@@ -55,7 +56,7 @@ namespace ASI.Basecode.WebApp.Repository
                     suppAgentNotif.ToUserId = suppAgentId[i];
                     suppAgentNotif.UserTicketId = userTicketId;
                     suppAgentNotif.Content = string.Format(
-                                ASI.Basecode.WebApp.Utils.Constant.SUPPORT_AGENT_TICKET_NOTIFICATION,
+                                Constant.SUPPORT_AGENT_TICKET_NOTIFICATION,
                                 userName,
                                 toUserId,
                                 ticketId,
@@ -86,15 +87,15 @@ namespace ASI.Basecode.WebApp.Repository
             try
             {
                 //var assignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
-                var assignedTicket = _db.VwAssignedTicketViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
-                
-                if (assignedTicket is null)
+                var userTicket = _db1.VwNotificationViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
+
+                if (userTicket is null)
                 {
                     return ErrorCode.Error;
                 }
 
                 //the assigned agent of the current ticket before updating the assignedticket (which the agent will be possibly updated/changed)
-                var previousAssignedAgent = assignedTicket.AgentId;
+                var previousAssignedAgent = userTicket.AgentId;
                 if (isAssigning)
                 {
                     var userAssignedNotif = new Notification()
@@ -126,9 +127,9 @@ namespace ASI.Basecode.WebApp.Repository
                     //trigger also notif for the user who owns the ticket...
                     var userNotif = new Notification()
                     {
-                        ToUserId = assignedTicket.UserId,
+                        ToUserId = userTicket.UserId,
                         UserTicketId = userTicketId,
-                        Content = $"Your ticket has been assigned by our support agent. Ticket ID: {assignedTicket.TicketId}"
+                        Content = $"Your ticket has been assigned by our support agent. Ticket ID: {userTicket.TicketId}"
                     };
 
                     if (_notifRepo.Create(userNotif) == ErrorCode.Error)
@@ -169,9 +170,9 @@ namespace ASI.Basecode.WebApp.Repository
                     //trigger also notif for the user who owns the ticket...
                     var userNotif = new Notification()
                     {
-                        ToUserId = assignedTicket.UserId,
+                        ToUserId = userTicket.UserId,
                         UserTicketId = userTicketId,
-                        Content = $"Good day! Your ticket has been re-assigned to our another support agent. Ticket ID: {assignedTicket.TicketId}. Please be guided."
+                        Content = $"Good day! Your ticket has been re-assigned to our another support agent. Ticket ID: {userTicket.TicketId}. Please be guided."
                     };
 
                     if (_notifRepo.Create(userNotif) == ErrorCode.Error)
@@ -200,7 +201,7 @@ namespace ASI.Basecode.WebApp.Repository
             try
             {
 
-                var userTickets = _db.VwAssignedTicketViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
+                var userTickets = _db1.VwNotificationViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
 
                 if (userTickets is null)
                 {
@@ -221,11 +222,94 @@ namespace ASI.Basecode.WebApp.Repository
                     return ErrorCode.Error;
                 }
 
+                //also send notif for the supp agent who was assign the resolve ticket...
+                var suppAgentNotif = new Notification()
+                {
+                    ToUserId = userTickets.AgentId,
+                    UserTicketId = userTicketId,
+                    Content = $"Job well done! You have successfully resolved user concern that has Ticket ID: {userTicketId}. Thank you!"
+                };
 
+                if (_notifRepo.Create(suppAgentNotif) == ErrorCode.Error)
+                {
+                    return ErrorCode.Error;
+                }
+
+                successMsg = "Ticket successfully resolve!";
             }
             catch (Exception e)
             {
                 errorMsg = e.InnerException == null || e.InnerException.InnerException == null ? e.Message : e.InnerException.InnerException.Message;
+                return ErrorCode.Error;
+            }
+
+            return ErrorCode.Success;
+        }
+
+        public ErrorCode RemindTicketNotif(out string errorMsg, out string successMsg)
+        {
+            errorMsg = successMsg = string.Empty;
+
+            try
+            {
+                // Fetch the current UTC time, converted to the application's timezone
+                var currentTime = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow);
+
+                // Loop through the tickets and send reminders before the due date
+                var tickets = _db1.VwNotificationViews
+                    .Where(m => m.DateAssigned.HasValue && m.ResolutionTime.HasValue) // Ensure DateAssigned and ResolutionTime are present
+                    .ToList();
+
+                foreach (var ticket in tickets)
+                {
+                    // Calculate the due date for the ticket (DateAssigned + ResolutionTime)
+                    var dueDate = ticket.DateAssigned.Value.AddHours((double)ticket.ResolutionTime);
+
+                    int hoursBeforeTrigger = 5; // Fixed hours before due date (STATIC declared)
+                    var reminderThreshold = TimeSpan.FromHours(hoursBeforeTrigger);  
+
+                    // Determine the reminder date (when the notification should be sent)
+                    var reminderDate = dueDate - reminderThreshold;
+
+                    // Check if the current time is within the reminder window (and the ticket is not yet overdue)
+                    if (currentTime >= reminderDate && currentTime < dueDate)
+                    {
+                        // Send reminder to the assigned user
+                        var suppAgentNotif = new Notification()
+                        {
+                            ToUserId = ticket.AgentId,  // Notify the assigned support agent
+                            UserTicketId = ticket.TicketId,
+                            Content = $"Unresolved Ticket Reminder for Ticket ID: {ticket.TicketId} Date Assigned: {ticket.DateAssigned} Hours To Be Resolve: {ticket.ResolutionTime}. Please resolve this ticket within {hoursBeforeTrigger} hours immediately!",
+                        };
+
+                        if (_notifRepo.Create(suppAgentNotif) == ErrorCode.Error)
+                        {
+                            return ErrorCode.Error;
+                        }
+
+                        //notify also the user who owns the ticket...
+                        var userNotif = new Notification()
+                        {
+                            ToUserId = ticket.UserId,  // Notify the user also 
+                            UserTicketId = ticket.TicketId,
+                            Content = $"We have noticed that your concerned with Ticket ID: {ticket.TicketId} has not been resolved. We already notified the assigned agent for this matter and promised to resolve this urgently. Thank you for your patience!",
+                        };
+
+                        if (_notifRepo.Create(userNotif) == ErrorCode.Error)
+                        {
+                            return ErrorCode.Error;
+                        }
+
+
+                    }
+                }
+
+                successMsg = "Upcoming due date reminders sent successfully.";
+            }
+            catch (Exception e)
+            {
+                // Handle exceptions and set error message
+                errorMsg = e.InnerException?.InnerException?.Message ?? e.Message;
                 return ErrorCode.Error;
             }
 

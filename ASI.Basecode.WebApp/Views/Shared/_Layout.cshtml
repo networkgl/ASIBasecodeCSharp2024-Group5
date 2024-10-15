@@ -223,16 +223,19 @@
                                             Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow) - (notif.CreatedAt ?? DateTime.UtcNow), notif.CreatedAt ?? DateTime.UtcNow);
 
                                             <a href="javascript:void(0)"
-                                               class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
+                                            class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
                                                 <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
                                                     <span class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
                                                         <iconify-icon icon="bitcoin-icons:verify-outline" class="icon text-xxl"></iconify-icon>
                                                     </span>
                                                     <div>
                                                         @*      @{
-                                                var actorName = "User - " + notif.FromUserId == null ? "System Message" : _userManager.GetUserNameById((int)notif.FromUserId);
-                                                } *@
-                                                        <h6 class="text-md fw-semibold mb-4">@("Support Agent")</h6>
+                                                            var actorName = "User - " + notif.FromUserId == null ? "System Message" : _userManager.GetUserNameById((int)notif.FromUserId);
+                                                            } *@
+                                                        <h6 class="text-md fw-semibold mb-4">
+                                                            @(User.IsInRole("user") == true ? ("Support Agent") : ("System Message"))
+                                                        </h6>
+
                                                         <p class="mb-0 text-sm text-secondary-light text-w-200-px">
                                                             @notif.Content
                                                         </p>
