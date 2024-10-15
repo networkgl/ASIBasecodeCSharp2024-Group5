@@ -260,7 +260,26 @@ namespace ASI.Basecode.WebApp.Controllers
                         NotificationManager _notificationManger = new NotificationManager();
                         string? fromUserName = User.FindFirst(ClaimsIdentity.DefaultNameClaimType)?.Value;
                         string? toUserName = userAgent.Name;
-                        if (_notificationManger.AssignOrReAssignTicketNotif(true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, fromUserName, toUserName, out errorMsg, out successMsg) == ErrorCode.Success)
+
+                        /*
+                         -----STATUS ID REFERENCE-----
+                         Open = 1
+                         In progress = 2
+                         Resolved = 3
+                         Closed = 4  
+                         */
+                        if (customTicket.Ticket.StatusId == 3) 
+                        {
+                            if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, int.Parse(AssignerId), out errorMsg, out successMsg) == ErrorCode.Success)
+                            {
+                                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                                {
+                                    Status = ErrorCode.Success,
+                                    Message = $"Ticket was successfully resolved",
+                                });
+                            }
+                        }
+                        else if (_notificationManger.AssignOrReAssignTicketNotif(true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, fromUserName, toUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
@@ -282,6 +301,7 @@ namespace ASI.Basecode.WebApp.Controllers
             }
             else
             {
+                //RE ASSIGN..
                 //the assigned agent of the current ticket before updating the assignedticket (which the agent will be possibly updated/changed)
                 var previousAssignedAgent = assignedTicket.AgentId;
 
@@ -310,9 +330,28 @@ namespace ASI.Basecode.WebApp.Controllers
                         //trigger notif...
                         string successMsg, errorMsg;
                         NotificationManager _notificationManger = new NotificationManager();
-                        string? fromUserName = User.FindFirst(ClaimsIdentity.DefaultNameClaimType)?.Value;
-                        string? toUserName = userAgent.Name;
-                        if (_notificationManger.AssignOrReAssignTicketNotif(true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, toUserName, fromUserName, out errorMsg, out successMsg) == ErrorCode.Success)
+                        string fromUserName = User.FindFirst(ClaimsIdentity.DefaultNameClaimType)?.Value;
+                        string toUserName = userAgent.Name;
+
+                        /*
+                        -----STATUS ID REFERENCE-----
+                        Open = 1
+                        In progress = 2
+                        Resolved = 3
+                        Closed = 4  
+                        */
+                        if (customTicket.Ticket.StatusId == 3)
+                        {
+                            if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, int.Parse(AssignerId), out errorMsg, out successMsg) == ErrorCode.Success)
+                            {
+                                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                                {
+                                    Status = ErrorCode.Success,
+                                    Message = $"Ticket was successfully resolved",
+                                });
+                            }
+                        }
+                        else if (_notificationManger.AssignOrReAssignTicketNotif(false, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, toUserName, fromUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()

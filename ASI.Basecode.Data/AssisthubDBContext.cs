@@ -33,6 +33,7 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwAdminUsersView> VwAdminUsersViews { get; set; }
         public virtual DbSet<VwAgentCount> VwAgentCounts { get; set; }
         public virtual DbSet<VwAssignedTicketView> VwAssignedTicketViews { get; set; }
+        public virtual DbSet<VwNotificationView> VwNotificationViews { get; set; }
         public virtual DbSet<VwTicketCountForAgent> VwTicketCountForAgents { get; set; }
         public virtual DbSet<VwTicketDetailsView> VwTicketDetailsViews { get; set; }
         public virtual DbSet<VwTotalTicketsResolved> VwTotalTicketsResolveds { get; set; }
@@ -344,6 +345,42 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.Password)
                     .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PriorityName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.StatusName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwNotificationView>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_NotificationView");
+
+                entity.Property(e => e.AgentName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("Agent Name");
+
+                entity.Property(e => e.CategoryName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.DateAssigned).HasColumnType("datetime");
+
+                entity.Property(e => e.Email)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.IssueDescription).IsUnicode(false);
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(100)
                     .IsUnicode(false);
 
                 entity.Property(e => e.PriorityName)
