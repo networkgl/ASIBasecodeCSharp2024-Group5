@@ -1,6 +1,7 @@
 ﻿using ASI.Basecode.Data.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
+using NUlid;
 
 namespace ASI.Basecode.Data.Models.CustomModels
 {
@@ -15,4 +16,5 @@ namespace ASI.Basecode.Data.Models.CustomModels
         public IFormFile formFile { get; set; }
         public string? RemovedOriginalImg { get; set; }
     }
+
 }

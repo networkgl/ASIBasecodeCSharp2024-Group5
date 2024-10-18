@@ -1,0 +1,99 @@
+﻿@using ASI.Basecode.Data.Models.CustomModels;
+@using Newtonsoft.Json;
+
+@{
+    var categoriesJson = JsonConvert.SerializeObject(Model.Categories);
+    var statusesJson = JsonConvert.SerializeObject(Model.Statuses);
+    var prioritiesJson = JsonConvert.SerializeObject(Model.Priorities);
+    var userActivitiesJson = JsonConvert.SerializeObject(Model.UserActivities);
+}
+
+<div style="width: 100%; padding-bottom: 20px;" class="d-flex justify-content-center align-items-center">
+    <strong class="text-align-center" style="font-size: 30px;">Ticket Summary</strong>
+</div>
+<div class="row row-cols-xxxl-4 row-cols-lg-4 row-cols-sm-2 row-cols-1 gy-4">
+
+    <!-- Ticket Category Start  -->
+    <div class="col-md-6">
+        <div class="card h-100 p-0">
+            <div class="card-header border-bottom bg-base py-16 px-24">
+                <h6 class="text-lg fw-semibold mb-0">Ticket Category</h6>
+            </div>
+            <div class="card-body p-24 text-center chart-container">
+                <div id="pieChartCategory"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Status Start  -->
+    <div class="col-md-6">
+        <div class="card h-100 p-0">
+            <div class="card-header border-bottom bg-base py-16 px-24">
+                <h6 class="text-lg fw-semibold mb-0">Ticket Status</h6>
+            </div>
+            <div class="card-body p-24 text-center chart-container">
+                <div id="pieChartStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Priority Start -->
+    <div class="col-md-6">
+        <div class="card h-100 p-0">
+            <div class="card-header border-bottom bg-base py-16 px-24">
+                <h6 class="text-lg fw-semibold mb-0">Ticket Priority</h6>
+            </div>
+            <div class="card-body p-24 text-center chart-container">
+                <div id="pieChartPriority"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket User Activity Start -->
+    <div class="col-md-6">
+        <div class="card h-100 p-0">
+            <div class="card-header border-bottom bg-base py-16 px-24">
+                <h6 class="text-lg fw-semibold mb-0">Ticket User Activity</h6>
+            </div>
+            <div class="card-body p-24 text-center chart-container">
+                <div id="pieChartActivity"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    var categories = @Html.Raw(categoriesJson);
+    var statuses = @Html.Raw(statusesJson);
+    var priorities = @Html.Raw(prioritiesJson);
+    var userActivities = @Html.Raw(userActivitiesJson);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        renderChart('pieChartCategory', categories.map(c => c.TicketCount), categories.map(c => c.CategoryName));
+        renderChart('pieChartStatus', statuses.map(s => s.TicketCount), statuses.map(s => s.StatusName));
+        renderChart('pieChartPriority', priorities.map(p => p.TicketCount), priorities.map(p => p.PriorityName));
+        renderChart('pieChartUserActivity', userActivities.map(u => u.TicketCount), userActivities.map(u => u.UserName));
+    });
+
+    function renderChart(elementId, seriesData, labels) {
+        var options = {
+            series: seriesData,
+            chart: { type: 'pie', height: 264 },
+            labels: labels,
+            legend: { position: 'bottom', horizontalAlign: 'center' },
+            colors: ['#487FFF', '#FF9F29', '#45B369', '#EF4A00'],
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: { width: 200 },
+                    legend: { show: false }
+                }
+            }]
+        };
+
+        var chart = new ApexCharts(document.querySelector(`#${elementId}`), options);
+        chart.render();
+    }
+</script>
+

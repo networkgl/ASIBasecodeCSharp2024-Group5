@@ -13139,7 +13139,16 @@ td.fc-header-center {
 .dashboard-main.active {
   margin-inline-start: 4.875rem;
 }
+.chart-container {
+    height: 400px; /* Set a fixed height for all pie chart containers */
+}
 
+#pieChartCategory,
+#pieChartStatus,
+#pieChartPriority,
+#pieChartActivity {
+    height: 100%; /* Ensure the chart takes the full height of its container */
+}
 /* === dashboard body css end === */
 /* === footer css start === */
 .d-footer {
@@ -13149,3 +13158,5 @@ td.fc-header-center {
 }
 
 /* === footer css end === */
+
+
