@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 
@@ -17,7 +18,7 @@ namespace ASI.Basecode.WebApp.Controllers
         {
         }
         [Authorize(Policy = "AllRoleTypePolicy")]
-        public IActionResult Index(string searchTerm)
+        public IActionResult Index(string searchTerm, string sortBy)
         {
             if (TempData["temp"] is not null)
             {
@@ -71,7 +72,18 @@ namespace ASI.Basecode.WebApp.Controllers
                     }
                 }
             }
+            ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortBy) ? "title_desc" : "";
             var articles = _articleRepo.GetAll().ToList();
+            switch (sortBy)
+            {
+                case "title_desc":
+                    articles = articles.OrderByDescending(u => u.Title).ToList();
+                    break;
+                default:
+                    articles = articles.OrderBy(u => u.Title).ToList();
+                    break;
+
+            }
 
             if (!string.IsNullOrEmpty(searchTerm))
             {

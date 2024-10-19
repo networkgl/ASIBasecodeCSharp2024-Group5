@@ -42,6 +42,7 @@
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
 </div>
+<a asp-action="Index" asp-route-sortBy="@ViewData["TitleSortParm"]" class = "btn btn-primary"> Sort </a>
 @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user")
 {
     <div class="text-end mt-3">
