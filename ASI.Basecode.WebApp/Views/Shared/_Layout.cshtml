@@ -152,6 +152,10 @@
                             <iconify-icon icon="solar:document-add-outline" class="menu-icon"></iconify-icon>
                             <span>Articles</span>
                         </a>
+                        <a asp-controller="Chat" asp-action="Index">
+                            <iconify-icon icon="icon-park-twotone:inbox" class="menu-icon"></iconify-icon>
+                            <span>Inbox</span>
+                        </a>
                     }
                 </li>
                 <li>
@@ -324,6 +328,7 @@
         <div class="dashboard-main-body">
             <partial name="_Notification" />
             @RenderBody()
+            @* <partial name="_Chat"/> *@
         </div>
 
         <footer class="d-footer">
@@ -368,6 +373,15 @@
             var tableId = '@tableId';
             $(`#${tableId}`).DataTable();
         });
+
+        function toggleChat() {
+                var chatInbox = document.getElementById("chat-inbox");
+        if (chatInbox.style.display === "none") {
+            chatInbox.style.display = "block";
+                } else {
+            chatInbox.style.display = "none";
+                }
+            }
     </script>
 
 </body>

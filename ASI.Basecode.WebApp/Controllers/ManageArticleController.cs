@@ -92,7 +92,6 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Create(Article article)
         {
-            TempData["temp"] = "create";
             article.UserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
             if (string.IsNullOrEmpty(article.Content))
@@ -133,12 +132,11 @@ namespace ASI.Basecode.WebApp.Controllers
 
             if (article == null)
             {
-
-                TempData["ResMsg"] = new AlertMessageContent()
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Error,
                     Message = "Article not found."
-                };
+                });
                 return RedirectToAction("Index");
             }
 
@@ -149,16 +147,35 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Edit(Article article)
         {
+            TempData["temp"] = "update";
             if (!ModelState.IsValid)
             {
-                TempData["ResMsg"] = "There was an error in your submission.";
-                TempData["ResStatus"] = ErrorCode.Error.ToString();
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Message = "There was an error in your submission.",
+                    Status = ErrorCode.Error
+                });
                 return View(article);
             }
 
             var result = _articleRepo.Update(article.ArticleId, article);
-            TempData["ResMsg"] = result == ErrorCode.Success ? "Updated Successfully!" : "An error occurred while updating the article.";
-            TempData["ResStatus"] = result == ErrorCode.Success ? ErrorCode.Success.ToString() : ErrorCode.Error.ToString();
+
+            if(result == ErrorCode.Success)
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Message = "Updated Successfully!",
+                    Status = ErrorCode.Success
+                });
+            } else
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Message = "An error occurred while updating the article.",
+                    Status = ErrorCode.Error
+                });
+            }
+
             return RedirectToAction("Index");
         }
 
