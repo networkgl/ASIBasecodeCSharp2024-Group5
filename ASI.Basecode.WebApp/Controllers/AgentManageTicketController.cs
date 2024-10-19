@@ -233,9 +233,12 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var AssignerId = User.FindFirst("UserId")?.Value;
 
-            //if assignedTicket is null then we create new resolve, otherwise update existing assignedTicket
+            //if assignedTicket is null then we create new AssignedTicket, otherwise update existing assignedTicket
+            
             if (assignedTicket is null)
             {
+                ticket.StatusId = 2;
+
                 assignedTicket = new AssignedTicket()
                 {
                     UserTicketId = userTicket.UserTicketId,
@@ -245,7 +248,7 @@ namespace ASI.Basecode.WebApp.Controllers
                     DateAssigned = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow),
                     LastModified = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow),
                 };
-
+                
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
                 {
                     if (_assignedTicketRepo.Create(assignedTicket) == ErrorCode.Success)
@@ -316,7 +319,10 @@ namespace ASI.Basecode.WebApp.Controllers
                 {
                     return BadRequest();
                 }
-
+                if (customTicket.AssignedTicket.AgentId is not null)
+                {
+                    ticket.StatusId = 2;
+                }
                 ticket.LastModified = DateTimeToday();
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
                 {
