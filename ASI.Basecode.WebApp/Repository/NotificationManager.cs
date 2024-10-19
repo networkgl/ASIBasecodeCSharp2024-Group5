@@ -106,7 +106,8 @@ namespace ASI.Basecode.WebApp.Repository
                         FromUserId = assignerId,
                         ToUserId = assignedToId,
                         UserTicketId = userTicketId,
-                        Content = string.Format(Constant.TICKET_ASSIGNED_MESSAGE_FOR_ASSIGNED_USER, toUserName)
+                        Content = string.Format(Constant.TICKET_ASSIGNED_MESSAGE_FOR_ASSIGNED_USER, toUserName),
+                        CreatedAt = DateTimeToday()
                     };
 
                     if (_notifRepo.Create(userAssignedNotif) == ErrorCode.Error)
