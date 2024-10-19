@@ -8,6 +8,7 @@ namespace ASI.Basecode.Data.Models
         public int UserId { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
+        public int? AssignedTicketId { get; set; }
         public int TicketId { get; set; }
         public int UserTicketId { get; set; }
         public string CategoryName { get; set; }
@@ -18,5 +19,6 @@ namespace ASI.Basecode.Data.Models
         public int? AgentId { get; set; }
         public string AgentName { get; set; }
         public DateTime? DateAssigned { get; set; }
+        public byte? HasReminded { get; set; }
     }
 }
