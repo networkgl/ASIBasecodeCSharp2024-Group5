@@ -115,7 +115,19 @@
 
                                     @foreach (var item in Model.Status)
                                     {
-                                        if(item.StatusId != 1)
+                                      
+                                        if (item.StatusId == 1)
+                                        {
+                                            if (Model.Ticket.StatusId == 2)
+                                            {
+                                                continue;
+                                            }
+                                            else
+                                            {
+                                                <option class="form-control radius-8" value="@item.StatusId">@item.StatusName</option>
+                                            }
+                                        }
+                                        else
                                         {
                                             <option class="form-control radius-8" value="@item.StatusId">@item.StatusName</option>
                                         }
