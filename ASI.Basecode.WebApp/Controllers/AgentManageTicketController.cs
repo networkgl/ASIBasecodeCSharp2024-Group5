@@ -157,6 +157,8 @@ namespace ASI.Basecode.WebApp.Controllers
                 return BadRequest();
             }
 
+            TempData["temp"] = "update";
+
             //if (customTicket.AssignedTicket.AgentId is null)
             //{
             //    TempData["ResMsg"] = new AlertMessageContent()
@@ -208,7 +210,6 @@ namespace ASI.Basecode.WebApp.Controllers
             //basis for choosing between create new or update AssignedTicket, if null then we create, otherwise we update
             var assignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == userTicket.UserTicketId).FirstOrDefault();
 
-            TempData["temp"] = "update";
 
             ticket.LastModified = DateTimeToday();
             //if no agent is selected then just update the ticket immediately
