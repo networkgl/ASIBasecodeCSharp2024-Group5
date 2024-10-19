@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
+    [Authorize(Policy = "AllRoleTypePolicy")]
     public class ChatController:BaseController
     {
         public ChatController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
@@ -11,6 +14,9 @@ namespace ASI.Basecode.WebApp.Controllers
 
         public IActionResult Index()
         {
+            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
+
             return View();
         }
     }
