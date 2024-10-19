@@ -31,7 +31,8 @@ namespace ASI.Basecode.WebApp.Repository
                 {
                     ToUserId = toUserId,
                     UserTicketId = userTicketId,
-                    Content = string.Format(Constant.USER_SUCCESS_TICKET_MESSAGE, userTicketId)
+                    Content = string.Format(Constant.USER_SUCCESS_TICKET_MESSAGE, userTicketId),
+                    CreatedAt = DateTimeToday()
                 };
 
                 if (_notifRepo.Create(userNotif) == ErrorCode.Error)//for user who create the notif
@@ -61,7 +62,9 @@ namespace ASI.Basecode.WebApp.Repository
                                 toUserId,
                                 ticketId,
                                 subjectOrCategoryName
+
                     );
+                    suppAgentNotif.CreatedAt = DateTimeToday();
 
                     if (_notifRepo.Create(suppAgentNotif) == ErrorCode.Error) //for all support agents..
                     {
@@ -115,7 +118,8 @@ namespace ASI.Basecode.WebApp.Repository
                     {
                         ToUserId = assignerId,
                         UserTicketId = userTicketId,
-                        Content = string.Format(Constant.TICKET_ASSIGNED_MESSAGE_FOR_ASSIGNER, fromUserName)
+                        Content = string.Format(Constant.TICKET_ASSIGNED_MESSAGE_FOR_ASSIGNER, fromUserName),
+                        CreatedAt = DateTimeToday()
                     };
 
                     if (_notifRepo.Create(assignerNotif) == ErrorCode.Error)
@@ -129,7 +133,8 @@ namespace ASI.Basecode.WebApp.Repository
                     {
                         ToUserId = userTicket.UserId,
                         UserTicketId = userTicketId,
-                        Content = $"Your ticket has been assigned by our support agent. Ticket ID: {userTicket.TicketId}"
+                        Content = $"Your ticket has been assigned by our support agent. Ticket ID: {userTicket.TicketId}",
+                        CreatedAt = DateTimeToday()
                     };
 
                     if (_notifRepo.Create(userNotif) == ErrorCode.Error)
@@ -146,7 +151,8 @@ namespace ASI.Basecode.WebApp.Repository
                         FromUserId = assignerId,
                         ToUserId = assignedToId,
                         UserTicketId = userTicketId,
-                        Content = string.Format(Constant.TICKET_RE_ASSIGNED_MESSAGE_FOR_ASSIGNED_USER, toUserName)
+                        Content = string.Format(Constant.TICKET_RE_ASSIGNED_MESSAGE_FOR_ASSIGNED_USER, toUserName),
+                        CreatedAt = DateTimeToday()
                     };
 
                     if (_notifRepo.Create(userAssignedNotif) == ErrorCode.Error)
@@ -158,7 +164,8 @@ namespace ASI.Basecode.WebApp.Repository
                     {
                         ToUserId = assignerId,
                         UserTicketId = userTicketId,
-                        Content = string.Format(Constant.TICKET_RE_ASSIGNED_MESSAGE_FOR_ASSIGNER, fromUserName)
+                        Content = string.Format(Constant.TICKET_RE_ASSIGNED_MESSAGE_FOR_ASSIGNER, fromUserName),
+                        CreatedAt = DateTimeToday()
                     };
 
                     if (_notifRepo.Create(assignerNotif) == ErrorCode.Error)
@@ -172,7 +179,8 @@ namespace ASI.Basecode.WebApp.Repository
                     {
                         ToUserId = userTicket.UserId,
                         UserTicketId = userTicketId,
-                        Content = $"Good day! Your ticket has been re-assigned to our another support agent. Ticket ID: {userTicket.TicketId}. Please be guided."
+                        Content = $"Good day! Your ticket has been re-assigned to our another support agent. Ticket ID: {userTicket.TicketId}. Please be guided.",
+                        CreatedAt = DateTimeToday()
                     };
 
                     if (_notifRepo.Create(userNotif) == ErrorCode.Error)
@@ -214,7 +222,8 @@ namespace ASI.Basecode.WebApp.Repository
                     FromUserId = userIdActor,
                     ToUserId = userTickets.UserId,
                     UserTicketId = userTicketId,
-                    Content = $"Good News! Your ticket has been resolved by our support agent team Ticket ID: {userTickets.TicketId}. If you have any concern or more please don't hesitate to reach us. Thank you!"
+                    Content = $"Good News! Your ticket has been resolved by our support agent team Ticket ID: {userTickets.TicketId}. If you have any concern or more please don't hesitate to reach us. Thank you!",
+                    CreatedAt = DateTimeToday()
                 };
 
                 if (_notifRepo.Create(userNotif) == ErrorCode.Error)
@@ -227,7 +236,8 @@ namespace ASI.Basecode.WebApp.Repository
                 {
                     ToUserId = userTickets.AgentId,
                     UserTicketId = userTicketId,
-                    Content = $"Job well done! You have successfully resolved user concern that has Ticket ID: {userTicketId}. Thank you!"
+                    Content = $"Job well done! You have successfully resolved user concern that has Ticket ID: {userTicketId}. Thank you!",
+                    CreatedAt = DateTimeToday()
                 };
 
                 if (_notifRepo.Create(suppAgentNotif) == ErrorCode.Error)
@@ -280,6 +290,7 @@ namespace ASI.Basecode.WebApp.Repository
                             ToUserId = ticket.AgentId,  // Notify the assigned support agent
                             UserTicketId = ticket.TicketId,
                             Content = $"Unresolved Ticket Reminder for Ticket ID: {ticket.TicketId} Date Assigned: {ticket.DateAssigned} Hours To Be Resolve: {ticket.ResolutionTime}. Please resolve this ticket within {hoursBeforeTrigger} hours immediately!",
+                            CreatedAt = DateTimeToday()
                         };
 
                         if (_notifRepo.Create(suppAgentNotif) == ErrorCode.Error)
@@ -293,6 +304,7 @@ namespace ASI.Basecode.WebApp.Repository
                             ToUserId = ticket.UserId,  // Notify the user also 
                             UserTicketId = ticket.TicketId,
                             Content = $"We have noticed that your concerned with Ticket ID: {ticket.TicketId} has not been resolved. We already notified the assigned agent for this matter and promised to resolve this urgently. Thank you for your patience!",
+                            CreatedAt = DateTimeToday()
                         };
 
                         if (_notifRepo.Create(userNotif) == ErrorCode.Error)

@@ -3,7 +3,15 @@
 @model IEnumerable<Article>
 
 @{
-    ViewData["Title"] = "Manage Article";
+    // ViewData["Title"] = "Article";
+
+    var userRole = User.FindFirst("UserRole")?.Value;
+
+    if (!string.IsNullOrEmpty(userRole))
+    {
+        ViewData["Title"] = userRole == "user" ? "Article" : "Manage Articles";
+    }
+
     var resMsg = TempData["ResMsg"] as string;
 }
 

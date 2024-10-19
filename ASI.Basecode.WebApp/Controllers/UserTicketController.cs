@@ -143,6 +143,7 @@ namespace ASI.Basecode.WebApp.Controllers
             }
 
             customTicket.ticket.CreateAt = DateTimeToday();
+            customTicket.ticket.LastModified = DateTimeToday();
 
             var imageFile = customTicket.formFile;
             var root = Path.Combine(_webHostEnvironment.WebRootPath, "images");

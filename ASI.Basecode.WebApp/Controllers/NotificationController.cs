@@ -1,5 +1,6 @@
 ﻿using ASI.Basecode.Data.Models;
 using ASI.Basecode.WebApp.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Security.Claims;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
+    [Authorize(Policy = "AdminAgentUserPolicy")]
     public class NotificationController : NotificationManager
     {
         public NotificationController()
