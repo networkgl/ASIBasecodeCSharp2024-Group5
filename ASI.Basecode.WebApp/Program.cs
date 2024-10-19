@@ -19,7 +19,7 @@ var appBuilder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = Directory.GetCurrentDirectory(),
 });
 
-appBuilder.Services.AddDbContext<TicketingSystemDBContext>(options =>
+appBuilder.Services.AddDbContext<AssisthubDBContext>(options =>
 {
     var connectionString = appBuilder.Configuration.GetConnectionString("RemoteConnection");
     options.UseSqlServer(connectionString);

@@ -9,9 +9,9 @@ namespace ASI.Basecode.WebApp
 {
     public class RolesInDBAuthorizationHandler : AuthorizationHandler<RolesAuthorizationRequirement>
     {
-        private readonly TicketingSystemDBContext _dbContext;
+        private readonly AssisthubDBContext _dbContext;
 
-        public RolesInDBAuthorizationHandler(TicketingSystemDBContext dbContext)
+        public RolesInDBAuthorizationHandler(AssisthubDBContext dbContext)
         {
             _dbContext = dbContext;
         }

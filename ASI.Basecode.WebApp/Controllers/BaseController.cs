@@ -17,8 +17,8 @@ namespace ASI.Basecode.WebApp.Controllers
     public class BaseController : Controller
     {
         protected ISession _session;
-        public TicketingSystemDBContext _db;
-        public AssisthubDBContext _db1; //temporary rani
+        public AssisthubDBContext _db;
+        //public AssisthubDBContext _db1; //temporary rani
         public BaseRepository<User> _userRepo;
         public BaseRepository<VwUserRoleView> _vw_UserRoleView;
         public BaseRepository<UserRole> _userRoleRepo;
@@ -33,8 +33,8 @@ namespace ASI.Basecode.WebApp.Controllers
         public BaseController(IHttpContextAccessor httpContextAccessor)
         {
             _session = httpContextAccessor.HttpContext.Session;
-            _db = new TicketingSystemDBContext();
-            _db1 = new AssisthubDBContext();
+            //_db = new TicketingSystemDBContext();
+            _db = new AssisthubDBContext();
             _userRepo = new BaseRepository<User>();
             _vw_UserRoleView = new BaseRepository<VwUserRoleView>();
             _userRoleRepo = new BaseRepository<UserRole>();
@@ -55,8 +55,8 @@ namespace ASI.Basecode.WebApp.Controllers
         }
         public BaseController()
         {
-            _db = new TicketingSystemDBContext();
-            _db1 = new AssisthubDBContext();
+            _db = new AssisthubDBContext();
+            //_db1 = new AssisthubDBContext();
             _userRepo = new BaseRepository<User>();
             _vw_UserRoleView = new BaseRepository<VwUserRoleView>();
             _userRoleRepo = new BaseRepository<UserRole>();
@@ -89,7 +89,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 int hoursToAdvance = 1; // Adjust this value as needed for your tests
                 currentTime = currentTime.AddHours(hoursToAdvance);
 
-                var tickets = _db1.VwNotificationViews
+                var tickets = _db.VwNotificationViews
                     .Where(m => m.AgentId.HasValue && m.DateAssigned.HasValue && m.ResolutionTime.HasValue && (m.StatusName.Equals("In Progress")))
                     .ToList(); // only get ticket that already has agent assigned
                 

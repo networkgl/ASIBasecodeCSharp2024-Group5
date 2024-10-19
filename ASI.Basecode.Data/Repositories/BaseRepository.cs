@@ -16,7 +16,7 @@ namespace ASI.Basecode.Data.Repositories
 
         public BaseRepository()
         {
-            _dbContext = new TicketingSystemDBContext();
+            _dbContext = new AssisthubDBContext();
             _table = _dbContext.Set<T>();
         }
 

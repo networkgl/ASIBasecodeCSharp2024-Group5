@@ -87,7 +87,7 @@ namespace ASI.Basecode.WebApp.Repository
             try
             {
                 //var assignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
-                var userTicket = _db1.VwNotificationViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
+                var userTicket = _db.VwNotificationViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
 
                 if (userTicket is null)
                 {
@@ -201,7 +201,7 @@ namespace ASI.Basecode.WebApp.Repository
             try
             {
 
-                var userTickets = _db1.VwNotificationViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
+                var userTickets = _db.VwNotificationViews.Where(m => m.UserTicketId == userTicketId).FirstOrDefault();
 
                 if (userTickets is null)
                 {
@@ -256,7 +256,7 @@ namespace ASI.Basecode.WebApp.Repository
                 var currentTime = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow);
 
                 // Loop through the tickets and send reminders before the due date
-                var tickets = _db1.VwNotificationViews
+                var tickets = _db.VwNotificationViews
                     .Where(m => m.DateAssigned.HasValue && m.ResolutionTime.HasValue) // Ensure DateAssigned and ResolutionTime are present
                     .ToList();
 
