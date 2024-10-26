@@ -609,6 +609,8 @@ namespace ASI.Basecode.Data
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
+                entity.Property(e => e.ProfilePicturePath).IsUnicode(false);
+
                 entity.Property(e => e.RoleName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
