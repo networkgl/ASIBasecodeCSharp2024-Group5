@@ -39,8 +39,12 @@
                                     </label>
                                 </div>
                                 <div class="avatar-preview">
-                                    <div id="imagePreview"> </div>
+                                    <div id="imagePreview">
+                                        <img class="w-240-px h-240-px" id="filePreviewCreateUser" style="display:none" />
+                                    </div>
                                 </div>
+                                <h1>hi</h1>
+                                <img class="w-240-px h-240-px" id="filePreviewCreateUser" style="display:none" />
                             </div>
                         </div>
                         <!-- Upload Image End -->
@@ -90,6 +94,27 @@
         </div>
     </div>
 </div>
+
+<!-- jQuery library js -->
+<script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        document.getElementById('file').addEventListener('change', function (event) {
+            var input = event.target;
+            var reader = new FileReader();
+
+            reader.onload = function () {
+                var imgElement = document.getElementById('filePreviewCreateUser');
+                imgElement.src = reader.result;
+                imgElement.style.display = 'block';
+            };
+
+            if (input.files && input.files[0]) {
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+    });
+</script>
 
 @* @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

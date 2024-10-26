@@ -85,7 +85,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 currentTime = currentTime.AddHours(hoursToAdvance);
 
                 var tickets = _db.VwNotificationViews
-                    .Where(m => m.AgentId.HasValue && m.DateAssigned.HasValue && m.ResolutionTime.HasValue && (m.StatusName.Equals("In Progress")) && (m.HasReminded == null || m.HasReminded == (byte)Reminder.NotReminded)) //meaning already reminded
+                    .Where(m => m.AgentId.HasValue && m.DateAssigned.HasValue && m.ResolutionTime.HasValue && (m.StatusName.Equals("In Progress")) && (m.HasReminded == null || m.HasReminded == (byte)Reminder.NotReminded)) //meaning only notify not reminded once...
                     .ToList(); // only get ticket that already has agent assigned
 
                 if (tickets.Count == 0)
@@ -94,7 +94,6 @@ namespace ASI.Basecode.WebApp.Controllers
                 }
 
 
-                // Sending reminders before the due date...
                 foreach (var ticket in tickets)
                 {
                     DateTime ticketAssignedTime = ticket.DateAssigned.Value;
@@ -164,6 +163,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
             return ErrorCode.Success;
         }
+
 
 
 

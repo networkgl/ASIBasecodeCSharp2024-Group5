@@ -1,0 +1,142 @@
+﻿@using ASI.Basecode.Data.Models.CustomModels
+@model ASI.Basecode.Data.Models.CustomModels.CustomUser
+
+@{
+    ViewData["Title"] = "Edit";
+    var resMsg = TempData["ResMsg"] as AlertMessageContent;
+    var userType = ViewData["UserType"];
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+    <h6 class="fw-semibold mb-0">Profile</h6>
+    <ul class="d-flex align-items-center gap-2">
+        <li class="fw-medium">
+            <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
+                <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                Profile
+            </a>
+        </li>
+        <li>-</li>
+        <li class="fw-medium">Update Profile</li>
+    </ul>
+</div>
+
+<div class="card h-100 p-0 radius-12">
+    <div class="card-body p-24">
+        <div class="row justify-content-center">
+            <div class="col-xxl-6 col-xl-8 col-lg-10">
+                <div class="card border">
+                    <div class="card-body">
+                        <form asp-action="EditProfile" asp-controller="Account" enctype="multipart/form-data" method="post">
+                            <div class="mb-20">
+                                <label asp-for="formFile" class="form-label fw-semibold text-primary-light text-sm mb-8">Select a profile picture</label>
+                                @if (string.IsNullOrEmpty(Model.user.ProfilePicturePath))
+                                {
+                                    <img class="w-240-px h-240-px mt-1" id="filePreview" style="display:none" />
+                                }
+                                else
+                                {
+                                    <img class="w-240-px h-240-px mt-1" id="filePreview" src="@Model.user.ProfilePicturePath" style="display:block" />
+                                    <input asp-for="formFile" type="file" class="form-control radius-8" accept="image/png, image/gif, image/jpeg" id="file" value="@Model.user.ProfilePicturePath">
+                                    <button type="button" id="removeImgBtn" onclick="removeImg()" class="btn btn-danger mt-1">Remove Image</button>
+                                }
+                            </div>
+                            <input type="hidden" asp-for="user.UserId" />
+                            <input type="hidden" asp-for="userRole.UserRoleId" />
+                            <input type="hidden" asp-for="userRole.UserId" />
+                            <input type="hidden" asp-for="user.ProfilePicturePath" />
+                            <div class="mb-20">
+                                <label asp-for="user.Name" for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">Name <span class="text-danger-600">*</span></label>
+                                <input asp-for="user.Name" type="text" class="form-control radius-8" id="name" placeholder="Enter full name" required>
+                            </div>
+                            <div class="mb-20">
+                                <label asp-for="user.Email" for="email" class="form-label fw-semibold text-primary-light text-sm mb-8">Email <span class="text-danger-600">*</span></label>
+                                <input asp-for="user.Email" type="email" class="form-control radius-8" id="email" placeholder="Enter email address" required>
+                            </div>
+                            @* <div class="mb-20">
+                                <label asp-for="userRole.RoleId" for="email" class="form-label fw-semibold text-primary-light text-sm mb-8">Role <span class="text-danger-600">*</span></label>
+                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="userRole.RoleId">
+                                    @{
+                                        foreach (var item in Model.roleList)
+                                        {
+                                            if (item.RoleId != Model.userRole.RoleId)
+                                            {
+                                                <option class="form-control radius-8" value="@item.RoleId">@item.RoleName</option>
+                                            }
+                                            else
+                                            {
+                                                <option selected class="form-control radius-8" value="@Model.userRole.RoleId">@item.RoleName</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </div> *@
+                            <div class="mb-20">
+                                <label for="password" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Enter new password (just leave blank if you will not change your password)<span class="text-danger-600">*</span>
+                                </label>
+                                <input asp-for="user.Password" type="password" class="form-control radius-8" id="password" placeholder="Enter password">
+                            </div>
+                            <div class="mb-20">
+                                <label for="confirmPassword" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Enter your old password to confirm changes<span class="text-danger-600">*</span>
+                                </label>
+                                <input name="confirmPassword" type="password" class="form-control radius-8" id="confirmPassword" placeholder="Enter password" required>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <button onclick="goBack()" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
+                                    Go back
+                                </button>
+                                <button type="submit" class="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
+<script type="text/javascript">
+    function goBack() {
+        window.history.back();
+    }
+
+
+    $(document).ready(function () {
+
+    document.getElementById('file').addEventListener('change', function (event) {
+        var input = event.target;
+        var reader = new FileReader();
+        var removeImgBtn = document.getElementById("removeImgBtn");
+        removeImgBtn.style.display = 'block';
+        reader.onload = function () {
+            var imgElement = document.getElementById('filePreview');
+            imgElement.src = reader.result;
+            imgElement.style.display = 'block';
+        };
+
+        if (input.files && input.files[0]) {
+            reader.readAsDataURL(input.files[0]);
+        }
+    });
+});
+
+    function removeImg() {
+        var img = document.getElementById("filePreview");
+        var removeImgBtn = document.getElementById("removeImgBtn");
+        var file = document.getElementById("file");
+        var removedOriginalImg = document.getElementById("removedOriginalImg");
+        img.src = "";
+        img.style.display = 'none';
+        removeImgBtn.style.display = 'none';
+        file.value = null;
+        removedOriginalImg.value = 'true';
+    }
+</script>
+@* @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} *@

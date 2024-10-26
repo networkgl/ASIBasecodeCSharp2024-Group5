@@ -3,6 +3,7 @@ using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.WebApp.Repository;
 using ASI.Basecode.WebApp.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -12,6 +13,7 @@ using System.Security.Claims;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
+    [Authorize(Policy = "SupportAgentPolicy")]
     public class AgentManageTicketController : BaseController
     {
         public AgentManageTicketController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
@@ -320,10 +322,10 @@ namespace ASI.Basecode.WebApp.Controllers
                 {
                     return BadRequest();
                 }
-                if (customTicket.AssignedTicket.AgentId is not null)
-                {
-                    ticket.StatusId = 2;
-                }
+                //if (customTicket.AssignedTicket.AgentId is not null)
+                //{
+                //    ticket.StatusId = 2;
+                //}
                 ticket.LastModified = DateTimeToday();
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
                 {

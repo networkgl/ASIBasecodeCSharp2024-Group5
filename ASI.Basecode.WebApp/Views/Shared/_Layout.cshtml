@@ -55,13 +55,34 @@
             <iconify-icon icon="radix-icons:cross-2"></iconify-icon>
         </button>
         <div>
-            <a href="index.html" class="sidebar-logo">
-                @* <img src="~/assets/images/logo.png" alt="site logo" class="light-logo">
-                <img src="~/assets/images/logo-light.png" alt="site logo" class="dark-logo">
-                <img src="~/assets/images/logo-icon.png" alt="site logo" class="logo-icon">  *@
-                <h5 class="brand-name-expand">AssistHub</h5>
-                <h5 class="brand-name-collapse">AH</h5>
-            </a>
+            @if (@User.IsInRole("superadmin"))
+            {
+                <a asp-action="Index" asp-controller="user" class="sidebar-logo">
+                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 class="brand-name-collapse">AH</h5>
+                </a>
+            }
+            else if (@User.IsInRole("administrator"))
+            {
+                <a asp-action="Index" asp-controller="AdminDashboard">
+                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 class="brand-name-collapse">AH</h5>
+                </a>
+            }
+            else if (@User.IsInRole("support agent"))
+            {
+                <a asp-action="Index" asp-controller="AgentDashboard">
+                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 class="brand-name-collapse">AH</h5>
+                </a>
+            }
+            else if (@User.IsInRole("user"))
+            {
+                <a asp-action="Index" asp-controller="UserDashboard">
+                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 class="brand-name-collapse">AH</h5>
+                </a>
+            }
         </div>
         <div class="sidebar-menu-area">
             <ul class="sidebar-menu" id="sidebar-menu">
@@ -96,15 +117,29 @@
                     }
 
                 </li>
-                @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
-                {
-                    <li>
-                        <a asp-controller="Notification" asp-action="List">
-                            <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
-                            <span>Notifications</span>
+
+
+                <li>
+                    @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
+                    {
+                        NotificationManager _notifManager = new NotificationManager();
+                        int? userId = int.Parse(User.FindFirstValue("UserId"));
+
+
+                        <a asp-controller="Notification" asp-action="List" class="d-flex align-items-center">
+                            <div class="d-flex align-items-center flex-grow-1">
+                                <iconify-icon style="margin-right: 4.5% !important; " icon="flowbite:users-group-outline" class="menu-icon me-2" aria-hidden="true"></iconify-icon>
+                                <span class="me-auto">Notifications</span>
+                                <span style="font-size: 12px !important" class="badge text-sm fw-semibold w-20-px h-20-px d-flex justify-content-center align-items-center rounded-circle text-success-600 bg-success-100 radius-4 text-white">
+                                    @if (userId != null)
+                                    {
+                                        @_notifManager.GetUserNotifCount(userId)
+                                    }   
+                                </span>
+                            </div>
                         </a>
-                    </li>
-                }
+                    }
+                </li>
 
 
                 <li>
@@ -159,7 +194,7 @@
                     }
                 </li>
                 <li>
-                    <a href="profile.html">
+                    <a asp-action="EditProfile" asp-controller="Account">
                         <iconify-icon icon="flowbite:user-outline" class="menu-icon"></iconify-icon>
                         <span>Profile</span>
                     </a>

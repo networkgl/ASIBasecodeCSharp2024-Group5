@@ -115,11 +115,7 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.FeedbackText).IsUnicode(false);
 
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Feedbacks)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK__Feedback__UserId__52593CB8");
+                entity.Property(e => e.Rating).HasColumnType("decimal(3, 2)");
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -237,6 +233,8 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.Password)
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.ProfilePicturePath).IsUnicode(false);
             });
 
             modelBuilder.Entity<UserRole>(entity =>
@@ -507,6 +505,8 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.Password)
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.ProfilePicturePath).IsUnicode(false);
 
                 entity.Property(e => e.RoleName)
                     .HasMaxLength(100)

@@ -1,4 +1,5 @@
 ﻿using ASI.Basecode.Data.Models;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 
 namespace ASI.Basecode.Data.Models.CustomModels
@@ -9,5 +10,6 @@ namespace ASI.Basecode.Data.Models.CustomModels
         public UserRole userRole { get; set; }
         public Role role { get; set; }
         public List<Role> roleList = new List<Role>();
+        public IFormFile formFile { get; set; }
     }
 }

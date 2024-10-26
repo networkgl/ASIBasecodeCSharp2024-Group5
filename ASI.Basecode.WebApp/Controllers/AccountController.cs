@@ -1,19 +1,21 @@
-﻿using ASI.Basecode.Data.Models;
+﻿using ASI.Basecode.Data.Interfaces;
+using ASI.Basecode.Data.Models;
+using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.Services.Interfaces;
 using ASI.Basecode.Services.Manager;
 using ASI.Basecode.WebApp.Authentication;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using static ASI.Basecode.Resources.Constants.Enums;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
@@ -24,6 +26,7 @@ namespace ASI.Basecode.WebApp.Controllers
         private readonly TokenValidationParametersFactory _tokenValidationParametersFactory;
         private readonly TokenProviderOptionsFactory _tokenProviderOptionsFactory;
         private readonly IConfiguration _appConfiguration;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         //private readonly IUserService _userService;
 
         /// <summary>
@@ -39,6 +42,7 @@ namespace ASI.Basecode.WebApp.Controllers
         /// <param name="tokenValidationParametersFactory">The token validation parameters factory.</param>
         /// <param name="tokenProviderOptionsFactory">The token provider options factory.</param>
         public AccountController(
+                            IWebHostEnvironment webHostEnvironment,
                             SignInManager signInManager,
                             IHttpContextAccessor httpContextAccessor,
                             ILoggerFactory loggerFactory,
@@ -48,6 +52,7 @@ namespace ASI.Basecode.WebApp.Controllers
                             TokenValidationParametersFactory tokenValidationParametersFactory,
                             TokenProviderOptionsFactory tokenProviderOptionsFactory) : base (httpContextAccessor)
         {
+            this._webHostEnvironment = webHostEnvironment;
             this._sessionManager = new SessionManager(this._session);
             this._signInManager = signInManager;
             this._tokenProviderOptionsFactory = tokenProviderOptionsFactory;
@@ -165,6 +170,160 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             await this._signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
+        }
+
+
+        public IActionResult EditProfile()
+        {
+            if(!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            ViewData["UserType"] = "User";
+            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+            var user = _db.VwUserRoleViews.Where(m => m.UserId == userId).FirstOrDefault();
+
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var role = _db.Roles.Where(m => m.RoleId == user.RoleId).FirstOrDefault();
+
+            if (role == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var userModel = _db.Users.Where(m => m.UserId == user.UserId).FirstOrDefault();
+
+            if (userModel == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var userRole = _db.UserRoles.Where(m => m.UserId == userModel.UserId).FirstOrDefault();
+
+            if (userRole == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
+            var customUserModel = new CustomUser()
+            {
+                user = userModel,
+                userRole = userRole,
+                role = role,
+                roleList = roleList,
+            };
+            return View(customUserModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditProfile(CustomUser customUser, string confirmPassword)
+        {
+            ViewData["UserType"] = "User";
+            var roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
+            customUser.roleList = roleList;
+            if (customUser.user == null || customUser.userRole == null)
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Error,
+                    Message = "An error has occured when updating user."
+                });
+                return View(customUser);
+            }
+
+            var user = customUser.user;
+            var userRole = customUser.userRole;
+
+            
+
+            var oldPassword = _db.Users.Where(m => m.UserId == user.UserId).Select(m => m.Password).FirstOrDefault();
+
+            if (oldPassword != confirmPassword)
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Error,
+                    Message = "Old password is incorrect."
+                });
+                return View(customUser);
+            }
+
+            if (string.IsNullOrEmpty(customUser.user.Password))
+            {
+                customUser.user.Password = oldPassword;
+            }
+
+            if (customUser.formFile != null)
+            {
+                var imageFile = customUser.formFile;
+                var root = Path.Combine(_webHostEnvironment.WebRootPath, "profilepics");
+
+                if (!Directory.Exists(root))
+                {
+                    Directory.CreateDirectory(root);
+                }
+                if (imageFile != null)
+                {
+                    var uniqueFileName = GetUniqueFileName(root, imageFile.FileName);
+                    var filePath = Path.Combine(root, uniqueFileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+                    var relativePath = Path.Combine("/profilepics", uniqueFileName).Replace("\\", "/");
+                    customUser.user.ProfilePicturePath = relativePath;
+                }
+            }
+            if (_userRepo.Update(user.UserId, user) == ErrorCode.Success)
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Success,
+                    Message = "Updated Profile Successfully!"
+                });
+                return View(customUser);
+            }
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+            {
+                Status = ErrorCode.Error,
+                Message = "An error has occured when updating user."
+            });
+            return View(customUser);
+        }
+        public string GetUniqueFileName(string parentPath, string fileName)
+        {
+            string uniqueName = fileName;
+            int count = 1;
+
+            string folderPath = Path.Combine(_webHostEnvironment.WebRootPath, parentPath);
+
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+
+            string filePath = Path.Combine(folderPath, uniqueName);
+
+            while (System.IO.File.Exists(filePath))
+            {
+                string extension = Path.GetExtension(fileName);
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                uniqueName = $"{fileNameWithoutExtension}_{count}{extension}";
+                filePath = Path.Combine(folderPath, uniqueName);
+                count++;
+            }
+
+            return uniqueName;
         }
     }
 }
