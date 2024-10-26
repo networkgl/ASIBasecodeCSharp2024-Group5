@@ -332,7 +332,6 @@ namespace ASI.Basecode.WebApp.Controllers
                     assignedTicket.LastModified = DateTimeToday();
                     if (_assignedTicketRepo.Update(assignedTicket.AssignedTicketId, assignedTicket) == ErrorCode.Success)
                     {
-        
                         customTicket.Ticket = ticket;
                         customTicket.AssignedTicket = assignedTicket;
                         customTicket.Agent = userAgent;

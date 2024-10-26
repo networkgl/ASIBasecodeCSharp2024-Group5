@@ -84,6 +84,13 @@ namespace ASI.Basecode.WebApp.Repository
             return ErrorCode.Success;
         }
 
+        public int? GetUserNotifCount(int? userId)
+        {
+            return _notifRepo.Table.Where(m => m.ToUserId == userId).Count();
+        }
+
+
+
         public ErrorCode AssignOrReAssignTicketNotif(bool isAssigning, int userTicketId, int assignerId, int assignedToId, string toUserName, string fromUserName, out string errorMsg, out string successsMsg)
         {
             errorMsg = successsMsg = string.Empty;
