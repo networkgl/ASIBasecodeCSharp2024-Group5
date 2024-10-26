@@ -10,5 +10,8 @@ namespace ASI.Basecode.Data.Models
         public string FeedbackText { get; set; }
         public decimal? Rating { get; set; }
         public int TicketId { get; set; }
+
+        public virtual User User { get; set; }
+        public virtual Ticket Ticket { get; set; }
     }
 }
