@@ -167,7 +167,7 @@ inner join [Role] r
 on r.RoleId = ur.RoleId
 where ur.RoleId = 3
 
-create view vw_UsersAndAgentsView
+alter view vw_UsersAndAgentsView
 as
 select u.*, ur.RoleId, ur.UserRoleId, r.RoleName
 from [User] u

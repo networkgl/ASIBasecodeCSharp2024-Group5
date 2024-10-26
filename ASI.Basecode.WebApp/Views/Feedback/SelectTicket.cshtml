@@ -1,0 +1,37 @@
+﻿@model IEnumerable<ASI.Basecode.Data.Models.Ticket>
+
+<h6>Select a Ticket</h6>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Category</th>
+            <th>Issue Description</th>
+            <th>Date Created</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ticket in Model)
+        {
+            <tr>
+                <td>@ticket.TicketId</td>
+                <td>@ticket.Category.CategoryName</td>
+                <td>@ticket.IssueDescription</td>
+                <td>@ticket.CreateAt</td>
+                <td>
+                    <button class="btn btn-success" onclick="selectTicket(@ticket.TicketId)">Select</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    function selectTicket(ticketId) {
+        // Update the hidden field and close the overlay
+        document.querySelector('[name="TicketId"]').value = ticketId;
+        document.getElementById('ticketSelectionOverlay').style.display = 'none';
+        location.reload(); // Reload the page to display the selected ticket info
+    }
+</script>

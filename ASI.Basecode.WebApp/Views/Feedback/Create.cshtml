@@ -1,0 +1,129 @@
+﻿@model ASI.Basecode.Data.Models.Feedback
+
+<h6 class="fw-semibold mb-0">Ticket Details</h6>
+
+<div>
+    <label for="Ticket">Choose a Ticket:</label>
+    <select id="TicketDropdown" asp-for="TicketId" class="form-control">
+        <option value="">-- Select Ticket --</option>
+        @foreach (var ticket in ViewBag.Tickets)
+        {
+            <option value="@ticket.TicketId"
+                    data-category="@ticket.Category?.CategoryName"
+                    data-issue="@ticket.IssueDescription"
+                    data-status="@ticket.Status?.StatusId"
+                    data-created="@ticket.CreateAt"
+                    data-modified="@ticket.LastModified"
+                    data-attachment="@ticket.AttachmentPath">
+                Ticket ID: @ticket.TicketId - Category: @ticket.Category?.CategoryName, Created: @ticket.CreateAt
+            </option>
+        }
+    </select>
+</div>
+
+<!-- Table for selected ticket details -->
+<table class="table bordered-table mt-3" id="selectedTicketTable" style="display:none;">
+    <thead>
+        <tr>
+            <th>Ticket ID</th>
+            <th>Category</th>
+            <th>Issue Description</th>
+            <th>Attached Image</th>
+            <th>Date Created</th>
+            <th>Resolved/Last Modified Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td id="ticketId"></td>
+            <td id="ticketCategory"></td>
+            <td id="ticketIssue"></td>
+            <td id="ticketAttachment"></td>
+            <td id="ticketCreatedAt"></td>
+            <td id="ticketModifiedAt"></td>
+        </tr>
+    </tbody>
+</table>
+
+<form asp-action="Create" method="post">
+    <!-- Feedback Section -->
+    <div class="form-group mt-3">
+        <label for="FeedbackText">Feedback</label>
+        <textarea id="FeedbackText" name="FeedbackText" class="form-control" required></textarea>
+    </div>
+
+    <!-- Star Rating Section -->
+    <div class="form-group mt-3">
+        <label for="Rating">Rate the Service:</label>
+        <div class="star-rating">
+            @for (int i = 1; i <= 5; i++)
+            {
+                <input type="radio" id="star-@i" name="Rating" value="@i" />
+                <label for="star-@i" title="@i stars">
+                    &#9733;
+                </label>
+            }
+        </div>
+    </div>
+
+    <input type="hidden" id="TicketId" name="TicketId" value="@Model.TicketId" />
+
+    <!-- Buttons -->
+    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+    <a href="javascript:history.back()" class="btn btn-danger">Cancel</a>
+</form>
+
+<script>
+    // Display ticket details and reset on form submit
+    document.getElementById('TicketDropdown').addEventListener('change', function () {
+        var selectedOption = this.options[this.selectedIndex];
+        var table = document.getElementById('selectedTicketTable');
+
+        if (selectedOption.value === "") {
+            table.style.display = "none";
+            document.getElementById('TicketId').value = "";
+            return;
+        }
+
+        table.style.display = "table";
+        document.getElementById('ticketId').innerText = selectedOption.value;
+        document.getElementById('ticketCategory').innerText = selectedOption.getAttribute('data-category');
+        document.getElementById('ticketIssue').innerText = selectedOption.getAttribute('data-issue');
+        var attachmentPath = selectedOption.getAttribute('data-attachment');
+        document.getElementById('ticketAttachment').innerHTML = attachmentPath ? `<img src="${attachmentPath}" class="w-120-px h-120-px" />` : "No file attached";
+        document.getElementById('ticketCreatedAt').innerText = selectedOption.getAttribute('data-created');
+        document.getElementById('ticketModifiedAt').innerText = selectedOption.getAttribute('data-modified');
+        document.getElementById('TicketId').value = selectedOption.value;
+    });
+
+    document.querySelector("form").onsubmit = function () {
+        document.getElementById('selectedTicketTable').style.display = "none";
+        document.getElementById("TicketDropdown").selectedIndex = 0;
+    };
+</script>
+
+<style>
+    .star-rating {
+        direction: ltr;
+        font-size: 1.5em;
+    }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .star-rating input:checked ~ label,
+        .star-rating input:hover ~ label {
+            color: #f90;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #fc0;
+        }
+</style>

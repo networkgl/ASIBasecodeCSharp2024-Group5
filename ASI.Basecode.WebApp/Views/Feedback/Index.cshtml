@@ -1,0 +1,63 @@
+﻿@model IEnumerable<ASI.Basecode.Data.Models.Feedback>
+
+<!-- Feedback Page Header with Create Button -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-bold">Feedbacks</h6>
+    <a asp-controller="Feedback" asp-action="Create" class="btn btn-primary w-200-px">
+        <i class="bi bi-plus-circle"></i> Create Feedback
+    </a>
+</div>
+
+<!-- Feedback Table -->
+<table class="table bordered-table">
+    <thead>
+        <tr>
+            <th>Ticket ID</th>
+            <th>User Name</th>
+            <th>Feedback</th>
+            <th>Rating</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            @foreach (var feedback in Model)
+            {
+                <tr>
+                    <td>@feedback.TicketId</td>
+                    <td>@feedback.UserId?</td>
+                    <td>@feedback.FeedbackText</td>
+                    <td>@feedback.Rating</td>
+                    <td>
+                        <a href="@Url.Action("Edit", "Feedback", new { id = feedback.FeedbackId })" ><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a>
+                        <a href="@Url.Action("Delete", "Feedback", new { id = feedback.FeedbackId })" onclick="return confirm('Are you sure you want to delete this feedback?');"><i class="bi bi-trash" style="color:red"></i></a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">No feedback available</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Style the Feedback Table -->
+<style>
+    .bordered-table {
+        border: 1px solid #dee2e6;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    .bordered-table th, .bordered-table td {
+        padding: 12px 15px;
+        border: 1px solid #dee2e6;
+    }
+    .bordered-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+</style>
