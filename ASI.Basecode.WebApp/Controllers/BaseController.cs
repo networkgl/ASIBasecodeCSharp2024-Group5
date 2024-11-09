@@ -30,6 +30,7 @@ namespace ASI.Basecode.WebApp.Controllers
         public BaseRepository<Notification> _notifRepo;
         public BaseRepository<Category> _catRepo;
         public BaseRepository<Article> _articleRepo;
+        public BaseRepository<Feedback> _feedbackRepo;
 
         public BaseController(IHttpContextAccessor httpContextAccessor)
         {
@@ -46,6 +47,7 @@ namespace ASI.Basecode.WebApp.Controllers
             _notifRepo = new BaseRepository<Notification>();
             _catRepo = new BaseRepository<Category>();
             _articleRepo = new BaseRepository<Article>();
+            _feedbackRepo = new BaseRepository<Feedback>();
 
             // Only call RemindTicketNotif if the user is authenticated
             if (httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -68,6 +70,7 @@ namespace ASI.Basecode.WebApp.Controllers
             _assignedTicketRepo = new BaseRepository<AssignedTicket>();
             _notifRepo = new BaseRepository<Notification>();
             _catRepo = new BaseRepository<Category>();
+            _feedbackRepo = new BaseRepository<Feedback>();
         }
 
 

@@ -33,6 +33,7 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwAdminUsersView> VwAdminUsersViews { get; set; }
         public virtual DbSet<VwAgentCount> VwAgentCounts { get; set; }
         public virtual DbSet<VwAssignedTicketView> VwAssignedTicketViews { get; set; }
+        public virtual DbSet<VwFeedbackView> VwFeedbackViews { get; set; }
         public virtual DbSet<VwNotificationView> VwNotificationViews { get; set; }
         public virtual DbSet<VwTicketCountForAgent> VwTicketCountForAgents { get; set; }
         public virtual DbSet<VwTicketDetailsView> VwTicketDetailsViews { get; set; }
@@ -113,9 +114,13 @@ namespace ASI.Basecode.Data
             {
                 entity.ToTable("Feedback");
 
-                entity.Property(e => e.FeedbackText).IsUnicode(false);
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at");
 
-                entity.Property(e => e.Rating).HasColumnType("decimal(3, 2)");
+                entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
+
+                entity.Property(e => e.FeedbackText).IsUnicode(false);
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -352,6 +357,23 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.StatusName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwFeedbackView>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_FeedbackView");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at");
+
+                entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
+
+                entity.Property(e => e.FeedbackText).IsUnicode(false);
+
+                entity.Property(e => e.IssueDescription).IsUnicode(false);
             });
 
             modelBuilder.Entity<VwNotificationView>(entity =>

@@ -1,12 +1,13 @@
-﻿@model ASI.Basecode.Data.Models.Feedback
+﻿@* @model ASI.Basecode.Data.Models.Feedback *@
+@model CustomFeedbackModel
 
 <h6 class="fw-semibold mb-0">Ticket Details</h6>
 
 <div>
     <label for="Ticket">Choose a Ticket:</label>
-    <select id="TicketDropdown" asp-for="TicketId" class="form-control">
+    <select id="TicketDropdown" asp-for="@Model.Feedback.UserTicketId" class="form-control">
         <option value="">-- Select Ticket --</option>
-        @foreach (var ticket in ViewBag.Tickets)
+        @foreach (var ticket in Model.Ticket)
         {
             <option value="@ticket.TicketId"
                     data-category="@ticket.Category?.CategoryName"
@@ -49,7 +50,7 @@
     <!-- Feedback Section -->
     <div class="form-group mt-3">
         <label for="FeedbackText">Feedback</label>
-        <textarea id="FeedbackText" name="FeedbackText" class="form-control" required></textarea>
+        <textarea id="FeedbackText" class="form-control" asp-for="@Model.Feedback.FeedbackText" required></textarea>
     </div>
 
     <!-- Star Rating Section -->
@@ -58,7 +59,7 @@
         <div class="star-rating">
             @for (int i = 1; i <= 5; i++)
             {
-                <input type="radio" id="star-@i" name="Rating" value="@i" />
+                <input type="radio" id="star-@i" asp-for="@Model.Feedback.FeedbackRating" value="@i" />
                 <label for="star-@i" title="@i stars">
                     &#9733;
                 </label>
@@ -66,7 +67,7 @@
         </div>
     </div>
 
-    <input type="hidden" id="TicketId" name="TicketId" value="@Model.TicketId" />
+    <input type="hidden" id="TicketId" name="TicketId" value="@Model.Feedback.UserTicketId" />
 
     <!-- Buttons -->
     <button type="submit" class="btn btn-primary">Submit Feedback</button>

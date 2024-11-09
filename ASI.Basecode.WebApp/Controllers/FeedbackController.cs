@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using ASI.Basecode.WebApp.Repository;
 using System.Linq;
 using System;
+using ASI.Basecode.WebApp.Models;
+using ASI.Basecode.Data.Interfaces;
+using System.Collections.Generic;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
@@ -37,36 +40,59 @@ namespace ASI.Basecode.WebApp.Controllers
                 return NotFound("No resolved or closed tickets found");
             }
 
-            ViewBag.Tickets = tickets;
+            //ViewBag.Tickets = tickets;
 
-            return View(new Feedback());
+            var customFeedbackModel = new CustomFeedbackModel()
+            {
+                Ticket = tickets,
+                Feedback = new Feedback(),
+            };
+
+            return View(customFeedbackModel);
         }
 
         [HttpPost]
-        public IActionResult Create(Feedback feedback)
+        public IActionResult Create(CustomFeedbackModel customFeedbackModel)
         {
             if (ModelState.IsValid)
             {
-                feedback.UserId = (int)_userManager.GetLoggedInUserId(HttpContext);
+                var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+                var assignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == customFeedbackModel.TicketId).FirstOrDefault();
 
-                _db.Feedbacks.Add(feedback);
-                _db.SaveChanges();
+                customFeedbackModel.Feedback.UserTicketId = customFeedbackModel.TicketId;
+                customFeedbackModel.Feedback.AgentId = assignedTicket.AgentId;
+                customFeedbackModel.Feedback.CreatedAt = DateTimeToday();
+                customFeedbackModel.Feedback.UserId = userId;
+                customFeedbackModel.Feedback.AssignedTicketId = assignedTicket.AssignedTicketId;
 
-                return RedirectToAction("Index", "Feedback");
+                if (_feedbackRepo.Create(customFeedbackModel.Feedback) == ErrorCode.Success)
+                {
+                    return RedirectToAction("Index", "Feedback");
+
+                }
+                return View(customFeedbackModel);
             }
-            ViewBag.Tickets = _db.Tickets
-                                 .Include(t => t.Category)
-                                 .Where(t => t.UserTickets.Any(ut => ut.UserId == feedback.UserId) &&
-                                             (t.StatusId == 3 || t.StatusId == 4))
-                                 .ToList();
-
-            return View(feedback);
+            return View(customFeedbackModel);
         }
 
         public IActionResult Index()
         {
-            var feedbacks = _db.Feedbacks.Include(f => f.User).Include(f => f.Ticket).ToList();
-            return View(feedbacks);
+            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+            var feedbacks = _db.Feedbacks.Where(m => m.UserId == userId).ToList();
+
+            var ticket = new List<Ticket>();
+            foreach (var item in feedbacks)
+            {
+                ticket.Add(_db.Tickets.Where(m => m.TicketId == item.UserTicketId).FirstOrDefault()); 
+            }
+
+            var customFeedbackModel = new CustomFeedbackModel()
+            {
+                FeedbackList = feedbacks,
+                Ticket = ticket
+            };
+
+            return View(customFeedbackModel);
         }
     }
 }
