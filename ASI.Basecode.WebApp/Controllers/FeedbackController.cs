@@ -78,7 +78,7 @@ namespace ASI.Basecode.WebApp.Controllers
         public IActionResult Index()
         {
             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-            var feedbacks = _db.Feedbacks.Where(m => m.UserId == userId).ToList();
+            var feedbacks = _db.Feedbacks.Where(m => m.UserId == userId).OrderByDescending(m => m.FeedbackId).ToList();
 
             var ticket = new List<Ticket>();
             foreach (var item in feedbacks)
@@ -91,7 +91,6 @@ namespace ASI.Basecode.WebApp.Controllers
                 FeedbackList = feedbacks,
                 Ticket = ticket
             };
-
             return View(customFeedbackModel);
         }
     }

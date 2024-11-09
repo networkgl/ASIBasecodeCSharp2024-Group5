@@ -80,7 +80,7 @@ namespace ASI.Basecode.WebApp.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 var userId = User.FindFirst("UserId")?.Value;
-                var myTickets = _db.VwTicketDetailsViews.ToList();
+                var myTickets = _db.VwTicketDetailsViews.OrderByDescending(m => m.UserTicketId).ToList();
 
                 return View(myTickets);
             }
@@ -161,16 +161,6 @@ namespace ASI.Basecode.WebApp.Controllers
 
             TempData["temp"] = "update";
 
-            //if (customTicket.AssignedTicket.AgentId is null)
-            //{
-            //    TempData["ResMsg"] = new AlertMessageContent()
-            //    {
-            //        Status = ErrorCode.Error,
-            //        Message = "Cant update the priority if this ticket is unassigned!"
-            //    };
-            //    return View();
-            //}
-
             //current ticket
             var ticket = _db.Tickets.Where(m => m.TicketId == customTicket.Ticket.TicketId).FirstOrDefault();
 
@@ -196,7 +186,7 @@ namespace ASI.Basecode.WebApp.Controllers
             customTicket.Status = status;
             customTicket.Agents = agents;
 
-            //check if there is a chosen priority, if none then set priority to null or zero, otherwise set the selected value
+            //check if there is a chosen priority, if none then set priority to null, otherwise set the selected value
             if (customTicket.Ticket.PriorityId is null || customTicket.Ticket.PriorityId == 0)
             {
                 ticket.PriorityId = null;
@@ -214,6 +204,13 @@ namespace ASI.Basecode.WebApp.Controllers
 
 
             ticket.LastModified = DateTimeToday();
+
+            if (ticket.StatusId == 3)
+            {
+                var currentAssignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == ticket.TicketId).FirstOrDefault();
+                ticket.ResolveAt = DateTimeToday().Hour - currentAssignedTicket.DateAssigned.Value.Hour;
+            }
+
             //if no agent is selected then just update the ticket immediately
             if (customTicket.AssignedTicket.AgentId is null || customTicket.AssignedTicket.AgentId == 0)
             {
@@ -377,5 +374,6 @@ namespace ASI.Basecode.WebApp.Controllers
             }
             return NotFound();
         }
-    }
+
+    } 
 }

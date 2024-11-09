@@ -43,7 +43,7 @@ namespace ASI.Basecode.WebApp.Controllers
                                 Message = resMsg.Message
                             });
                             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-                            var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).ToList();
+                            var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).OrderByDescending(m => m.UserId).ToList();
 
                             return View(myTickets);
                         }

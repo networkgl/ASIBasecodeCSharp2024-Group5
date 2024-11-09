@@ -3,6 +3,7 @@ using ASI.Basecode.Data.Models.CustomModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 
@@ -16,26 +17,73 @@ namespace ASI.Basecode.WebApp.Controllers
         }
         public IActionResult Index()
         {
-            if (TempData["temp"] != null)
+            if (!User.Identity.IsAuthenticated)
             {
-                if (TempData["status"] as int? == 0)
+                return Unauthorized();
+            }
+            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
+            if (TempData["temp"] is not null)
+            {
+                if ((string)TempData["temp"] == "create")
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+
+                    if (resMsg is not null)
                     {
-                        Status = ErrorCode.Success,
-                        Message = "An admin account has deleted successfully!"
-                    };
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                            {
+                                Status = resMsg.Status,
+                                Message = resMsg.Message
+                            });
+                            var thisUsersList = _db.VwUsersAndAgentsViews.OrderByDescending(m => m.UserId).ToList();
+                            return View(thisUsersList);
+                        }
+                    }
                 }
-                else
+                if ((string)TempData["temp"] == "delete")
                 {
-                    TempData["ResMsg"] = new AlertMessageContent()
+                    if (TempData["status"] as int? == 0)
                     {
-                        Status = ErrorCode.Error,
-                        Message = "An error has occured upon deleting the account."
-                    };
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Success,
+                            Message = "A user has deleted successfully!"
+                        });
+                    }
+                    else
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error has occured upon deleting the user."
+                        });
+                    }
+                }
+
+                if ((string)TempData["temp"] == "update")
+                {
+                    if (TempData["status"] as int? == 0)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Success,
+                            Message = "User created successfully!"
+                        });
+                    }
+                    else
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error has occured when updating this user, pls try again."
+                        });
+                    }
                 }
             }
-            var users = _db.VwUsersAndAgentsViews.ToList();
+            var users = _db.VwUsersAndAgentsViews.OrderByDescending(m => m.UserId).ToList();
             return View(users);
         }
 
@@ -59,49 +107,53 @@ namespace ASI.Basecode.WebApp.Controllers
 
             if (string.IsNullOrEmpty(customUser.user.Name) || string.IsNullOrEmpty(customUser.user.Email) || string.IsNullOrEmpty(customUser.user.Password) || string.IsNullOrEmpty(ConfirmPassword))
             {
-                TempData["ResMsg"] = new AlertMessageContent()
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Error,
                     Message = "Please fill out all required fields."
-                };
+                });
                 return View(customUser);
             }
 
             var domain = customUser.user.Email.Split('@').Last();
             if (!AllowedDomains.Contains(domain))
             {
-                TempData["ResMsg"] = new AlertMessageContent()
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Error,
                     Message = "Invalid email address"
-                };
+                });
                 return View(customUser);
             }
 
 
             if (customUser == null)
             {
-                TempData["ResMsg"] = new AlertMessageContent()
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Error,
                     Message = "An error has occured upon creating the account."
-                };
+                });
                 return View(customUser);
             }
 
             if (ConfirmPassword != customUser.user.Password)
             {
-                TempData["ResMsg"] = new AlertMessageContent()
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Error,
                     Message = "Password mismatch, please try again."
-                };
-                return View();
+                });
+                return View(customUser);
             }
 
             var result = CreateNewUser(customUser.user, Convert.ToInt32(customUser.userRole.RoleId), null);
-            TempData["ResMsg"] = result;
-            return View();
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+            {
+                Status = ErrorCode.Success,
+                Message = "User Created Successfully!"
+            });
+            return RedirectToAction("Index");
         }
 
         public IActionResult Edit(int id)

@@ -87,8 +87,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
-                
+                articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.ArticleId).ToList();
             }
             return View(articles);
         }

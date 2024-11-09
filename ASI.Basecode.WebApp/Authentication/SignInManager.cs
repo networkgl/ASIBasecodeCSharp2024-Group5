@@ -99,7 +99,7 @@ namespace ASI.Basecode.WebApp.Authentication
         }
 
         /// <summary>
-        /// Creates the claims principal.
+        /// Creates the claims principal.¶
         /// </summary>
         /// <param name="identity">The identity.</param>
         /// <returns>Created claims principal</returns>
