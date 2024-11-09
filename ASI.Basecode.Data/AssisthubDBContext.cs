@@ -35,8 +35,15 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwAssignedTicketView> VwAssignedTicketViews { get; set; }
         public virtual DbSet<VwFeedbackView> VwFeedbackViews { get; set; }
         public virtual DbSet<VwNotificationView> VwNotificationViews { get; set; }
+        public virtual DbSet<VwTicketAssignedToMeAgent> VwTicketAssignedToMeAgents { get; set; }
         public virtual DbSet<VwTicketCountForAgent> VwTicketCountForAgents { get; set; }
         public virtual DbSet<VwTicketDetailsView> VwTicketDetailsViews { get; set; }
+        public virtual DbSet<VwTicketsByCategory> VwTicketsByCategories { get; set; }
+        public virtual DbSet<VwTicketsByPriority> VwTicketsByPriorities { get; set; }
+        public virtual DbSet<VwTicketsByStatus> VwTicketsByStatuses { get; set; }
+        public virtual DbSet<VwTotalTicketSummaryWithCategory> VwTotalTicketSummaryWithCategories { get; set; }
+        public virtual DbSet<VwTotalTicketSummaryWithPriority> VwTotalTicketSummaryWithPriorities { get; set; }
+        public virtual DbSet<VwTotalTicketSummaryWithStatus> VwTotalTicketSummaryWithStatuses { get; set; }
         public virtual DbSet<VwTotalTicketsResolved> VwTotalTicketsResolveds { get; set; }
         public virtual DbSet<VwUserCount> VwUserCounts { get; set; }
         public virtual DbSet<VwUserRoleView> VwUserRoleViews { get; set; }
@@ -79,6 +86,8 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.DateAssigned)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.DateResolved).HasColumnType("datetime");
 
                 entity.Property(e => e.LastModified)
                     .HasColumnType("datetime")
@@ -412,6 +421,15 @@ namespace ASI.Basecode.Data
                     .IsUnicode(false);
             });
 
+            modelBuilder.Entity<VwTicketAssignedToMeAgent>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_TicketAssignedToMeAgent");
+
+                entity.Property(e => e.TicketCount).HasColumnName("Ticket Count");
+            });
+
             modelBuilder.Entity<VwTicketCountForAgent>(entity =>
             {
                 entity.HasNoKey();
@@ -490,6 +508,78 @@ namespace ASI.Basecode.Data
                     .IsUnicode(false);
 
                 entity.Property(e => e.TicketLastModified).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<VwTicketsByCategory>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_TicketsByCategory");
+
+                entity.Property(e => e.CategoryName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwTicketsByPriority>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_TicketsByPriority");
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PriorityName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.UserId).HasColumnName("userId");
+            });
+
+            modelBuilder.Entity<VwTicketsByStatus>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_TicketsByStatus");
+
+                entity.Property(e => e.StatusName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwTotalTicketSummaryWithCategory>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_TotalTicketSummaryWithCategory");
+
+                entity.Property(e => e.CategoryName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwTotalTicketSummaryWithPriority>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_TotalTicketSummaryWithPriority");
+
+                entity.Property(e => e.PriorityName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwTotalTicketSummaryWithStatus>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_TotalTicketSummaryWithStatus");
+
+                entity.Property(e => e.StatusName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<VwTotalTicketsResolved>(entity =>

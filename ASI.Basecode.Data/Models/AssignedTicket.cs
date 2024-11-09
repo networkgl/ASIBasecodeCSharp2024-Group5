@@ -12,6 +12,7 @@ namespace ASI.Basecode.Data.Models
         public DateTime? DateAssigned { get; set; }
         public DateTime? LastModified { get; set; }
         public byte? HasReminded { get; set; }
+        public DateTime? DateResolved { get; set; }
 
         public virtual User Agent { get; set; }
         public virtual User Assigner { get; set; }

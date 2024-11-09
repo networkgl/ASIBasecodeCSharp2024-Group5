@@ -1,11 +1,29 @@
 ﻿@using ASI.Basecode.Data.Models.CustomModels;
+@model ASI.Basecode.Data.Models.CustomModels.TicketSummaryModel;
 @using Newtonsoft.Json;
 
 @{
-    var categoriesJson = JsonConvert.SerializeObject(Model.Categories);
-    var statusesJson = JsonConvert.SerializeObject(Model.Statuses);
-    var prioritiesJson = JsonConvert.SerializeObject(Model.Priorities);
-    var userActivitiesJson = JsonConvert.SerializeObject(Model.UserActivities);
+    string totalCategoriesJson = "none";
+    string totalStatusesJson = "none";
+    string totalPrioritiesJson = "none";
+    var categoriesJson = "none";
+    var statusesJson = "none";
+    var prioritiesJson = "none";
+    if (User.FindFirst("UserRole")?.Value == "administrator" || User.FindFirst("UserRole")?.Value == "superadmin")
+    {
+        totalCategoriesJson = JsonConvert.SerializeObject(Model.TicketSummaryWithCategory);
+        totalStatusesJson = JsonConvert.SerializeObject(Model.TicketSummaryWithStatus);
+        totalPrioritiesJson = JsonConvert.SerializeObject(Model.TicketSummaryWithPriority);
+    }
+    else if (User.FindFirst("UserRole")?.Value == "support agent")
+    {
+        categoriesJson = JsonConvert.SerializeObject(Model.TicketsByCategory);
+        statusesJson = JsonConvert.SerializeObject(Model.TicketsByStatus);
+        prioritiesJson = JsonConvert.SerializeObject(Model.TicketsByPriority);
+    }
+    
+    
+    // var userActivitiesJson = JsonConvert.SerializeObject(Model.UserActivities);
 }
 
 <div style="width: 100%; padding-bottom: 20px;" class="d-flex justify-content-center align-items-center">
@@ -63,20 +81,42 @@
 
 </div>
 
-<script>
-    var categories = @Html.Raw(categoriesJson);
-    var statuses = @Html.Raw(statusesJson);
-    var priorities = @Html.Raw(prioritiesJson);
-    var userActivities = @Html.Raw(userActivitiesJson);
+<script type="text/javascript">
+    // Pass the user role to JavaScript
+    var userRole = '@User.FindFirst("UserRole")?.Value';
+
+    // Now, you can pass the chart data from the server-side model
+    if (userRole === "administrator" || userRole === "superadmin") {
+        var totalCategories = @Html.Raw(totalCategoriesJson);
+        var totalStatuses = @Html.Raw(totalStatusesJson);
+
+        var totalPriorities = @Html.Raw(totalPrioritiesJson);
+        console.log(totalPriorities)
+
+    }
+    else if (userRole === "support agent") {
+        var categories = @Html.Raw(categoriesJson);
+        var statuses = @Html.Raw(statusesJson);
+        var priorities = @Html.Raw(prioritiesJson);
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
-        renderChart('pieChartCategory', categories.map(c => c.TicketCount), categories.map(c => c.CategoryName));
-        renderChart('pieChartStatus', statuses.map(s => s.TicketCount), statuses.map(s => s.StatusName));
-        renderChart('pieChartPriority', priorities.map(p => p.TicketCount), priorities.map(p => p.PriorityName));
-        renderChart('pieChartUserActivity', userActivities.map(u => u.TicketCount), userActivities.map(u => u.UserName));
+        if (userRole === "administrator" || userRole === "superadmin") {
+            renderChart('pieChartCategory', totalCategories.map(c => c.TotalCount), totalCategories.map(c => c.CategoryName));
+            renderChart('pieChartStatus', totalStatuses.map(s => s.TotalCount), totalStatuses.map(s => s.StatusName));
+            renderChart('pieChartPriority', totalPriorities.map(p => p.TotalCount), totalPriorities.map(p => p.PriorityName));
+        }
+        else if (userRole === "support agent") {
+            renderChart('pieChartCategory', categories.map(c => c.TicketsByCategory), categories.map(c => c.CategoryName));
+            renderChart('pieChartStatus', statuses.map(s => s.TicketByStatus), statuses.map(s => s.StatusName));
+            renderChart('pieChartPriority', priorities.map(p => p.TicketByPriority), priorities.map(p => p.PriorityName));
+        }
+        // Optionally render user activity chart if needed
+        // renderChart('pieChartUserActivity', userActivities.map(u => u.TicketCount), userActivities.map(u => u.UserName));
     });
 
     function renderChart(elementId, seriesData, labels) {
+        console.log(seriesData)
         var options = {
             series: seriesData,
             chart: { type: 'pie', height: 264 },
@@ -92,7 +132,9 @@
             }]
         };
 
-        var chart = new ApexCharts(document.querySelector(`#${elementId}`), options);
+        var id = elementId;
+        console.log(id)
+        var chart = new ApexCharts(document.getElementById(id), options);
         chart.render();
     }
 </script>

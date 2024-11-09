@@ -19,57 +19,45 @@ namespace ASI.Basecode.WebApp.Controllers
     {
         public ReportController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
         {
-
         }
 
         public IActionResult Index()
         {
-            // Fetch categories with their ticket counts
-            var categoryCounts = _db.Categories
-                .Select(category => new CategoryDataModel
-                {
-                    CategoryName = category.CategoryName,
-                    TicketCount = _db.Tickets.Count(ticket => ticket.CategoryId == category.CategoryId)
-                })
-                .ToList(); // Execute the query and convert to a list
+            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
-            // Fetch statuses with their ticket counts
-            var statusCounts = _db.Statuses
-                .Select(status => new StatusDataModel
-                {
-                    StatusName = status.StatusName,
-                    TicketCount = _db.Tickets.Count(ticket => ticket.StatusId == status.StatusId)
-                })
-                .ToList();
-
-            // Fetch priorities with their ticket counts
-            var priorityCounts = _db.Priorities
-                .Select(priority => new PriorityDataModel
-                {
-                    PriorityName = priority.PriorityName,
-                    TicketCount = _db.Tickets.Count(ticket => ticket.PriorityId == priority.PriorityId)
-                })
-                .ToList();
-
-            // Fetch user activities with their ticket counts
-            var userActivityCounts = _db.Users
-                .Select(user => new UserActivityDataModel
-                {
-                    UserName = user.Name,
-                    //TicketCount = _db.Tickets.Count(ticket => ticket.AssignedToUserId == user.UserId)
-                })
-                .ToList();
-
-            // Create a summary model to pass to the view
-            var summaryModel = new CustomTicketSummaryViewModel
+            if (User.FindFirst("UserRole")?.Value == "administrator" || User.FindFirst("UserRole")?.Value == "superadmin")
             {
-                Categories = categoryCounts,
-                Statuses = statusCounts,
-                Priorities = priorityCounts,
-                UserActivities = userActivityCounts
-            };
+                var TicketsByCategory = _db.VwTotalTicketSummaryWithCategories.ToList();
+                var TicketsByStatus = _db.VwTotalTicketSummaryWithStatuses.ToList();
+                var TicketsByPriority = _db.VwTotalTicketSummaryWithPriorities.ToList();
 
-            return View(summaryModel); // Pass the model to the view
+                var summaryModel = new TicketSummaryModel
+                {
+                    TicketSummaryWithCategory = TicketsByCategory,
+                    TicketSummaryWithStatus = TicketsByStatus,
+                    TicketSummaryWithPriority = TicketsByPriority
+                };
+                return View(summaryModel);
+            }
+            else if (User.FindFirst("UserRole")?.Value == "support agent")
+            {
+                var TicketsAssignedByMeAgent = _db.VwTicketAssignedToMeAgents.Where(m => m.UserId == userId).ToList();
+                var TicketsByCategory = _db.VwTicketsByCategories.Where(m => m.UserId == userId).ToList();
+                var TicketsByStatus = _db.VwTicketsByStatuses.Where(m => m.UserId == userId).ToList();
+                var TicketsByPriority = _db.VwTicketsByPriorities.Where(m => m.UserId == userId).ToList();
+
+                var summaryModel = new TicketSummaryModel
+                {
+                    TicketsByCategory = TicketsByCategory,
+                    TicketsByStatus = TicketsByStatus,
+                    TicketsByPriority = TicketsByPriority
+                };
+
+                return View(summaryModel);
+            }
+
+            return View();
+
         }
 
 
