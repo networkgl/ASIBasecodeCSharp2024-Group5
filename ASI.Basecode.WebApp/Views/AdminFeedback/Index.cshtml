@@ -1,0 +1,115 @@
+﻿@model IEnumerable<ASI.Basecode.Data.Models.VwAgentFeedbackRatingView>
+
+<h6>Agents Feedback Rating</h6>
+
+<div class="row">
+    @foreach (var agent in Model)
+    {
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm d-flex flex-row p-3 align-items-center">
+                <div class="image-container me-3">
+                    <img class="profile-img" src="@(!string.IsNullOrEmpty(agent.ProfilePicture) ? agent.ProfilePicture : "default-profile.jpg")" alt="">
+                    @if (string.IsNullOrEmpty(agent.ProfilePicture))
+                    {
+                        <span class="alt-text">No Image</span>
+                    }
+                </div>
+                <div class="card-body p-2">
+                    <h6 class="card-title mb-1">@agent.AgentName</h6>
+                    <p class="card-text"><strong>Agent ID:</strong> @agent.AgentId</p
+                    <p><strong>Average Rating:</strong></p>
+                    <p class="card-text mb-1">
+                        @{
+                            int fullStars = (int)agent.AverageRating;
+                            bool hasHalfStar = ((double)agent.AverageRating - fullStars) >= 0.5;
+                        }
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= fullStars)
+                            {
+                                <i class="bi bi-star-fill text-warning"></i>
+                            }
+                            else if (hasHalfStar && i == fullStars + 1)
+                            {
+                                <i class="bi bi-star-half text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-star text-secondary"></i>
+                            }
+                        }
+                        <span> (@agent.AverageRating?.ToString("0.0"))</span>
+                    </p>
+                    <p class="card-text"><strong>Total Feedbacks:</strong> @agent.FeedbackCount</p>
+                    <a asp-controller="Feedback" asp-action="Index" asp-route-agentId="@agent.AgentId" class="btn btn-primary mt-2">View Feedbacks</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .card {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        border: none;
+        border-radius: 8px;
+    }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+    .image-container {
+        width: 150px;
+        height: 200px;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .profile-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .alt-text {
+        position: absolute;
+        color: #6c757d;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .card-body {
+        padding: 0.5rem;
+        flex: 1;
+    }
+
+    .btn-primary {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .bi-star, .bi-star-fill, .bi-star-half {
+        font-size: 1rem;
+    }
+
+    .text-warning {
+        color: #ffc107 !important;
+    }
+
+    .text-secondary {
+        color: #6c757d !important;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+</style>

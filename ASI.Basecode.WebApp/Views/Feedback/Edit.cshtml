@@ -1,0 +1,82 @@
+﻿@model ASI.Basecode.Data.Models.VwFeedbackView
+
+<div class="container mt-4">
+    <h6 class="fw-bold">Edit Feedback</h6>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ticket ID</th>
+                <th>Category</th>
+                <th>Issue Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Model.UserTicketId</td>
+                <td>@Model.TicketCategory</td>
+                <td>@Model.IssueDescription</td>
+                <td>
+                    @if (Model.StatusId == 2)
+                    {
+                        <span>In Progress</span>
+                    }
+                    else if (Model.StatusId == 3)
+                    {
+                        <span>Resolved</span>
+                    }
+                    else if (Model.StatusId == 4)
+                    {
+                        <span>Closed</span>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" name="feedbackId" value="@Model.FeedbackId" />
+
+        <div class="mb-3">
+            <label for="feedbackText" class="form-label">Feedback Text</label>
+            <textarea id="feedbackText" name="feedbackText" class="form-control" rows="3">@Model.FeedbackText</textarea>
+        </div>
+
+        <div class="form-group mt-3" style="text-align: left;">
+            <label for="Rating">Rate the Service:</label>
+            <div class="star-rating">
+                @for (int i = 5; i >= 1; i--)
+                {
+                    <input type="radio" id="star-@i" name="FeedbackRating" value="@i" required />
+                    <label for="star-@i" title="@i stars">&#9733;</label>
+                }
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+
+<style>
+    .star-rating {
+        direction: rtl;
+        font-size: 1.5em;
+    }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            cursor: pointer;
+        }
+
+            .star-rating input:checked ~ label,
+            .star-rating label:hover,
+            .star-rating label:hover ~ label {
+                color: #f90;
+            }
+</style>
