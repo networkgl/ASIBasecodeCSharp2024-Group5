@@ -32,6 +32,7 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwAdminCount> VwAdminCounts { get; set; }
         public virtual DbSet<VwAdminUsersView> VwAdminUsersViews { get; set; }
         public virtual DbSet<VwAgentCount> VwAgentCounts { get; set; }
+        public virtual DbSet<VwAgentFeedbackRatingView> VwAgentFeedbackRatingViews { get; set; }
         public virtual DbSet<VwAssignedTicketView> VwAssignedTicketViews { get; set; }
         public virtual DbSet<VwFeedbackView> VwFeedbackViews { get; set; }
         public virtual DbSet<VwNotificationView> VwNotificationViews { get; set; }
@@ -126,10 +127,19 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at");
+<<<<<<< Updated upstream
 
                 entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
 
                 entity.Property(e => e.FeedbackText).IsUnicode(false);
+=======
+
+                entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
+
+                entity.Property(e => e.FeedbackText).IsUnicode(false);
+
+                entity.Property(e => e.TicketCategory).IsUnicode(false);
+>>>>>>> Stashed changes
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -325,6 +335,21 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.TotalAgentCount).HasColumnName("Total Agent Count");
             });
 
+            modelBuilder.Entity<VwAgentFeedbackRatingView>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_AgentFeedbackRatingView");
+
+                entity.Property(e => e.AgentName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AverageRating).HasColumnType("decimal(38, 6)");
+
+                entity.Property(e => e.ProfilePicture).IsUnicode(false);
+            });
+
             modelBuilder.Entity<VwAssignedTicketView>(entity =>
             {
                 entity.HasNoKey();
@@ -383,6 +408,11 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.FeedbackText).IsUnicode(false);
 
                 entity.Property(e => e.IssueDescription).IsUnicode(false);
+<<<<<<< Updated upstream
+=======
+
+                entity.Property(e => e.TicketCategory).IsUnicode(false);
+>>>>>>> Stashed changes
             });
 
             modelBuilder.Entity<VwNotificationView>(entity =>

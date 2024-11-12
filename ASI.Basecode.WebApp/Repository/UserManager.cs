@@ -19,7 +19,10 @@ namespace ASI.Basecode.WebApp.Repository
             }
             return null;
         }
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         public string? GetUserNameById(int userId)
         {
             var retVal = _userRepo.Table.Where(m => m.UserId == userId).FirstOrDefault().Name == null ? null : _userRepo.Table.Where(m => m.UserId == userId).FirstOrDefault().Name;

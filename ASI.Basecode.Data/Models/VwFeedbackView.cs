@@ -6,8 +6,15 @@ namespace ASI.Basecode.Data.Models
     public partial class VwFeedbackView
     {
         public int FeedbackId { get; set; }
+<<<<<<< Updated upstream
         public int? UserTicketId { get; set; }
         public int? CategoryId { get; set; }
+=======
+        public int? UserId { get; set; }
+        public int? UserTicketId { get; set; }
+        public int? CategoryId { get; set; }
+        public string TicketCategory { get; set; }
+>>>>>>> Stashed changes
         public string IssueDescription { get; set; }
         public int? StatusId { get; set; }
         public string FeedbackText { get; set; }

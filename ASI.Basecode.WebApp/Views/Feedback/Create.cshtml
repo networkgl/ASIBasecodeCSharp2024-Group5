@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 ﻿@* @model ASI.Basecode.Data.Models.Feedback *@
 @model CustomFeedbackModel
 
@@ -63,18 +64,66 @@
                 <label for="star-@i" title="@i stars">
                     &#9733;
                 </label>
+=======
+﻿@model ASI.Basecode.Data.Models.Feedback
+
+<h6>Provide Feedback</h6>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label for="TicketDropdown">Choose a Ticket:</label>
+        <select id="TicketDropdown" name="UserTicketId" class="form-control" required>
+            <option value="">Select Ticket </option>
+            @foreach (var ticket in ViewBag.Tickets)
+            {
+                <option value="@ticket.TicketId"
+                        ticket-category="@ticket.CategoryName"
+                        ticket-issue="@ticket.IssueDescription"
+                        ticket-created="@ticket.CreateAt"
+                        ticket-fixed="@ticket.LastModified"
+                        ticket-agent="@ticket.AgentId"
+                        ticket-assigned="@ticket.AssignedTicketId"
+                        ticket-agentname="@ticket.Name">
+                    Ticket ID: @ticket.TicketId - Category: @ticket.CategoryName, Issue: @ticket.IssueDescription,
+                    Created: @ticket.CreateAt, Fixed: @ticket.LastModified, Agent: @ticket.Name
+                </option>
+            }
+        </select>
+    </div>
+
+    <input type="hidden" id="AssignedTicketId" name="AssignedTicketId" />
+    <input type="hidden" id="AgentId" name="AgentId" />
+    <input type="hidden" id="CategoryName" name="CategoryName" />
+
+    <div class="form-group mt-3">
+        <label for="FeedbackText">Feedback</label>
+        <textarea id="FeedbackText" name="FeedbackText" class="form-control" required></textarea>
+    </div>
+
+    <div class="form-group mt-3" style="text-align: left;">
+        <label for="Rating">Rate the Service:</label>
+        <div class="star-rating">
+            @for (int i = 5; i >= 1; i--)
+            {
+                <input type="radio" id="star-@i" name="FeedbackRating" value="@i" required />
+                <label for="star-@i" title="@i stars">&#9733;</label>
+>>>>>>> Stashed changes
             }
         </div>
     </div>
 
+<<<<<<< Updated upstream
     <input type="hidden" id="TicketId" name="TicketId" value="@Model.Feedback.UserTicketId" />
 
     <!-- Buttons -->
+=======
+>>>>>>> Stashed changes
     <button type="submit" class="btn btn-primary">Submit Feedback</button>
     <a href="javascript:history.back()" class="btn btn-danger">Cancel</a>
 </form>
 
 <script>
+<<<<<<< Updated upstream
     // Display ticket details and reset on form submit
     document.getElementById('TicketDropdown').addEventListener('change', function () {
         var selectedOption = this.options[this.selectedIndex];
@@ -101,11 +150,24 @@
         document.getElementById('selectedTicketTable').style.display = "none";
         document.getElementById("TicketDropdown").selectedIndex = 0;
     };
+=======
+    document.getElementById('TicketDropdown').addEventListener('change', function () {
+        var selectedOption = this.options[this.selectedIndex];
+
+        document.getElementById('AssignedTicketId').value = selectedOption.getAttribute('ticket-assigned');
+        document.getElementById('AgentId').value = selectedOption.getAttribute('ticket-agent');
+        document.getElementById('CategoryName').value = selectedOption.getAttribute('ticket-category');
+    });
+>>>>>>> Stashed changes
 </script>
 
 <style>
     .star-rating {
+<<<<<<< Updated upstream
         direction: ltr;
+=======
+        direction: rtl;
+>>>>>>> Stashed changes
         font-size: 1.5em;
     }
 
@@ -118,6 +180,7 @@
             cursor: pointer;
         }
 
+<<<<<<< Updated upstream
         .star-rating input:checked ~ label,
         .star-rating input:hover ~ label {
             color: #f90;
@@ -128,3 +191,11 @@
             color: #fc0;
         }
 </style>
+=======
+            .star-rating input:checked ~ label,
+            .star-rating label:hover,
+            .star-rating label:hover ~ label {
+                color: #f90;
+            }
+</style>
+>>>>>>> Stashed changes
