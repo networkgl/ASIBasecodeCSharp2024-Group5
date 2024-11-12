@@ -127,19 +127,12 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at");
-<<<<<<< Updated upstream
-
-                entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
-
-                entity.Property(e => e.FeedbackText).IsUnicode(false);
-=======
 
                 entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
 
                 entity.Property(e => e.FeedbackText).IsUnicode(false);
 
                 entity.Property(e => e.TicketCategory).IsUnicode(false);
->>>>>>> Stashed changes
             });
 
             modelBuilder.Entity<Notification>(entity =>
@@ -408,11 +401,8 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.FeedbackText).IsUnicode(false);
 
                 entity.Property(e => e.IssueDescription).IsUnicode(false);
-<<<<<<< Updated upstream
-=======
 
                 entity.Property(e => e.TicketCategory).IsUnicode(false);
->>>>>>> Stashed changes
             });
 
             modelBuilder.Entity<VwNotificationView>(entity =>

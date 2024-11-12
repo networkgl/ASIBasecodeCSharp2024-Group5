@@ -1,62 +1,4 @@
-<<<<<<< Updated upstream
-﻿@model CustomFeedbackModel
-
-<!-- Feedback Page Header with Create Button -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h6 class="fw-bold">Feedbacks</h6>
-    <a asp-controller="Feedback" asp-action="Create" class="btn btn-primary w-200-px">
-        <i class="bi bi-plus-circle"></i> Create Feedback
-    </a>
-</div>
-
-<!-- Feedback Table -->
-<table class="table bordered-table">
-    <thead>
-        <tr>
-            <th>Ticket ID</th>
-            <th>Issue Description</th>
-            <th>Feedback</th>
-            <th>Rating</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Ticket.Any())
-        {
-            int i = 0;
-            @foreach (var feedback in Model.FeedbackList)
-            {
-                <tr>
-                    <td>@feedback.UserTicketId</td>
-                    <td>@Model.Ticket[i].IssueDescription</td>
-                    <td>@feedback.FeedbackText</td>
-                    <td>@feedback.FeedbackRating</td>
-                    <td>
-                        <a href="@Url.Action("Edit", "Feedback", new { id = feedback.FeedbackId })" ><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a>
-                        <a href="@Url.Action("Delete", "Feedback", new { id = feedback.FeedbackId })" onclick="return confirm('Are you sure you want to delete this feedback?');"><i class="bi bi-trash" style="color:red"></i></a>
-                    </td>
-                </tr>
-                i++;
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="5" class="text-center">No feedback available</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<!-- Style the Feedback Table -->
-<style>
-    .bordered-table {
-        border: 1px solid #dee2e6;
-        border-collapse: collapse;
-        width: 100%;
-    }
-=======
-﻿@using ASI.Basecode.Data.Models;
+@using ASI.Basecode.Data.Models;
 @model IEnumerable<VwFeedbackView>;
 
 @{
@@ -260,23 +202,14 @@
         border-collapse: collapse;
     }
     
->>>>>>> Stashed changes
     .bordered-table th, .bordered-table td {
         padding: 12px 15px;
         border: 1px solid #dee2e6;
-    }
-<<<<<<< Updated upstream
-=======
-    
->>>>>>> Stashed changes
+    }    
     .bordered-table th {
         background-color: #f8f9fa;
         font-weight: 600;
     }
-<<<<<<< Updated upstream
-</style>
-=======
-    
     .bi-star, .bi-star-fill, .bi-star-half {
         font-size: 1.1rem;
     }
@@ -287,4 +220,3 @@
         color: #6c757d !important;
     }
 </style>
->>>>>>> Stashed changes

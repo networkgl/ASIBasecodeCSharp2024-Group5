@@ -1,75 +1,8 @@
-<<<<<<< Updated upstream
-﻿@* @model ASI.Basecode.Data.Models.Feedback *@
-@model CustomFeedbackModel
-
-<h6 class="fw-semibold mb-0">Ticket Details</h6>
-
-<div>
-    <label for="Ticket">Choose a Ticket:</label>
-    <select id="TicketDropdown" asp-for="@Model.Feedback.UserTicketId" class="form-control">
-        <option value="">-- Select Ticket --</option>
-        @foreach (var ticket in Model.Ticket)
-        {
-            <option value="@ticket.TicketId"
-                    data-category="@ticket.Category?.CategoryName"
-                    data-issue="@ticket.IssueDescription"
-                    data-status="@ticket.Status?.StatusId"
-                    data-created="@ticket.CreateAt"
-                    data-modified="@ticket.LastModified"
-                    data-attachment="@ticket.AttachmentPath">
-                Ticket ID: @ticket.TicketId - Category: @ticket.Category?.CategoryName, Created: @ticket.CreateAt
-            </option>
-        }
-    </select>
-</div>
-
-<!-- Table for selected ticket details -->
-<table class="table bordered-table mt-3" id="selectedTicketTable" style="display:none;">
-    <thead>
-        <tr>
-            <th>Ticket ID</th>
-            <th>Category</th>
-            <th>Issue Description</th>
-            <th>Attached Image</th>
-            <th>Date Created</th>
-            <th>Resolved/Last Modified Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td id="ticketId"></td>
-            <td id="ticketCategory"></td>
-            <td id="ticketIssue"></td>
-            <td id="ticketAttachment"></td>
-            <td id="ticketCreatedAt"></td>
-            <td id="ticketModifiedAt"></td>
-        </tr>
-    </tbody>
-</table>
-
-<form asp-action="Create" method="post">
-    <!-- Feedback Section -->
-    <div class="form-group mt-3">
-        <label for="FeedbackText">Feedback</label>
-        <textarea id="FeedbackText" class="form-control" asp-for="@Model.Feedback.FeedbackText" required></textarea>
-    </div>
-
-    <!-- Star Rating Section -->
-    <div class="form-group mt-3">
-        <label for="Rating">Rate the Service:</label>
-        <div class="star-rating">
-            @for (int i = 1; i <= 5; i++)
-            {
-                <input type="radio" id="star-@i" asp-for="@Model.Feedback.FeedbackRating" value="@i" />
-                <label for="star-@i" title="@i stars">
-                    &#9733;
-                </label>
-=======
-﻿@model ASI.Basecode.Data.Models.Feedback
+@model ASI.Basecode.Data.Models.Feedback;
 
 <h6>Provide Feedback</h6>
 
-<form asp-action="Create" method="post">
+<form asp-controller="Feedback" asp-action="Create" method="post">
     <div class="form-group">
         <label for="TicketDropdown">Choose a Ticket:</label>
         <select id="TicketDropdown" name="UserTicketId" class="form-control" required>
@@ -107,24 +40,16 @@
             {
                 <input type="radio" id="star-@i" name="FeedbackRating" value="@i" required />
                 <label for="star-@i" title="@i stars">&#9733;</label>
->>>>>>> Stashed changes
             }
         </div>
     </div>
+    <input type="hidden" id="TicketId" name="TicketId" value="@Model.UserTicketId" />
 
-<<<<<<< Updated upstream
-    <input type="hidden" id="TicketId" name="TicketId" value="@Model.Feedback.UserTicketId" />
-
-    <!-- Buttons -->
-=======
->>>>>>> Stashed changes
     <button type="submit" class="btn btn-primary">Submit Feedback</button>
     <a href="javascript:history.back()" class="btn btn-danger">Cancel</a>
 </form>
 
 <script>
-<<<<<<< Updated upstream
-    // Display ticket details and reset on form submit
     document.getElementById('TicketDropdown').addEventListener('change', function () {
         var selectedOption = this.options[this.selectedIndex];
         var table = document.getElementById('selectedTicketTable');
@@ -150,7 +75,6 @@
         document.getElementById('selectedTicketTable').style.display = "none";
         document.getElementById("TicketDropdown").selectedIndex = 0;
     };
-=======
     document.getElementById('TicketDropdown').addEventListener('change', function () {
         var selectedOption = this.options[this.selectedIndex];
 
@@ -158,16 +82,12 @@
         document.getElementById('AgentId').value = selectedOption.getAttribute('ticket-agent');
         document.getElementById('CategoryName').value = selectedOption.getAttribute('ticket-category');
     });
->>>>>>> Stashed changes
 </script>
 
 <style>
     .star-rating {
-<<<<<<< Updated upstream
         direction: ltr;
-=======
         direction: rtl;
->>>>>>> Stashed changes
         font-size: 1.5em;
     }
 
@@ -180,22 +100,13 @@
             cursor: pointer;
         }
 
-<<<<<<< Updated upstream
-        .star-rating input:checked ~ label,
-        .star-rating input:hover ~ label {
-            color: #f90;
-        }
-
-        .star-rating label:hover,
-        .star-rating label:hover ~ label {
-            color: #fc0;
-        }
-</style>
-=======
             .star-rating input:checked ~ label,
             .star-rating label:hover,
             .star-rating label:hover ~ label {
                 color: #f90;
             }
+
+        .star-rating label:hover ~ label {
+            color: #fc0;
+        }            
 </style>
->>>>>>> Stashed changes

@@ -5,14 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using ASI.Basecode.WebApp.Repository;
 using System.Linq;
 using System;
-<<<<<<< Updated upstream
 using ASI.Basecode.WebApp.Models;
 using ASI.Basecode.Data.Interfaces;
 using System.Collections.Generic;
-=======
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
->>>>>>> Stashed changes
 
 namespace ASI.Basecode.WebApp.Controllers
 {
@@ -24,8 +20,6 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             _userManager = new UserManager();
         }
-<<<<<<< Updated upstream
-=======
         public IActionResult Index(int? agentId = null)
         {
             int? loggedInUserId = _userManager.GetLoggedInUserId(HttpContext);
@@ -79,83 +73,10 @@ namespace ASI.Basecode.WebApp.Controllers
             }
         }
 
->>>>>>> Stashed changes
-
         [HttpGet]
         public IActionResult Create()
         {
             int? loggedInUserId = _userManager.GetLoggedInUserId(HttpContext);
-<<<<<<< Updated upstream
-
-            if (loggedInUserId == null)
-            {
-                return Unauthorized("User not logged in");
-            }
-
-            var tickets = _db.Tickets.Include(t => t.Category)
-                                     .Where(t => t.UserTickets.Any(ut => ut.UserId == loggedInUserId) &&
-                                                 (t.StatusId == 3 || t.StatusId == 4))
-                                     .ToList();
-
-            if (!tickets.Any())
-            {
-                return NotFound("No resolved or closed tickets found");
-            }
-
-            //ViewBag.Tickets = tickets;
-
-            var customFeedbackModel = new CustomFeedbackModel()
-            {
-                Ticket = tickets,
-                Feedback = new Feedback(),
-            };
-
-            return View(customFeedbackModel);
-        }
-
-        [HttpPost]
-        public IActionResult Create(CustomFeedbackModel customFeedbackModel)
-        {
-            if (ModelState.IsValid)
-            {
-                var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-                var assignedTicket = _db.AssignedTickets.Where(m => m.UserTicketId == customFeedbackModel.TicketId).FirstOrDefault();
-
-                customFeedbackModel.Feedback.UserTicketId = customFeedbackModel.TicketId;
-                customFeedbackModel.Feedback.AgentId = assignedTicket.AgentId;
-                customFeedbackModel.Feedback.CreatedAt = DateTimeToday();
-                customFeedbackModel.Feedback.UserId = userId;
-                customFeedbackModel.Feedback.AssignedTicketId = assignedTicket.AssignedTicketId;
-
-                if (_feedbackRepo.Create(customFeedbackModel.Feedback) == ErrorCode.Success)
-                {
-                    return RedirectToAction("Index", "Feedback");
-
-                }
-                return View(customFeedbackModel);
-            }
-            return View(customFeedbackModel);
-        }
-
-        public IActionResult Index()
-        {
-            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-            var feedbacks = _db.Feedbacks.Where(m => m.UserId == userId).OrderByDescending(m => m.FeedbackId).ToList();
-
-            var ticket = new List<Ticket>();
-            foreach (var item in feedbacks)
-            {
-                ticket.Add(_db.Tickets.Where(m => m.TicketId == item.UserTicketId).FirstOrDefault()); 
-            }
-
-            var customFeedbackModel = new CustomFeedbackModel()
-            {
-                FeedbackList = feedbacks,
-                Ticket = ticket
-            };
-            return View(customFeedbackModel);
-        }
-=======
             if (loggedInUserId == null)
                 return Unauthorized("User not logged in");
 
@@ -186,7 +107,7 @@ namespace ASI.Basecode.WebApp.Controllers
             feedback.TicketCategory = CategoryName;
             feedback.AgentId = feedback.AgentId;
             feedback.CreatedAt = DateTime.Now;
-            feedback.AssignedTicketId = feedback.AssignedTicketId; 
+            feedback.AssignedTicketId = feedback.AssignedTicketId;
             _db.Feedbacks.Add(feedback);
             _db.SaveChanges();
 
@@ -227,6 +148,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
             return RedirectToAction("Index", "Feedback");
         }
+
         [HttpPost]
         [Route("Feedback/Delete/{id:int}")]
         public IActionResult Delete(int id)
@@ -242,26 +164,5 @@ namespace ASI.Basecode.WebApp.Controllers
 
             return Ok(new { message = "Feedback deleted successfully." });
         }
-        public IActionResult AdminFeedback()
-        {
-            // Retrieve all users with the role of 'Agent' (assuming RoleId = 2)
-            var agents = _db.VwUserRoleViews
-                .Where(u => u.RoleId == 2) // Filter for agents
-                .Select(agent => new
-                {
-                    AgentId = agent.UserId,
-                    AgentName = agent.Name,
-                    AverageRating = _db.VwFeedbackViews
-                        .Where(f => f.AgentId == agent.UserId && f.FeedbackRating.HasValue)
-                        .Average(f => (decimal?)f.FeedbackRating) ?? 0, // Calculate average rating
-                    FeedbackCount = _db.VwFeedbackViews
-                        .Count(f => f.AgentId == agent.UserId) // Count feedbacks
-                })
-                .ToList();
-
-            return View(agents);
-        }
-
->>>>>>> Stashed changes
     }
 }

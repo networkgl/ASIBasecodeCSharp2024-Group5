@@ -43,10 +43,9 @@ namespace ASI.Basecode.WebApp.Controllers
                                 Message = resMsg.Message
                             });
                             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-<<<<<<< Updated upstream
-                            var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).OrderByDescending(m => m.UserId).ToList();
 
-=======
+                            //var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).OrderByDescending(m => m.UserId).ToList();
+
                             var myTickets = _db.VwUserTicketViews.Where(m => m.UserId == userId).ToList();
                             foreach (var item in myTickets)
                             {
@@ -55,7 +54,6 @@ namespace ASI.Basecode.WebApp.Controllers
                                     //resolved tickets
                                 }
                             }
->>>>>>> Stashed changes
                             return View(myTickets);
                         }
                     }
