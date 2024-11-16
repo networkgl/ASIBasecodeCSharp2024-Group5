@@ -40,7 +40,7 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 var userId = User.FindFirst("UserId")?.Value;
                 var myTickets = _db.VwTicketDetailsViews.ToList();
-
+                ViewData["TableId"] = "adminManageTicketsTable";
                 return View(myTickets);
             }
             return NotFound();

@@ -22,6 +22,8 @@ namespace ASI.Basecode.WebApp.Controllers
         }
         public IActionResult Index(int? agentId = null)
         {
+            ViewData["TableId"] = "myFeedbackTable";
+
             int? loggedInUserId = _userManager.GetLoggedInUserId(HttpContext);
             if (loggedInUserId == null)
                 return Unauthorized("User not logged in");
@@ -47,7 +49,6 @@ namespace ASI.Basecode.WebApp.Controllers
                 ViewData["AverageRating"] = averageRating;
                 ViewData["FeedbackCount"] = feedbackCount;
                 ViewData["UserRoleId"] = userRole.RoleId;
-
                 return View(feedbacks);
             }
             else if (userRole.RoleId == 3)

@@ -38,10 +38,10 @@
                                 </select>
                             </div>
                             <div class="mb-20">
-                                <label asp-for="ticket.PriorityId" class="form-label fw-semibold text-primary-light text-sm mb-8">Priority Level <span class="text-danger-600"></span></label>
-                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="ticket.PriorityId">
-                                    <option class="form-control radius-8" selected value="@null">Not Set</option>
-                                    @foreach (var item in Model.priority)
+                                <label asp-for="@Model.ticket.PriorityId" class="form-label fw-semibold text-primary-light text-sm mb-8">priority level <span class="text-danger-600"></span></label>
+                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="@Model.ticket.PriorityId">
+                                    <option class="form-control radius-8" selected value="@null">not set</option>
+                                    @foreach (var item in @Model.priority)
                                     {
                                         <option class="form-control radius-8" value="@item.PriorityId">@item.PriorityName</option>
                                     }

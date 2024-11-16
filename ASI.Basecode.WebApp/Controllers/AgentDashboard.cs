@@ -41,7 +41,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var customAdminDashoardViewModel = new CustomDashoardViewModel()
             {
-                UserCount = _db.VwUserCounts.Select(m => m.TotalUserCount).FirstOrDefault(),
+                UserCount = _db.VwUserRoleViews.Where(m => m.RoleId == 1).ToList().Count,
                 AgentCount = _db.VwAgentCounts.Select(m => m.TotalAgentCount).FirstOrDefault(),
                 TicketsAssignedByMeCount = Convert.ToInt32(ticketAssignByMeCount.Value),
                 TicketsResolvedCount = Convert.ToInt32(ticketsResolvedCount.Value),

@@ -4,129 +4,274 @@
 
 @{
     ViewData["Title"] = "Manage Tickets";
-    ViewBag.TableId = "agentManageTicketsTable";
-    var tableId = ViewBag.TableId;
     var resMsg = TempData["ResMsg"] as AlertMessageContent;
+    var priorities = ViewBag.Priorities as List<Priority>;
+    var categories = ViewBag.Categories as List<Category>;
+    var statuses = ViewBag.Statuses as List<Status>;
+}
+
+@functions {
+    public string GetCardBackgroundColor(int? statusId)
+    {
+        return statusId switch
+        {
+            1 => "#0d6efd", // Primary color for "Open"
+            2 => "#ffc107", // Yellow for "In Progress"
+            3 => "#28a745", // Green for "Resolved"
+            4 => "#6c757d", // Grey for "Closed"
+            _ => "#ffffff"  // Default white
+        };
+    }
+
+    public string GetCardBorderColor(int? statusId)
+    {
+        return statusId switch
+        {
+            1 => "#0a58ca", // Darker blue for border
+            2 => "#d39e00", // Dark yellow for border
+            3 => "#218838", // Dark green for border
+            4 => "#545b62", // Dark grey for border
+            _ => "#dee2e6"  // Default border
+        };
+    }
 }
 
 <link href="~/assets/css/enlargeimagemodal.css" rel="stylesheet" />
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
     <h6 class="fw-semibold mb-0">Manage Tickets</h6>
-    <ul class="d-flex align-items-center gap-2">
-        <li class="fw-medium">
-            <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
-                <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
-                Dashboard
-            </a>
-        </li>
-        <li>-</li>
-        <li class="fw-medium">Tickets</li>
-    </ul>
 </div>
 
 <div class="card h-100 p-16 radius-12">
-@*     <div>
-        <div class="row pt-8 pb-8">
-            <div class="col-12 text-end">
-                <a asp-action="Create" class="btn btn-primary w-200-px"><i class="bi bi-plus-circle"></i>&nbsp; Create Ticket</a>
+    <!-- Toggle View and Search Section -->
+    <div class="d-flex justify-content-between align-items-center mb-3" id="toogleViewAndSearchContainer">
+        <!-- Legend for Status Colors -->
+        <div class="d-flex flex-wrap align-items-center gap-4 mb-3" id="ticketStatusLegend" style="opacity:0">
+            <span class="fw-semibold mb-0">Ticket Status Legend</span>
+            <div class="d-flex gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #0d6efd; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">Open</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #ffc107; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">In Progress</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #28a745; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">Resolved</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #6c757d; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">Closed</span>
+                </div>
             </div>
         </div>
-    </div> *@
-    <table class="table bordered-table" id="agentManageTicketsTable" style="transform:scale(0.95); table-layout:fixed">
-        <thead>
-            <tr>
-                <th style="text-align:center !important; width:8%">
-                    @Html.DisplayName("Ticket Id")
-                </th>
-                <th style="width:17%">
-                    @Html.DisplayName("Category")
-                </th>
-                <th style="width:26%">
-                    @Html.DisplayName("Issue Description")
-                </th>
-                <th style="width:11%">
-                    @Html.DisplayName("Status")
-                </th>
-                <th style="width:11%">
-                    @Html.DisplayName("Priority")
-                </th>
-                <th style="width:11%">
-                    @Html.DisplayName("Reporter")
-                </th>
-                <th style="width:16%">
-                    @Html.DisplayName("Assigned to")
-                </th>
-                <th style="width:16%">
-                    @Html.DisplayName("Assigned by")
-                </th>
-                <th class="text-center" style="width:10%">
-                    @Html.DisplayName("Action")
-                </th>
-            </tr>
-        </thead>
-        <tbody>
+        <!-- View Toggle Buttons -->
+        <div class="btn-group" role="group" aria-label="View Toggle">
+            <button id="cardViewBtn" class="btn btn-outline-primary" onclick="switchView('card')">
+                <i class="bi bi-card-list"></i> <!-- Card View Icon -->
+            </button>
+            <button id="tableViewBtn" class="btn btn-outline-primary active" onclick="switchView('table')">
+                <i class="bi bi-table"></i> <!-- Table View Icon -->
+            </button>
+        </div>
+    </div>
+    <!-- Filter Section -->
+    <div class="d-flex justify-content-between mb-3">
+        <div class="d-flex gap-3 flex-grow-1">
+            <!-- Search Input -->
+            <div class="form-group mb-3 flex-grow-0 w-440-px">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search tickets..." onkeyup="filterTickets()" style="display:none"/>
+            </div>
+
+            <!-- Filter Labels and Dropdowns -->
+            <div class="d-flex align-items-center gap-3" id="filterContainer" style="opacity:0">
+                <span>Filter by:</span>
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="categoryFilter" onchange="filterTickets()">
+                        <option value="">All Categories</option>
+                        @foreach (var item in categories)
+                        {
+                            <option value="@item.CategoryName">@item.CategoryName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="statusFilter" onchange="filterTickets()">
+                        <option value="">All Statuses</option>
+                        @foreach (var item in statuses)
+                        {
+                            <option value="@item.StatusName">@item.StatusName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="priorityFilter" onchange="filterTickets()">
+                        <option value="">All Priorities</option>
+                        @foreach (var item in priorities)
+                        {
+                            <option value="@item.PriorityName">@item.PriorityName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="assignedFilter" onchange="filterTickets()">
+                        <option value="">All Tickets</option>
+                        <option value="assignedToMe">Assigned to Me</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Ticket Button -->
+        <div>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i>&nbsp; Create Ticket
+            </a>
+        </div>
+    </div>
+    <div id="tableView" style="display: block;">
+        <table class="table bordered-table" id="agentManageTicketsTable" style="transform:scale(0.95); table-layout:fixed">
+            <thead>
+                <tr>
+                    <th style="text-align:center !important; width:8%">
+                        @Html.DisplayName("Ticket Id")
+                    </th>
+                    <th style="width:17%">
+                        @Html.DisplayName("Category")
+                    </th>
+                    <th style="width:26%">
+                        @Html.DisplayName("Issue Description")
+                    </th>
+                    <th style="width:11%">
+                        @Html.DisplayName("Status")
+                    </th>
+                    <th style="width:11%">
+                        @Html.DisplayName("Priority")
+                    </th>
+                    <th style="width:11%">
+                        @Html.DisplayName("Reporter")
+                    </th>
+                    <th style="width:16%">
+                        @Html.DisplayName("Assigned to")
+                    </th>
+                    <th style="width:16%">
+                        @Html.DisplayName("Assigned by")
+                    </th>
+                    <th class="text-center" style="width:10%">
+                        @Html.DisplayName("Action")
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="text-align:center !important">
+                            @Html.DisplayFor(modelItem => item.TicketId)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.CategoryName)
+                        </td>
+                        <td text-align:left">
+                            @Html.DisplayFor(modelItem => item.IssueDescription)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.StatusName)
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.PriorityName))
+                            {
+                                @("Not set")
+                            }
+                            else
+                            {
+                                @Html.DisplayFor(modelItem => item.PriorityName)
+                            }
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Reporter)
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.AgentName))
+                            {
+                                @("No agent assigned")
+                            }
+                            else
+                            {
+                                @Html.DisplayFor(modelItem => item.AgentName)
+                            }
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.AssignerName))
+                            {
+                                @("None")
+                            }
+                            else
+                            {
+                                @Html.DisplayFor(modelItem => item.AssignerName)
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.TicketId"><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a> |
+                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId"><i class="bi bi-trash" style="color:red"></i></a> |
+                            <a asp-action="Details" asp-route-id="@item.TicketId"><i class="bi bi-info-circle" style="color:#0d6efd"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <div id="imageModal" class="modal" onclick="closeModal()">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="enlargedImg">
+            </div>
+        </table>
+    </div>
+
+    <!-- Card View -->
+    <div id="cardView" style="display: none;">
+        <div class="row" id="cardContainer">
             @foreach (var item in Model)
             {
-                <tr>
-                    <td style="text-align:center !important">
-                        @Html.DisplayFor(modelItem => item.TicketId)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.CategoryName)
-                    </td>
-                    <td text-align:left">
-                        @Html.DisplayFor(modelItem => item.IssueDescription)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.StatusName)
-                    </td>
-                    <td>
-                        @if (string.IsNullOrEmpty(item.PriorityName))
-                        {
-                            @("Not set")
-                        }
-                        else
-                        {
-                            @Html.DisplayFor(modelItem => item.PriorityName)
-                        }
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Reporter)
-                    </td>
-                    <td>
-                        @if (string.IsNullOrEmpty(item.AgentName))
-                        {
-                            @("No agent assigned")
-                        }
-                        else
-                        {
-                            @Html.DisplayFor(modelItem => item.AgentName)
-                        }
-                    </td>
-                    <td>
-                        @if (string.IsNullOrEmpty(item.AssignerName))
-                        {
-                            @("None")
-                        }
-                        else
-                        {
-                            @Html.DisplayFor(modelItem => item.AssignerName)
-                        }
-                    </td>
-                    <td class="text-center">
-                        <a asp-action="Edit" asp-route-id="@item.TicketId"><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a> |
-                        <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId"><i class="bi bi-trash" style="color:red"></i></a> |
-                        <a asp-action="Details" asp-route-id="@item.TicketId"><i class="bi bi-info-circle" style="color:#0d6efd"></i></a>
-                    </td>
-                </tr>
+                <div class="col-md-4 mb-3 ticket-card"
+                     data-ticket-id="@item.TicketId"
+                     data-category="@item.CategoryName"
+                     data-description="@item.IssueDescription"
+                     data-priority="@item.PriorityName"
+                     data-status="@item.StatusName"
+                     data-assigned-to="@item.AgentId"
+                     data-assigned-to-me="@((item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value)) ? "assignedToMe" : "")">
+                    <div class="card" style="border-color: @GetCardBorderColor(item.StatusId);">
+                        <div class="card-header text-white" style="background-color: @GetCardBackgroundColor(item.StatusId);">
+                            <strong>Ticket ID:</strong> @Html.DisplayFor(modelItem => item.TicketId)
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Category:</strong> @Html.DisplayFor(modelItem => item.CategoryName)</p>
+                            <p><strong>Description:</strong> @Html.DisplayFor(modelItem => item.IssueDescription)</p>
+                            <p><strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)</p>
+                            <p><strong>Status:</strong> @Html.DisplayFor(modelItem => item.StatusName)</p>
+                            <p><strong>Reporter:</strong> @Html.DisplayFor(modelItem => item.Reporter)</p>
+                            <p><strong>Assigned to:</strong> @(string.IsNullOrEmpty(item.AgentName) ? "No agent assigned" : item.AgentName)</p>
+                            <p><strong>Assigned by:</strong> @(string.IsNullOrEmpty(item.AssignerName) ? "None" : item.AssignerName)</p>
+                            <p><strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(item.CreateAt.Value.ToShortDateString()) ? item.CreateAt.Value.ToLongDateString() : "N/A")</p>
+                        </div>
+                        <div class="d-flex justify-content-evenly card-footer text-center">
+                            <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
+                                <i class="bi bi-info-circle"></i> Details
+                            </a>
+                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-        <div id="imageModal" class="modal" onclick="closeModal()">
-            <span class="close">&times;</span>
-            <img class="modal-content" id="enlargedImg">
         </div>
-    </table>
+    </div>
+
 </div>
 
 <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
@@ -168,5 +313,121 @@
                 }
             }
         );
+    }
+
+    function switchView(view) {
+        const tableView = document.getElementById('tableView');
+        const cardView = document.getElementById('cardView');
+        const tableBtn = document.getElementById('tableViewBtn');
+        const cardBtn = document.getElementById('cardViewBtn');
+        const searchInput = document.getElementById('searchInput');
+        const toogleViewAndSearchContainer = document.getElementById('toogleViewAndSearchContainer');
+        const ticketStatusLegend = document.getElementById('ticketStatusLegend');
+        const filterContainer = document.getElementById('filterContainer');
+        const selects = filterContainer.querySelectorAll('select');
+
+        if (view === 'table') {
+            tableView.style.display = 'block';
+            cardView.style.display = 'none';
+            tableBtn.classList.add('active');
+            cardBtn.classList.remove('active');
+            searchInput.style.display = 'none';
+            ticketStatusLegend.style.opacity = 0;
+            filterContainer.style.opacity = '0';
+            selects.forEach(select => {
+                select.setAttribute('disabled', 'true');
+                select.style.cursor = 'default';
+            });
+        } else if (view === 'card') {
+            cardView.style.display = 'block';
+            tableView.style.display = 'none';
+            cardBtn.classList.add('active');
+            tableBtn.classList.remove('active');
+            searchInput.style.display = 'block';
+            ticketStatusLegend.style.opacity = 1;
+            filterContainer.style.opacity = '1';
+            selects.forEach(select => {
+                select.removeAttribute('disabled');
+                select.style.cursor = 'pointer';
+            });
+        }
+    }
+
+    function filterTickets() {
+        const searchInput = document.getElementById("searchInput").value.toLowerCase();
+        const categoryFilter = document.getElementById("categoryFilter").value.toLowerCase();
+        const statusFilter = document.getElementById("statusFilter").value.toLowerCase();
+        const priorityFilter = document.getElementById("priorityFilter").value.toLowerCase();
+        const assignedFilter = document.getElementById("assignedFilter").value.toLowerCase();
+
+        const cards = document.querySelectorAll(".ticket-card");
+
+        cards.forEach(card => {
+            const ticketId = card.getAttribute("data-ticket-id").toLowerCase();
+            const category = card.getAttribute("data-category").toLowerCase();
+            const description = card.getAttribute("data-description").toLowerCase();
+            const priority = card.getAttribute("data-priority").toLowerCase();
+            const status = card.getAttribute("data-status").toLowerCase();
+            const assignedTo = card.getAttribute("data-assigned-to").toLowerCase();
+            const assignedToMe = card.getAttribute("data-assigned-to-me").toLowerCase();
+
+            const cardText = `${ticketId} ${category} ${description} ${priority} ${status}`;
+
+            // Check if the card matches all filter criteria
+            const matchesSearch = cardText.includes(searchInput);
+            const matchesCategory = category.includes(categoryFilter) || categoryFilter === "";
+            const matchesStatus = status.includes(statusFilter) || statusFilter === "";
+            const matchesPriority = priority.includes(priorityFilter) || priorityFilter === "";
+            const matchesAssignedToMe = assignedToMe.includes(assignedFilter) || assignedFilter === "";
+
+            let matchesAssignedFilter = true;
+            if (assignedFilter === "assignedToMe") {
+                matchesAssignedFilter = assignedToMe === 'assignedToMe';
+            }
+
+            if (matchesSearch && matchesCategory && matchesStatus && matchesPriority && matchesAssignedToMe) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    }
+
+
+
+
+    function updateCardColors() {
+        const cards = document.querySelectorAll(".ticket-card");
+
+        cards.forEach(card => {
+            const status = card.getAttribute("data-status").toLowerCase();
+
+            let bgColor, borderColor;
+
+            switch (status) {
+                case "open":
+                    bgColor = "#0d6efd"; // Blue
+                    borderColor = "#0a58ca";
+                    break;
+                case "in progress":
+                    bgColor = "#ffc107"; // Yellow
+                    borderColor = "#d39e00";
+                    break;
+                case "resolved":
+                    bgColor = "#28a745"; // Green
+                    borderColor = "#218838";
+                    break;
+                case "closed":
+                    bgColor = "#6c757d"; // Grey
+                    borderColor = "#545b62";
+                    break;
+                default:
+                    bgColor = "#ffffff"; // Default white
+                    borderColor = "#dee2e6";
+            }
+
+            card.querySelector(".card-header").style.backgroundColor = bgColor;
+            card.querySelector(".card").style.borderColor = borderColor;
+        });
     }
 </script>

@@ -48,9 +48,12 @@
                 <th>
                     @Html.DisplayNameFor(model => model.RoleName)
                 </th>
-                <th>
-                    Actions
-                </th>
+                @if (User.FindFirst("UserRole")?.Value == "administrator")
+                {
+                    <th>
+                        Actions
+                    </th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -72,10 +75,13 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.RoleName)
                     </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.UserId"><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a> |
-                        <a href="#" onclick="confirmDelete('@item.UserId'); return false;" id="@item.UserId"><i class="bi bi-trash" style="color:red"></i></a>
-                    </td>
+                    @if (User.FindFirst("UserRole")?.Value == "administrator")
+                    {
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.UserId"><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a> |
+                            <a href="#" onclick="confirmDelete('@item.UserId'); return false;" id="@item.UserId"><i class="bi bi-trash" style="color:red"></i></a>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>

@@ -1,15 +1,17 @@
 ﻿using ASI.Basecode.Data.Interfaces;
+using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
-    [Authorize(Policy ="AdminPolicy")]
+    [Authorize(Policy = "AdminAndAgentPolicy")]
     public class ManageUserController:BaseController
     {
         public ManageUserController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
@@ -83,7 +85,15 @@ namespace ASI.Basecode.WebApp.Controllers
                     }
                 }
             }
-            var users = _db.VwUsersAndAgentsViews.OrderByDescending(m => m.UserId).ToList();
+
+            var users = new List<VwUsersAndAgentsView>();
+            if (User.FindFirst("UserRole")?.Value == "support agent")
+            {
+                users = _db.VwUsersAndAgentsViews.Where(m => m.RoleId == 1 || m.RoleId == 2 ).OrderByDescending(m => m.UserId).ToList();
+            } else
+            {
+                users = _db.VwUsersAndAgentsViews.OrderByDescending(m => m.UserId).ToList();
+            }
             return View(users);
         }
 
