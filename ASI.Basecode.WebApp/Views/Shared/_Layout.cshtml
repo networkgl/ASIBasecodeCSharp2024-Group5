@@ -4,6 +4,7 @@
 @using ASI.Basecode.WebApp.Repository
 @using ASI.Basecode.WebApp.Utils
 @using ASI.Basecode.WebApp.Functions
+@using ASI.Basecode.Resources.Constants;
 
 @{
     var tableId = string.Empty;
@@ -14,6 +15,10 @@
     }
 
     var role = User.FindFirst("UserRole")?.Value;
+
+    BaseRepository<Notification> _notifRepo = new BaseRepository<Notification>();
+    int userId = int.Parse(User.FindFirstValue("UserId"));
+    var countNotif = _notifRepo.Table.Where(m => m.ToUserId == userId && (m.IsRead == null || m.IsRead == (byte)Enums.NotifStatus.NotRead)).Select(m => m.NotificationId).Count();
 }
 
 <!-- meta tags and other links -->
@@ -128,19 +133,17 @@
                 <li>
                     @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
                     {
-                        NotificationManager _notifManager = new NotificationManager();
-                        int? userId = int.Parse(User.FindFirstValue("UserId"));
+     @*                    NotificationManager _notifManager = new NotificationManager();
+                        int? userId = int.Parse(User.FindFirstValue("UserId")); *@
 
 
                         <a asp-controller="Notification" asp-action="List" class="d-flex align-items-center">
                             <div class="d-flex align-items-center flex-grow-1">
                                 <iconify-icon style="margin-right: 4.5% !important; " icon="flowbite:users-group-outline" class="menu-icon me-2" aria-hidden="true"></iconify-icon>
                                 <span class="me-auto">Notifications</span>
-                                <span style="font-size: 12px !important" class="badge text-sm fw-semibold w-20-px h-20-px d-flex justify-content-center align-items-center rounded-circle text-success-600 bg-success-100 radius-4 text-white">
-                                    @if (userId != null)
-                                    {
-                                        @_notifManager.GetUserNotifCount(userId)
-                                    }   
+                                <span class="badge text-sm bg-danger-500 border-0 d-flex justify-content-center align-items-center"
+                                      style="border-radius: 50%; width: 20px; height: 20px; color: white; font-weight: bold;">
+                                    @countNotif
                                 </span>
                             </div>
                         </a>
@@ -247,21 +250,22 @@
                                 class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"></button>
 
                         @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
-                        {
+                        {                       
+                            List<Notification> _userNotif = _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
+                            UserManager _userManager = new UserManager();
+
+                                
                             <div class="dropdown">
-                                <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+                             @* <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
                                         type="button" data-bs-toggle="dropdown">
                                     <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
+                                </button> *@
+                                <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
+                                    <span style="margin-top: 5px" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger-600 border-0">@countNotif</span>
                                 </button>
 
-                                @{
-                                    BaseRepository<Notification> _notifRepo = new BaseRepository<Notification>();
-                                    int userId = int.Parse(User.FindFirstValue("UserId"));
-                                    int? countNotif = _notifRepo.Table.Where(m => m.ToUserId == userId).Select(m => m.NotificationId).Count();
-                                    List<Notification> _userNotif = _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
-                                    UserManager _userManager = new UserManager();
 
-                                }
 
                                 <div class="dropdown-menu to-top dropdown-menu-lg p-0">
                                     <div class="m-16 py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
@@ -280,15 +284,12 @@
                                             Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow) - (notif.CreatedAt ?? DateTime.UtcNow), notif.CreatedAt ?? DateTime.UtcNow);
 
                                             <a href="javascript:void(0)"
-                                            class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
+                                                class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
                                                 <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
                                                     <span class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
-                                                        <iconify-icon icon="bitcoin-icons:verify-outline" class="icon text-xxl"></iconify-icon>
+                                                        <img src="~/notifpics/notification.png" />
                                                     </span>
-                                                    <div>
-                                                        @*      @{
-                                                            var actorName = "User - " + notif.FromUserId == null ? "System Message" : _userManager.GetUserNameById((int)notif.FromUserId);
-                                                            } *@
+												<div>                                   
                                                         <h6 class="text-md fw-semibold mb-4">
                                                             @(User.IsInRole("user") == true ? ("Support Agent") : ("System Message"))
                                                         </h6>
@@ -296,9 +297,19 @@
                                                         <p class="mb-0 text-sm text-secondary-light text-w-200-px">
                                                             @notif.Content
                                                         </p>
-                                                    </div>
                                                 </div>
-                                                <span class="text-sm text-secondary-light flex-shrink-0">@timeElapsed</span>
+                                                </div>
+                                                <span class="text-sm text-secondary-light flex-shrink-0 text-truncate" style="max-width: 100px; position: relative;" title="@timeElapsed">
+                                                    @timeElapsed
+                                                    <span style="margin-left: 15px">
+                                                        @if (notif.IsRead == (byte)Enums.NotifStatus.NotRead || notif.IsRead == null)
+                                                        {
+                                                            <i class="ri-circle-fill circle-icon text-danger-main" style="font-size: 10px; position: absolute; top: 0; right: 0; z-index: 1;"></i>
+                                                        }
+                                                    </span>
+                                              
+                                                </span>
+
                                             </a>
                                         }
 
@@ -428,6 +439,9 @@
     <script src="~/assets/js/app.js"></script>
     <!-- Pie Chart js -->
     <script src="~/assets/js/piechartpagechart.js"></script>
+
+
+
     <script>
         $(document).ready(function () {
             // Initialize DataTable with the correct table ID

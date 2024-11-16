@@ -14,7 +14,5 @@ namespace ASI.Basecode.Data.Models
         public int? AgentId { get; set; }
         public DateTime? CreatedAt { get; set; }
         public int? AssignedTicketId { get; set; }
-        public virtual User User { get; set; }
-        public virtual AssignedTicket AssignedTicket { get; set; }
     }
 }

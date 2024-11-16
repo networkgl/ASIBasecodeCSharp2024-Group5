@@ -12,6 +12,7 @@ namespace ASI.Basecode.Data.Models
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastModified { get; set; }
         public int? ToUserId { get; set; }
+        public byte? IsRead { get; set; }
 
         public virtual User FromUser { get; set; }
         public virtual UserTicket UserTicket { get; set; }

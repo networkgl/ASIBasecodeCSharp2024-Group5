@@ -7,14 +7,13 @@ using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Interfaces;
 using Microsoft.AspNetCore.Http;
 using ASI.Basecode.Resources.Messages;
+using static ASI.Basecode.Resources.Constants.Enums;
 
 namespace ASI.Basecode.WebApp.Repository
 {
     public class NotificationManager : BaseController
     {
-        public NotificationManager()
-        {
-        }
+        public NotificationManager() { }
 
         protected List<Notification> GetUserAssociatedNotif(int? userId)
         {
@@ -264,6 +263,40 @@ namespace ASI.Basecode.WebApp.Repository
             return ErrorCode.Success;
         }
 
+
+        protected ErrorCode MarkUserNotifAllAsRead(int userId, byte? value, out string errorMsg, out string successMsg)
+        {
+            errorMsg = successMsg = string.Empty;
+
+            try
+            {
+                var getUserNotifById = _notifRepo.Table.Where(m => m.ToUserId == userId).ToList();
+
+                foreach (var notif in getUserNotifById)
+                {
+                    var updateNotif = _notifRepo.Table.Where(m => m.NotificationId == notif.NotificationId).FirstOrDefault();
+                    updateNotif.IsRead = (byte)NotifStatus.HasRead;
+
+                    if (_notifRepo.Update(notif.NotificationId, updateNotif) == ErrorCode.Error)
+                    {
+                        return ErrorCode.Error;
+                    }
+                }
+
+                successMsg = "Successfully mark all as read.";
+            }
+            catch (Exception e)
+            {
+                errorMsg = e.InnerException == null || e.InnerException.InnerException == null ? e.Message : e.InnerException.InnerException.Message;
+                return ErrorCode.Error;
+            }
+
+            return ErrorCode.Success;
+        }
+
+
+
+
         public ErrorCode RemindTicketNotif(out string errorMsg, out string successMsg)
         {
             errorMsg = successMsg = string.Empty;
@@ -284,7 +317,7 @@ namespace ASI.Basecode.WebApp.Repository
                     var dueDate = ticket.DateAssigned.Value.AddHours((double)ticket.ResolutionTime);
 
                     int hoursBeforeTrigger = 5; // Fixed hours before due date (STATIC declared)
-                    var reminderThreshold = TimeSpan.FromHours(hoursBeforeTrigger);  
+                    var reminderThreshold = TimeSpan.FromHours(hoursBeforeTrigger);
 
                     // Determine the reminder date (when the notification should be sent)
                     var reminderDate = dueDate - reminderThreshold;
@@ -335,5 +368,7 @@ namespace ASI.Basecode.WebApp.Repository
 
             return ErrorCode.Success;
         }
+
+
     }
 }

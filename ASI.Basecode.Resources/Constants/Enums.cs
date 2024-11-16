@@ -29,5 +29,12 @@
             NotReminded,
             HasReminded
         }
+
+        public enum NotifStatus
+        {
+            NotRead,
+            HasRead,
+            All
+        }
     }
 }
