@@ -92,6 +92,7 @@ namespace ASI.Basecode.WebApp.Authentication
                 new Claim("UserId", userId, ClaimValueTypes.String, Const.Issuer),
                 new Claim("UserName", name, ClaimValueTypes.String, Const.Issuer),
                 new Claim("UserRole", user.RoleName.ToString(), ClaimValueTypes.String, Const.Issuer),
+                new Claim("ProfilePicPath", !string.IsNullOrEmpty(user.ProfilePicturePath) ? user.ProfilePicturePath : "" , ClaimValueTypes.String, Const.Issuer)
             };
 
 

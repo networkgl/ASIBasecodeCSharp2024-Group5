@@ -75,9 +75,10 @@
                                 <label for="password" class="form-label fw-semibold text-primary-light text-sm mb-8">
                                     Enter new password (just leave blank if you will not change your password)<span class="text-danger-600">*</span>
                                 </label>
-                                <input asp-for="user.Password" type="password" class="form-control radius-8" id="password" placeholder="Enter password">
+                                <input asp-for="user.Password" type="password" class="form-control radius-8" id="password" placeholder="Enter password" oninput="toggleConfirmPassword()">
                             </div>
-                            <div class="mb-20">
+
+                            <div class="mb-20" id="confirmPasswordContainer" style="display: none;">
                                 <label for="confirmPassword" class="form-label fw-semibold text-primary-light text-sm mb-8">
                                     Enter your old password to confirm changes<span class="text-danger-600">*</span>
                                 </label>
@@ -135,6 +136,18 @@
         removeImgBtn.style.display = 'none';
         file.value = null;
         removedOriginalImg.value = 'true';
+    }
+
+    function toggleConfirmPassword() {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
+
+        // Show the confirm password field if the new password is not empty
+        if (passwordInput.value) {
+            confirmPasswordContainer.style.display = 'block';
+        } else {
+            confirmPasswordContainer.style.display = 'none';
+        }
     }
 </script>
 @* @section Scripts {
