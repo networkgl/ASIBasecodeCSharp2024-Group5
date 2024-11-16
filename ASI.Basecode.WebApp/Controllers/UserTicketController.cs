@@ -196,7 +196,6 @@ namespace ASI.Basecode.WebApp.Controllers
             customTicket.priority = _db.Priorities.ToList();
             customTicket.status = _db.Statuses.ToList();
 
-            // Validate the input fields
             if (customTicket.ticket.CategoryId == null || string.IsNullOrEmpty(customTicket.ticket.IssueDescription))
             {
                 TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
@@ -207,11 +206,9 @@ namespace ASI.Basecode.WebApp.Controllers
                 return View(customTicket);
             }
 
-            // Set the ticket's creation and last modified dates
             customTicket.ticket.CreateAt = DateTime.Today;
             customTicket.ticket.LastModified = DateTime.Today;
 
-            // Handle file upload
             var imageFile = customTicket.formFile;
             var root = Path.Combine(_webHostEnvironment.WebRootPath, "images");
 
@@ -221,17 +218,15 @@ namespace ASI.Basecode.WebApp.Controllers
             }
 
             ViewData["root"] = root;
-            customTicket.ticket.StatusId = 1; // Set initial ticket status to 'Open'
+            customTicket.ticket.StatusId = 1;
 
             string errorMsg = string.Empty, successMsg;
 
-            // Process the image if uploaded
             if (imageFile != null)
             {
                 string uniqueFileName = GetUniqueFileName(root, imageFile.FileName);
                 string filePath = Path.Combine(root, uniqueFileName);
 
-                // Save the image file
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await imageFile.CopyToAsync(stream);
@@ -241,7 +236,6 @@ namespace ASI.Basecode.WebApp.Controllers
                 customTicket.ticket.AttachmentPath = relativePath;
             }
 
-            // Save the ticket
             if (_ticketRepo.Create(customTicket.ticket) == ErrorCode.Success)
             {
                 var userTicket = new UserTicket
@@ -250,10 +244,8 @@ namespace ASI.Basecode.WebApp.Controllers
                     TicketId = customTicket.ticket.TicketId
                 };
 
-                // Create a user-ticket association
                 if (_userTicketRepo.Create(userTicket) == ErrorCode.Success)
                 {
-                    // Send notification
                     NotificationManager _notifManager = new NotificationManager();
                     string? userName = User.FindFirst(ClaimsIdentity.DefaultNameClaimType)?.Value;
 

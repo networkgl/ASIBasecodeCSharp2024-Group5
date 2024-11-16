@@ -20,8 +20,28 @@ namespace ASI.Basecode.WebApp.Controllers
         public AgentManageTicketController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
         {
         }
-
+        [HttpGet("agentmanageticket")]
         public IActionResult Index()
+        {
+            HandleTempDataMessages();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
+                var myTickets = _db.VwTicketDetailsViews.ToList().OrderByDescending(m => m.TicketId);
+                ViewData["TableId"] = "agentManageTicketsTable";
+                ViewBag.Priorities = _db.Priorities.ToList();
+                ViewBag.Categories = _db.Categories.ToList();
+                ViewBag.Statuses = _db.Statuses.ToList();
+                return View(myTickets);
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet("agentmanageticket/{id}")]
+        public IActionResult Index(int id)
         {
             HandleTempDataMessages();
 
