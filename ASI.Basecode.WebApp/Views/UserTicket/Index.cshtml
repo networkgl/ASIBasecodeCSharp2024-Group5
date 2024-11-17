@@ -194,15 +194,27 @@
                      data-priority="@item.PriorityName"
                      data-status="@item.StatusName">
                     <div class="card" style="border-color: @GetCardBorderColor(item.StatusId);">
-                        <div class="card-header text-white" style="background-color: @GetCardBackgroundColor(item.StatusId);">
+                        <div class="card-header text-white"
+                             style="background-color: @GetCardBackgroundColor(item.StatusId);">
                             Ticket ID: @Html.DisplayFor(modelItem => item.TicketId)
                         </div>
-                        <div class="card-body">
-                            <p><strong>Category:</strong> @Html.DisplayFor(modelItem => item.CategoryName)</p>
-                            <p><strong>Description:</strong> @Html.DisplayFor(modelItem => item.IssueDescription)</p>
-                            <p><strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)</p>
-                            <p><strong>Status:</strong> @Html.DisplayFor(modelItem => item.StatusName)</p>
-                            <p><strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(item.CreateAt.Value.ToShortDateString()) ? item.CreateAt.Value.ToLongDateString() : "N/A")</p>
+                        <div class="card-body" style="max-height: 288px; overflow: hidden; text-overflow: ellipsis;">
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Category:</strong> @Html.DisplayFor(modelItem => item.CategoryName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Description:</strong> @Html.DisplayFor(modelItem => item.IssueDescription)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Status:</strong> @Html.DisplayFor(modelItem => item.StatusName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(item.CreateAt.Value.ToShortDateString())
+                            ? item.CreateAt.Value.ToLongDateString() : "N/A")
+                            </p>
                         </div>
                         <div class="d-flex justify-content-evenly card-footer text-center">
                             <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
@@ -217,6 +229,7 @@
             }
         </div>
     </div>
+
 </div>
 
 

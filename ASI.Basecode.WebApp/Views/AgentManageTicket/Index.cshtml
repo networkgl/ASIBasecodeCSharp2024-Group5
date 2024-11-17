@@ -111,6 +111,7 @@
                 <div class="form-group mb-3" style="width: 150px;">
                     <select class="form-control" id="priorityFilter" onchange="filterTickets()">
                         <option value="">All Priorities</option>
+                        <option value="Not Set">Not Set</option>
                         @foreach (var item in priorities)
                         {
                             <option value="@item.PriorityName">@item.PriorityName</option>
@@ -240,27 +241,48 @@
                      data-ticket-id="@item.TicketId"
                      data-category="@item.CategoryName"
                      data-description="@item.IssueDescription"
-                     data-priority="@item.PriorityName"
+                     data-priority="@(!string.IsNullOrEmpty(item.PriorityName) ? item.PriorityName : "Not Set")"
                      data-status="@item.StatusName"
                      data-assigned-to="@item.AgentId"
                      data-assigned-to-me="@((item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value)) ? "assignedToMe" : "")">
                     <div class="card" style="border-color: @GetCardBorderColor(item.StatusId);">
-                        <div class="card-header text-white" style="background-color: @GetCardBackgroundColor(item.StatusId);">
+                        <div class="card-header text-white"
+                             style="background-color: @GetCardBackgroundColor(item.StatusId);">
                             <strong>Ticket ID:</strong> @Html.DisplayFor(modelItem => item.TicketId)
                         </div>
-                        <div class="card-body">
-                            <p><strong>Category:</strong> @Html.DisplayFor(modelItem => item.CategoryName)</p>
-                            <p><strong>Description:</strong> @Html.DisplayFor(modelItem => item.IssueDescription)</p>
-                            <p><strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)</p>
-                            <p><strong>Status:</strong> @Html.DisplayFor(modelItem => item.StatusName)</p>
-                            <p><strong>Reporter:</strong> @Html.DisplayFor(modelItem => item.Reporter)</p>
-                            <p><strong>Assigned to:</strong> @(string.IsNullOrEmpty(item.AgentName) ? "No agent assigned" : item.AgentName)</p>
-                            <p><strong>Assigned by:</strong> @(string.IsNullOrEmpty(item.AssignerName) ? "None" : item.AssignerName)</p>
-                            <p><strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(item.CreateAt.Value.ToShortDateString()) ? item.CreateAt.Value.ToLongDateString() : "N/A")</p>
+                        <div class="card-body" style="max-height: 432px; overflow: hidden; text-overflow: ellipsis;">
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Category:</strong> @Html.DisplayFor(modelItem => item.CategoryName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Description:</strong> @Html.DisplayFor(modelItem => item.IssueDescription)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Status:</strong> @Html.DisplayFor(modelItem => item.StatusName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Reporter:</strong> @Html.DisplayFor(modelItem => item.Reporter)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Assigned to:</strong> @(string.IsNullOrEmpty(item.AgentName) ? "No agent assigned" : item.AgentName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Assigned by:</strong> @(string.IsNullOrEmpty(item.AssignerName) ? "None" : item.AssignerName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(item.CreateAt.Value.ToShortDateString())
+                            ? item.CreateAt.Value.ToLongDateString() : "N/A")
+                            </p>
                         </div>
                         <div class="d-flex justify-content-evenly card-footer text-center">
                             <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
                                 <i class="bi bi-info-circle"></i> Details
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@item.TicketId" class="text-primary">
+                                <i class="bi bi-pencil-square"></i> Update
                             </a>
                             <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
                                 <i class="bi bi-trash"></i> Delete
@@ -271,7 +293,6 @@
             }
         </div>
     </div>
-
 </div>
 
 <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
@@ -326,6 +347,38 @@
         const filterContainer = document.getElementById('filterContainer');
         const selects = filterContainer.querySelectorAll('select');
 
+        // if (@ViewData["view"] != null) {
+        //     if (@ViewData["view"] == 'table') {
+        //         tableView.style.display = 'block';
+        //         cardView.style.display = 'none';
+        //         tableBtn.classList.add('active');
+        //         cardBtn.classList.remove('active');
+        //         searchInput.style.display = 'none';
+        //         ticketStatusLegend.style.opacity = 0;
+        //         filterContainer.style.opacity = '0';
+        //         selects.forEach(select => {
+        //             select.setAttribute('disabled', 'true');
+        //             select.style.cursor = 'default';
+        //         });
+        //         @ViewData["view"] = "card";
+        //         return;
+        //     } else if (@ViewData["view"] == 'card') {
+        //         cardView.style.display = 'block';
+        //         tableView.style.display = 'none';
+        //         cardBtn.classList.add('active');
+        //         tableBtn.classList.remove('active');
+        //         searchInput.style.display = 'block';
+        //         ticketStatusLegend.style.opacity = 1;
+        //         filterContainer.style.opacity = '1';
+        //         selects.forEach(select => {
+        //             select.removeAttribute('disabled');
+        //             select.style.cursor = 'pointer';
+        //         });
+        //         @ViewData["view"] = "card";
+        //         return;
+        //     }
+        // }
+
         if (view === 'table') {
             tableView.style.display = 'block';
             cardView.style.display = 'none';
@@ -338,6 +391,7 @@
                 select.setAttribute('disabled', 'true');
                 select.style.cursor = 'default';
             });
+            // @ViewData["view"] = "table";
         } else if (view === 'card') {
             cardView.style.display = 'block';
             tableView.style.display = 'none';
@@ -350,6 +404,7 @@
                 select.removeAttribute('disabled');
                 select.style.cursor = 'pointer';
             });
+            // @ViewData["view"] = "card";
         }
     }
 
