@@ -20,7 +20,7 @@ namespace ASI.Basecode.WebApp.Controllers
         public AgentManageTicketController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
         {
         }
-        [HttpGet("agentmanageticket")]
+        [HttpGet("ManageTickets")]
         public IActionResult Index()
         {
             HandleTempDataMessages();
@@ -40,7 +40,7 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
-        [HttpGet("agentmanageticket/{id}")]
+        [HttpGet("ManageTickets/{id}")]
         public IActionResult Index(int id)
         {
             HandleTempDataMessages();
@@ -132,6 +132,7 @@ namespace ASI.Basecode.WebApp.Controllers
             });
         }
 
+        [HttpGet("UpdateTicket/{id}")]
         public IActionResult Edit(int id)
         {
             if (User.Identity.IsAuthenticated)

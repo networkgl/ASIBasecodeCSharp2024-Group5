@@ -26,7 +26,7 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             _webHostEnvironment = webHostEnvironment;
         }
-        [HttpGet("")]
+        [HttpGet("MyTickets")]
         public IActionResult Index()
         {
             if (TempData["temp"] is not null)
@@ -62,7 +62,7 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("MyTickets/{id}")]
         public IActionResult Index(int id)
         {
             HandleTempDataMessages();
