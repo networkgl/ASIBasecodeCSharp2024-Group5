@@ -8,6 +8,32 @@
     var resMsg = TempData["ResMsg"] as AlertMessageContent;
 }
 
+@functions {
+    public string GetCardBackgroundColor(int? statusId)
+    {
+        return statusId switch
+        {
+            1 => "#0d6efd", // Primary color for "Open"
+            2 => "#ffc107", // Yellow for "In Progress"
+            3 => "#28a745", // Green for "Resolved"
+            4 => "#6c757d", // Grey for "Closed"
+            _ => "#ffffff"  // Default white
+        };
+    }
+
+    public string GetCardBorderColor(int? statusId)
+    {
+        return statusId switch
+        {
+            1 => "#0a58ca", // Darker blue for border
+            2 => "#d39e00", // Dark yellow for border
+            3 => "#218838", // Dark green for border
+            4 => "#545b62", // Dark grey for border
+            _ => "#dee2e6"  // Default border
+        };
+    }
+}
+
 <link href="~/assets/css/enlargeimagemodal.css" rel="stylesheet" />
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
@@ -25,105 +51,205 @@
 </div>
 
 <div class="card h-100 p-16 radius-12">
-    <div>
-        <div class="row pt-8 pb-8">
-            <div class="col-12 text-end">
-                <a asp-action="Create" class="btn btn-primary w-200-px"><i class="bi bi-plus-circle"></i>&nbsp; Create Ticket</a>
+    <!-- Toggle View and Search Section -->
+    <div class="d-flex justify-content-between align-items-center mb-3" id="toogleViewAndSearchContainer">
+        <!-- Legend for Status Colors -->
+        <div class="d-flex flex-wrap align-items-center gap-4 mb-3" id="ticketStatusLegend" style="opacity:0">
+            <span class="fw-semibold mb-0">Ticket Status Legend</span>
+            <div class="d-flex gap-3">
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #0d6efd; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">Open</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #ffc107; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">In Progress</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #28a745; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">Resolved</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="status-legend" style="background-color: #6c757d; width: 16px; height: 16px; border-radius: 50%;"></div>
+                    <span class="ms-2">Closed</span>
+                </div>
             </div>
         </div>
+        <!-- View Toggle Buttons -->
+        <div class="btn-group" role="group" aria-label="View Toggle">
+            <button id="cardViewBtn" class="btn btn-outline-primary" onclick="switchView('card')">
+                <i class="bi bi-card-list"></i> <!-- Card View Icon -->
+            </button>
+            <button id="tableViewBtn" class="btn btn-outline-primary active" onclick="switchView('table')">
+                <i class="bi bi-table"></i> <!-- Table View Icon -->
+            </button>
+        </div>
     </div>
-    <table class="table bordered-table" id="adminManageTicketsTable" style="transform:scale(0.95); table-layout:fixed">
-        <thead>
-            <tr>
-                <th style="text-align:center !important; width:8%">
-                    @Html.DisplayName("Ticket Id")
-                </th>
-                <th style="width:17%">
-                    @Html.DisplayName("Category")
-                </th>
-                <th style="width:26%">
-                    @Html.DisplayName("Issue Description")
-                </th>
-                <th style="width:11%">
-                    @Html.DisplayName("Status")
-                </th>
-                <th style="width:11%">
-                    @Html.DisplayName("Priority")
-                </th>
-                <th style="width:11%">
-                    @Html.DisplayName("Reporter")
-                </th>
-                <th style="width:16%">
-                    @Html.DisplayName("Assigned to")
-                </th>
-                <th style="width:16%">
-                    @Html.DisplayName("Assigned by")
-                </th>
-                <th class="text-center" style="width:10%">
-                    @Html.DisplayName("Action")
-                </th>
-            </tr>
-        </thead>
-        <tbody>
+
+    <!-- Filter Section -->
+    <div class="d-flex justify-content-between mb-3">
+        <div class="d-flex gap-3 flex-grow-1">
+            <!-- Search Input -->
+            <div class="form-group mb-3 flex-grow-0 w-440-px">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search tickets..." onkeyup="filterTickets()" style="display:none" />
+            </div>
+
+            <!-- Filter Labels and Dropdowns -->
+            <div class="d-flex align-items-center gap-3" id="filterContainer" style="opacity:0">
+                <span>Filter by:</span>
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="categoryFilter" onchange="filterTickets()">
+                        <option value="">All Categories</option>
+                        @foreach (var item in categories)
+                        {
+                            <option value="@item.CategoryName">@item.CategoryName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="statusFilter" onchange="filterTickets()">
+                        <option value="">All Statuses</option>
+                        @foreach (var item in statuses)
+                        {
+                            <option value="@item.StatusName">@item.StatusName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="priorityFilter" onchange="filterTickets()">
+                        <option value="">All Priorities</option>
+                        <option value="Not Set">Not Set</option>
+                        @foreach (var item in priorities)
+                        {
+                            <option value="@item.PriorityName">@item.PriorityName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group mb-3" style="width: 150px;">
+                    <select class="form-control" id="assignedFilter" onchange="filterTickets()">
+                        <option value="">All Tickets</option>
+                        <option value="assignedToMe">Assigned to Me</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Ticket Button -->
+        <div>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i>&nbsp; Create Ticket
+            </a>
+        </div>
+    </div>
+
+    <!-- Admin Manage Tickets Table View -->
+    <div id="tableView" style="display: block;">
+        <table class="table bordered-table" id="adminManageTicketsTable" style="transform:scale(0.95); table-layout:fixed">
+            <thead>
+                <tr>
+                    <th style="text-align:center !important; width:8%">Ticket Id</th>
+                    <th style="width:17%">Category</th>
+                    <th style="width:26%">Issue Description</th>
+                    <th style="width:11%">Status</th>
+                    <th style="width:11%">Priority</th>
+                    <th style="width:11%">Reporter</th>
+                    <th style="width:16%">Assigned to</th>
+                    <th style="width:16%">Assigned by</th>
+                    <th class="text-center" style="width:10%">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td style="text-align:center !important">@item.TicketId</td>
+                        <td>@item.CategoryName</td>
+                        <td style="text-align:left">@item.IssueDescription</td>
+                        <td>@item.StatusName</td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.PriorityName))
+                            {
+                                <span>Not set</span>
+                            }
+                            else
+                            {
+                                @item.PriorityName
+                            }
+                        </td>
+                        <td>@item.Reporter</td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.AgentName))
+                            {
+                                <span>No agent assigned</span>
+                            }
+                            else
+                            {
+                                @item.AgentName
+                            }
+                        </td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.AssignerName))
+                            {
+                                <span>None</span>
+                            }
+                            else
+                            {
+                                @item.AssignerName
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="Edit" asp-route-id="@item.TicketId" title="Edit Ticket">
+                                <i class="bi bi-pencil-square" style="color:#0d6efd"></i>
+                            </a>
+                            &nbsp;|&nbsp;
+                            <a asp-action="Details" asp-route-id="@item.TicketId" title="View Details">
+                                <i class="bi bi-info-circle" style="color:#0d6efd"></i>
+                            </a>
+                            &nbsp;|&nbsp;
+                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" title="Delete Ticket">
+                                <i class="bi bi-trash" style="color:red"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Admin Manage Tickets Card View -->
+    <div id="cardView" style="display: none;">
+        <div class="row" id="cardContainer">
             @foreach (var item in Model)
             {
-                <tr>
-                    <td style="text-align:center !important">
-                        @Html.DisplayFor(modelItem => item.TicketId)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.CategoryName)
-                    </td>
-                    <td text-align:left">
-                        @Html.DisplayFor(modelItem => item.IssueDescription)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.StatusName)
-                    </td>
-                    <td>
-                        @if (string.IsNullOrEmpty(item.PriorityName))
-                        {
-                            @("Not set")
-                        } else
-                        {
-                            @Html.DisplayFor(modelItem => item.PriorityName)
-                        }
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Reporter)
-                    </td>
-                    <td>
-                        @if (string.IsNullOrEmpty(item.AgentName))
-                        {
-                            @("No agent assigned")
-                        } else
-                        {
-                            @Html.DisplayFor(modelItem => item.AgentName)
-                        }
-                    </td>
-                    <td>
-                        @if (string.IsNullOrEmpty(item.AssignerName))
-                        {
-                            @("None")
-                        }
-                        else
-                        {
-                            @Html.DisplayFor(modelItem => item.AssignerName)
-                        }
-                    </td>
-                    <td class="text-center">
-                        <a asp-action="Edit" asp-route-id="@item.TicketId"><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a> |
-                        <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId"><i class="bi bi-trash" style="color:red"></i></a> |
-                        <a asp-action="Details" asp-route-id="@item.TicketId"><i class="bi bi-info-circle" style="color:#0d6efd"></i></a>
-                    </td>
-                </tr>
+                <div class="col-md-4 mb-3">
+                    <div class="card" style="border-color: @GetCardBorderColor(item.StatusId);">
+                        <div class="card-header text-white" style="background-color: @GetCardBackgroundColor(item.StatusId);">
+                            <strong>Ticket ID:</strong> @item.TicketId
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Category:</strong> @item.CategoryName</p>
+                            <p><strong>Description:</strong> @item.IssueDescription</p>
+                            <p><strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)</p>
+                            <p><strong>Status:</strong> @item.StatusName</p>
+                            <p><strong>Reporter:</strong> @item.Reporter</p>
+                            <p><strong>Assigned to:</strong> @(string.IsNullOrEmpty(item.AgentName) ? "No agent assigned" : item.AgentName)</p>
+                            <p><strong>Assigned by:</strong> @(string.IsNullOrEmpty(item.AssignerName) ? "None" : item.AssignerName)</p>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a asp-action="Details" asp-route-id="@item.TicketId" class="btn btn-info">Details</a>
+                            <a asp-action="Edit" asp-route-id="@item.TicketId" class="btn btn-primary">Edit</a>
+                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="btn btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-        <div id="imageModal" class="modal" onclick="closeModal()">
-            <span class="close">&times;</span>
-            <img class="modal-content" id="enlargedImg">
         </div>
-    </table>
+    </div>
+
+
 </div>
 
 <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>

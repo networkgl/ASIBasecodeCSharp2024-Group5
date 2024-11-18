@@ -31,9 +31,9 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 var myTickets = _db.VwTicketDetailsViews.ToList().OrderByDescending(m => m.TicketId);
                 ViewData["TableId"] = "agentManageTicketsTable";
-                ViewBag.Priorities = _db.Priorities.ToList();
-                ViewBag.Categories = _db.Categories.ToList();
-                ViewBag.Statuses = _db.Statuses.ToList();
+                ViewData["Priorities"] = _db.Priorities.ToList();
+                ViewData["Categories"] = _db.Categories.ToList();
+                ViewData["Statuses"] = _db.Statuses.ToList();
                 return View(myTickets);
             }
 
@@ -60,79 +60,8 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
-        private void HandleTempDataMessages()
-        {
-            var temp = TempData["temp"]?.ToString();
-            if (temp == "create")
-            {
-                HandleCreateTempData();
-            }
-            else if (temp == "delete")
-            {
-                HandleDeleteTempData();
-            }
-            else if (temp == "update")
-            {
-                HandleUpdateTempData();
-            }
-        }
-
-        private void HandleCreateTempData()
-        {
-            if (TempData["ResMsg"] is not null)
-            {
-                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-                if (resMsg is not null && User.Identity.IsAuthenticated)
-                {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-                    {
-                        Status = resMsg.Status,
-                        Message = resMsg.Message
-                    });
-                }
-            }
-        }
-
-        private void HandleDeleteTempData()
-        {
-            var status = TempData["status"] as int?;
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-            {
-                Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
-                Message = status == 0
-                    ? "A ticket has been deleted successfully!"
-                    : "An error has occurred upon deleting the ticket."
-            });
-        }
-
-        private void HandleUpdateTempData()
-        {
-            var status = TempData["status"] as int?;
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-            {
-                Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
-                Message = status == 0
-                    ? "Ticket updated successfully!"
-                    : "An error has occurred when updating your ticket, please try again."
-            });
-        }
-
-        private void UpdateTicketStatusMessages(List<VwUserTicketView> tickets)
-        {
-            tickets.ForEach(ticket =>
-            {
-                ticket.StatusName = ticket.StatusId switch
-                {
-                    1 => "Your ticket is pending assignment to an agent.",
-                    2 => "Your ticket is currently in progress. An agent is working on it.",
-                    3 => "Your ticket has been resolved.",
-                    4 => "Your ticket is closed.",
-                    _ => "Status is unknown. Please contact support for more information."
-                };
-            });
-        }
-
-        [HttpGet("UpdateTicket/{id}")]
+        //[HttpGet("UpdateTicket/{id}")]
+        [HttpGet]
         public IActionResult Edit(int id)
         {
             if (User.Identity.IsAuthenticated)
@@ -197,6 +126,7 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
+        //[HttpPost("UpdateTicket/{id}")]
         [HttpPost]
         public IActionResult Edit(CustomEditTicketAssignment customTicket)
         {
@@ -232,7 +162,7 @@ namespace ASI.Basecode.WebApp.Controllers
             customTicket.Status = status;
             customTicket.Agents = agents;
 
-            //check if there is a chosen priority, if none then set priority to null, otherwise set the selected value
+            //check if there is a chosen priority. if none then set priority to null, otherwise set to selected value
             if (customTicket.Ticket.PriorityId is null || customTicket.Ticket.PriorityId == 0)
             {
                 ticket.PriorityId = null;
@@ -264,7 +194,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 {
                     customTicket.Ticket = ticket;
                     customTicket.Agent = null;
-                    return RedirectToAction("Index");
+                    return RedirectToAction("Details", ticket.TicketId);
                 }
                 else
                 {
@@ -273,7 +203,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         Status = ErrorCode.Error,
                         Message = "An error has occured upon updating the ticket, pls try again."
                     });
-                    return RedirectToAction("Index");
+                    return View(customTicket);
                 }
             }
 
@@ -346,7 +276,8 @@ namespace ASI.Basecode.WebApp.Controllers
                         customTicket.AssignedTicket = assignedTicket;
                         customTicket.Agent = userAgent;
                         customTicket.Category = categories;
-                        return RedirectToAction("Index");
+                        TempData["status"] = ErrorCode.Success;
+                        return RedirectToAction("Details", ticket.TicketId);
                     }
                 }
             }
@@ -414,7 +345,8 @@ namespace ASI.Basecode.WebApp.Controllers
                             });
 
                         }
-                        return RedirectToAction("Index");
+                        TempData["status"] = ErrorCode.Success;
+                        return RedirectToAction("Details", ticket.TicketId);
                     }
                 }
             }
@@ -434,5 +366,74 @@ namespace ASI.Basecode.WebApp.Controllers
             return View(myTicket);
         }
 
+        private void HandleTempDataMessages()
+        {
+            if (TempData["ResMsg"] is not null)
+            {
+                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+                if (resMsg is not null && User.Identity.IsAuthenticated)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                    {
+                        Status = resMsg.Status,
+                        Message = resMsg.Message
+                    });
+                }
+            }
+        }
+
+        //private void HandleCreateTempData()
+        //{
+        //    if (TempData["ResMsg"] is not null)
+        //    {
+        //        var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+        //        if (resMsg is not null && User.Identity.IsAuthenticated)
+        //        {
+        //            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+        //            {
+        //                Status = resMsg.Status,
+        //                Message = resMsg.Message
+        //            });
+        //        }
+        //    }
+        //}
+
+        //private void HandleDeleteTempData()
+        //{
+        //    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+        //    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+        //    {
+        //        Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
+        //        Message = status == 0
+        //            ? "A ticket has been deleted successfully!"
+        //            : "An error has occurred upon deleting the ticket."
+        //    });
+        //}
+
+        //private void HandleUpdateTempData()
+        //{
+        //    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+        //    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+        //    {
+        //        Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
+        //        Message = status == 0
+        //            ? "Ticket updated successfully!"
+        //            : "An error has occurred when updating your ticket, please try again."
+        //    });
+        //}
+        private void UpdateTicketStatusMessages(List<VwUserTicketView> tickets)
+        {
+            tickets.ForEach(ticket =>
+            {
+                ticket.StatusName = ticket.StatusId switch
+                {
+                    1 => "Your ticket is pending assignment to an agent.",
+                    2 => "Your ticket is currently in progress. An agent is working on it.",
+                    3 => "Your ticket has been resolved.",
+                    4 => "Your ticket is closed.",
+                    _ => "Status is unknown. Please contact support for more information."
+                };
+            });
+        }
     } 
 }

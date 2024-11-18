@@ -6,9 +6,9 @@
     ViewData["Title"] = "My Tickets";
     // ViewBag.TableId = "myTicketsTable";
     var resMsg = TempData["ResMsg"] as AlertMessageContent;
-    var priorities = ViewBag.Priorities as List<Priority>;
-    var categories = ViewBag.Categories as List<Category>;
-    var statuses = ViewBag.Statuses as List<Status>;
+    var priorities = ViewData["Priorities"] as List<Priority>;
+    var categories = ViewData["Categories"] as List<Category>;
+    var statuses = ViewData["Statuses"] as List<Status>;
 }
 
 @functions {
@@ -132,7 +132,6 @@
         </div>
     </div>
 
-
     <!-- Table View -->
     <div id="tableView" style="display: none;">
         <table class="table bordered-table" id="myTicketsTable" style="transform:scale(0.95); table-layout:fixed">
@@ -169,12 +168,16 @@
                         </td>
                         <td>@(!string.IsNullOrEmpty(item.CreateAt.Value.ToShortDateString()) ? item.CreateAt.Value.ToLongDateString() : "N/A")</td>
                         <td class="text-center">
-                            <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
-                                <i class="bi bi-info-circle"></i> |
+                            <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info" title="View Details">
+                                <i class="bi bi-info-circle"></i>
                             </a>
-                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId">
-                                <i class="bi bi-trash" style="color:red"></i>
-                            </a>
+                            @if (item.StatusId == 1)
+                            {
+                                @("|")
+                                <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId" title="Delete Ticket">
+                                    <i class="bi bi-trash" style="color:red"></i>
+                                </a>
+                            }
                         </td>
                     </tr>
                 }
@@ -220,16 +223,17 @@
                             <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
                                 <i class="bi bi-info-circle"></i> Details
                             </a>
-                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
-                                <i class="bi bi-trash"></i> Delete
-                            </a>
+                            @if(item.StatusId == 1){
+                                <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>
             }
         </div>
     </div>
-
 </div>
 
 
@@ -323,7 +327,14 @@
                 select.style.cursor = 'pointer';
             });
         }
+
+        localStorage.setItem("selectedView", view);
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const savedView = localStorage.getItem("selectedView") || "card";
+        switchView(savedView);
+    });
 
     function filterTickets() {
         const searchInput = document.getElementById("searchInput").value.toLowerCase();

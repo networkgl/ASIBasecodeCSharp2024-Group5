@@ -444,9 +444,10 @@
 
     <script>
         $(document).ready(function () {
-            // Initialize DataTable with the correct table ID
             var tableId = '@tableId';
-            $(`#${tableId}`).DataTable();
+            $(`#${tableId}`).DataTable({
+                "order": [[0, 'desc']]
+            });
         });
 
         function toggleChat() {

@@ -9,12 +9,12 @@
 }
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-    <h6 class="fw-semibold mb-0">Update Ticket</h6>
+    <h6 class="fw-semibold mb-0">Ticket Id: @Model.Ticket.TicketId</h6>
     <ul class="d-flex align-items-center gap-2">
         <li class="fw-medium">
             <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
                 <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
-                Dashboard
+                Manage Tickets
             </a>
         </li>
         <li>-</li>
@@ -28,7 +28,7 @@
             <div class="col-xxl-6 col-xl-8 col-lg-10">
                 <div class="card border">
                     <div class="card-body">
-                        <form asp-action="Edit" enctype="multipart/form-data">
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
                             <input type="hidden" asp-for="Ticket.TicketId" />
                             <input type="hidden" asp-for="AssignedTicket.AssignedTicketId" />
                             <div class="mb-20">
@@ -115,7 +115,7 @@
 
                                     @foreach (var item in Model.Status)
                                     {
-                                      
+
                                         if (item.StatusId == 1)
                                         {
                                             if (Model.Ticket.StatusId == 2)
@@ -134,6 +134,11 @@
                                     }
                                 </select>
                             </div>
+                            @* @if (Model.Ticket.StatusId == 3 ||  Model.Ticket.StatusId == 4)
+                            {
+                                <input type="hidden" asp-for="@Model.Ticket.StatusId" />
+                            } else
+                            { }*@
                             <div class="mb-20">
                                 <label asp-for="Ticket.IssueDescription" class="form-label fw-semibold text-primary-light text-sm mb-8">Issue Description <span class="text-danger-600">*</span></label>
                                 <textarea id="editor" asp-for="Ticket.IssueDescription" class="form-control radius-8" maxlength="255" rows="4" readonly></textarea>

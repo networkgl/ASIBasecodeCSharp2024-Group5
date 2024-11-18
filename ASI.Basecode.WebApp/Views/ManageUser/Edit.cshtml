@@ -49,37 +49,72 @@
                             <input type="hidden" asp-for="user.UserId" />
                             <input type="hidden" asp-for="userRole.UserRoleId" />
                             <input type="hidden" asp-for="userRole.UserId" />
+                            <!--Name-->
                             <div class="mb-20">
                                 <label asp-for="user.Name" for="name" class="form-label fw-semibold text-primary-light text-sm mb-8">Name <span class="text-danger-600">*</span></label>
                                 <input asp-for="user.Name" type="text" class="form-control radius-8" id="name" placeholder="Enter full name" required>
                             </div>
+                            <!--Email-->
                             <div class="mb-20">
-                                <label asp-for="user.Email" for="email" class="form-label fw-semibold text-primary-light text-sm mb-8">Email <span class="text-danger-600">*</span></label>
+                                <label asp-for="user.Email" asp-for="user.Email" class="form-label fw-semibold text-primary-light text-sm mb-8">Email <span class="text-danger-600">*</span></label>
                                 <input asp-for="user.Email" type="email" class="form-control radius-8" id="email" placeholder="Enter email address" required>
                             </div>
-                            <div class="mb-20">
-                                <label asp-for="userRole.RoleId" for="email" class="form-label fw-semibold text-primary-light text-sm mb-8">Role <span class="text-danger-600">*</span></label>
-                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="userRole.RoleId">
-                                    @{
-                                        foreach (var item in Model.roleList)
-                                        {
-                                            if (item.RoleId != Model.userRole.RoleId)
-                                            {
-                                                <option class="form-control radius-8" value="@item.RoleId">@item.RoleName</option>
-                                            }
-                                            else
-                                            {
-                                                <option selected class="form-control radius-8" value="@Model.userRole.RoleId">@item.RoleName</option>
-                                            }
-                                        }
+                            <!-- Role -->
+                            <div class="form-group pb-3">
+                                <label asp-for="userRole.RoleId" class="form-label fw-semibold text-primary-light text-sm mb-8">Role <span class="text-danger-600">*</span></label>
+                                <select id="roleSelect" class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="userRole.RoleId">
+                                    @foreach (var item in Model.roleList)
+                                    {
+                                        <option value="@item.RoleId">@item.RoleName</option>
                                     }
                                 </select>
                             </div>
+
+                            <!-- Expertise List -->
+                            <div id="expertiseContainer" class="form-group pb-3" style="display: @(Model.userRole.RoleId == 1 ? "none" : "block");">
+                                <label asp-for="Expertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Expertise <span class="text-danger-600">*</span></label>
+                                <select id="expertiseSelect" class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Expertise" onchange="toggleOtherInput()">
+                                    @foreach (var item in Model.expertiseList)
+                                    {
+                                        <option value="@item.ExpertiseName">@item.ExpertiseName</option>
+                                    }
+                                    @if(!string.IsNullOrEmpty(Model.OtherExpertise))
+                                    {
+                                        <option value="Other" selected>Other</option>
+                                    } else
+                                    {
+                                        <option value="Other">Other</option>
+                                    }
+                                </select>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.OtherExpertise))
+                            {
+                                <!-- Other Expertise Input -->
+                                <div id="otherExpertiseContainer" class="form-group pb-3" style="display: block;">
+                                    <label asp-for="OtherExpertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Specify Other Expertise <span class="text-danger-600">*</span></label>
+                                    <input id="otherExpertise" name="OtherExpertise" type="text" asp-for="OtherExpertise" class="form-control radius-8" placeholder="Specify other expertise">
+                                </div>
+                            } else
+                            {
+                                <!-- Other Expertise Input -->
+                                <div id="otherExpertiseContainer" class="form-group pb-3" style="display: none;">
+                                    <label asp-for="OtherExpertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Specify Other Expertise <span class="text-danger-600">*</span></label>
+                                    <input id="otherExpertise" name="OtherExpertise" type="text" asp-for="OtherExpertise" class="form-control radius-8" placeholder="Specify other expertise">
+                                </div>
+                            }
+                            <!--Password-->
                             <div class="mb-20">
                                 <label asp-for="user.Password" for="password" class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                    Password <span class="text-danger-600">*</span>
+                                    Enter new password (just leave blank if you will not change your password)<span class="text-danger-600">*</span>
                                 </label>
-                                <input asp-for="user.Password" type="password" class="form-control radius-8" id="password" placeholder="Enter password" required>
+                                <input asp-for="user.Password" type="password" class="form-control radius-8" id="password" placeholder="Enter password" oninput="toggleConfirmPassword()">
+                            </div>
+                            <div class="mb-20" id="confirmPasswordContainer" style="display: none;">
+                                <label for="confirmPassword" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Enter your current password to confirm changes<span class="text-danger-600">*</span>
+                                </label>
+                                <input name="confirmPassword" type="password" class="form-control radius-8" id="confirmPassword" placeholder="Enter password" required>
                             </div>
                             <div class="d-flex align-items-center justify-content-center gap-3">
                                 <a asp-action="Index" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
@@ -96,6 +131,53 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('roleSelect').addEventListener('change', function () {
+        const expertiseContainer = document.getElementById('expertiseContainer');
+        const otherExpertiseContainer = document.getElementById('otherExpertiseContainer');
+        const selectedRole = this.options[this.selectedIndex].text;
+
+        if (selectedRole === 'support agent') {
+            expertiseContainer.style.display = 'block';
+        } else {
+            expertiseContainer.style.display = 'none';
+            otherExpertiseContainer.style.display = 'none';
+            document.getElementById('expertiseSelect').value = '';
+            document.getElementById('otherExpertise').value = '';
+
+            @*
+                document.getElementById('expertiseSelect').value = @string.IsNullOrEmpty(Model.Expertise) ? '' : @Model.Expertise;
+                document.getElementById('otherExpertise').value = @string.IsNullOrEmpty(Model.OtherExpertise) ? '' : @Model.OtherExpertise;
+            *@
+        }
+    });
+
+    function toggleOtherInput() {
+        const expertiseSelect = document.getElementById('expertiseSelect');
+        const otherExpertiseContainer = document.getElementById('otherExpertiseContainer');
+        const selectedExpertise = expertiseSelect.value;
+
+        if (selectedExpertise === 'Other') {
+            otherExpertiseContainer.style.display = 'block';
+        } else {
+            otherExpertiseContainer.style.display = 'none';
+            document.getElementById('otherExpertise').value = '';
+        }
+    }
+
+    function toggleConfirmPassword() {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
+
+        // Show the confirm password field if the new password is not empty
+        if (passwordInput.value) {
+            confirmPasswordContainer.style.display = 'block';
+        } else {
+            confirmPasswordContainer.style.display = 'none';
+        }
+    }
+</script>
 
 @* @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

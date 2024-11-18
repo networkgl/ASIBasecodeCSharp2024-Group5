@@ -245,7 +245,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 });
                 return View();
             }
-            var result = CreateNewUser(user, 3, null);
+            var result = CreateNewUser(user, 3, null, null);
             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
             {
                 Status = ErrorCode.Success,

@@ -31,6 +31,7 @@ namespace ASI.Basecode.WebApp.Controllers
         public BaseRepository<Category> _catRepo;
         public BaseRepository<Article> _articleRepo;
         public BaseRepository<Feedback> _feedbackRepo;
+        public BaseRepository<UserAgent> _userAgentRepo;
 
         public BaseController(IHttpContextAccessor httpContextAccessor)
         {
@@ -48,6 +49,7 @@ namespace ASI.Basecode.WebApp.Controllers
             _catRepo = new BaseRepository<Category>();
             _articleRepo = new BaseRepository<Article>();
             _feedbackRepo = new BaseRepository<Feedback>();
+            _userAgentRepo = new BaseRepository<UserAgent>();
 
             // Only call RemindTicketNotif if the user is authenticated
             if (httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
@@ -71,9 +73,8 @@ namespace ASI.Basecode.WebApp.Controllers
             _notifRepo = new BaseRepository<Notification>();
             _catRepo = new BaseRepository<Category>();
             _feedbackRepo = new BaseRepository<Feedback>();
+            _userAgentRepo = new BaseRepository<UserAgent>();
         }
-
-
 
         public ErrorCode RemindTicketNotif(out string errorMsg, out string successMsg)
         {
@@ -167,80 +168,80 @@ namespace ASI.Basecode.WebApp.Controllers
             return ErrorCode.Success;
         }
 
-
-
-
-
-        public AlertMessageContent CreateNewUser(User user, int roleId, object? modelParam)
+        public AlertMessageContent CreateNewUser(User user, int roleId, string expertise, string otherExpertise)
         {
-            /* ROLE
-             * 1 - user
-             * 2 - support agent
-             * 3 - administrator
-             * 4 - superadmin
-             */
-            CustomUser customUser = new CustomUser();
-            var roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
-            customUser.roleList = roleList;
-            customUser.user = user;
-
-            var alertMessageContent = new AlertMessageContent();
-
-            if (roleId <= 0 && roleId > 4)
+            var customUser = new CustomUser
             {
-                return new AlertMessageContent()
+                roleList = _db.Roles
+                    .Where(m => m.RoleName == "user" || m.RoleName == "support agent")
+                    .ToList(),
+                user = user
+            };
+
+            if (roleId < 1 || roleId > 4)
+            {
+                return new AlertMessageContent
                 {
                     Status = ErrorCode.Error,
                     Message = "Invalid role id."
                 };
             }
+
             switch (_userRepo.Create(user))
             {
                 case ErrorCode.Success:
-                    var userRole = new UserRole()
+                    var userRole = new UserRole
                     {
                         UserId = user.UserId,
                         RoleId = roleId
                     };
+
                     if (_userRoleRepo.Create(userRole) == ErrorCode.Success)
                     {
-                        customUser.user = user;
                         customUser.userRole = userRole;
-                        return new AlertMessageContent()
+
+                        if (!string.IsNullOrEmpty(expertise) || !string.IsNullOrEmpty(otherExpertise))
                         {
-                            Status = ErrorCode.Success,
-                            Message = "New admin user is created successfully."
-                        };
-                    } else
-                    {
-                        _userRepo.Delete(user.UserId);
-                        return new AlertMessageContent()
-                        {
-                            Status = ErrorCode.Error,
-                            Message = "An error has occured. Please try again later."
-                        };
+                            UserAgent userAgent = new UserAgent()
+                            {
+                                AgentId = user.UserId,
+                                Expertise = string.IsNullOrEmpty(expertise) || expertise == "Other" ? otherExpertise : expertise,
+                            };
+
+                            if(_userAgentRepo.Create(userAgent) == ErrorCode.Success)
+                            {
+                                return new AlertMessageContent
+                                {
+                                    Status = ErrorCode.Success,
+                                    Message = $"New user is created successfully."
+                                };
+                            }
+                            _userRoleRepo.Delete(userRole);
+                        }
                     }
-                    
-                case ErrorCode.Error:
-                    return new AlertMessageContent()
+                    _userRepo.Delete(user.UserId);
+                    return new AlertMessageContent
                     {
                         Status = ErrorCode.Error,
-                        Message = "An error has occured upon creating the account, please try again later."
+                        Message = "An error occurred. Please try again later."
                     };
+
                 case ErrorCode.Duplicate:
-                    return new AlertMessageContent()
+                    return new AlertMessageContent
                     {
                         Status = ErrorCode.Error,
-                        Message = "Duplicate name or email has detected, please use another one."
+                        Message = "Duplicate name or email detected. Please use another one."
                     };
+
                 default:
-                    return new AlertMessageContent()
+                    return new AlertMessageContent
                     {
                         Status = ErrorCode.Error,
-                        Message = "An error has occured. Please try again later."
+                        Message = "An error occurred. Please try again later."
                     };
             }
         }
+
         public DateTime DateTimeToday()
         {
             TimeZoneInfo phTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
