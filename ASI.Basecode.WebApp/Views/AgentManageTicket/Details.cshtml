@@ -39,7 +39,8 @@
                         <p><strong>Reporter:</strong> @Html.DisplayFor(modelItem => Model.Reporter)</p>
                         <p><strong>Assigned to:</strong> @(string.IsNullOrEmpty(Model.AgentName) ? "No agent assigned" : Model.AgentName)</p>
                         <p><strong>Assigned by:</strong> @(string.IsNullOrEmpty(Model.AssignerName) ? "None" : Model.AssignerName)</p>
-                        <p><strong>Date Created:</strong> @(!string.IsNullOrEmpty(Model.CreateAt.Value.ToShortDateString()) ? Model.CreateAt.Value.ToLongDateString() : "N/A")</p>
+                        <p><strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(Model.CreateAt.Value.ToShortDateString()) ? Model.CreateAt.Value.ToLongDateString() : "N/A")</p>
+                        <p><strong>Date Assigned to Agent:</strong> @Html.DisplayFor(modelItem => Model.DateAssigned.Value.ToShortDateString())</p>
                         <p>
                             <strong>File Attached:</strong>
                             @if (!string.IsNullOrEmpty(Model.AttachmentPath))
