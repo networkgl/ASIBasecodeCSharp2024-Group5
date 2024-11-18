@@ -90,7 +90,7 @@ namespace ASI.Basecode.WebApp.Repository
 
 
 
-        public ErrorCode AssignOrReAssignTicketNotif(bool isAssigning, int userTicketId, int assignerId, int assignedToId, string toUserName, string fromUserName, out string errorMsg, out string successsMsg)
+        public ErrorCode AssignOrReAssignTicketNotif(bool hasChangedPriorityId, bool isAssigning, int userTicketId, int assignerId, int assignedToId, string toUserName, string fromUserName, out string errorMsg, out string successsMsg)
         {
             errorMsg = successsMsg = string.Empty;
             try
@@ -180,6 +180,25 @@ namespace ASI.Basecode.WebApp.Repository
                         return ErrorCode.Error;
                     }
 
+
+
+                    string notifContent = string.Empty;
+                    if (hasChangedPriorityId)
+                    {
+                        //trigger notif for updating the prio level
+                        var notifPrioLevelChange = new Notification()
+                        {
+                            ToUserId = userTicket.UserId,
+                            UserTicketId = userTicketId,
+                            Content = $"Good day! Your ticket priority level has been updated to our support agent to matched prior to the issue. Ticket ID: {userTicket.TicketId}. Please be guided.",
+                            CreatedAt = DateTimeToday()
+                        };
+
+                        if (_notifRepo.Create(notifPrioLevelChange) == ErrorCode.Error)
+                        {
+                            return ErrorCode.Error;
+                        }
+                    }
 
                     //trigger also notif for the user who owns the ticket...
                     var userNotif = new Notification()

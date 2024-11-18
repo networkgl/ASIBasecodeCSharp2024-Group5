@@ -69,28 +69,28 @@
             @if (@User.IsInRole("superadmin"))
             {
                 <a asp-action="Index" asp-controller="user" class="sidebar-logo">
-                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
             }
             else if (@User.IsInRole("administrator"))
             {
                 <a asp-action="Index" asp-controller="AdminDashboard">
-                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
             }
             else if (@User.IsInRole("support agent"))
             {
                 <a asp-action="Index" asp-controller="AgentDashboard">
-                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
             }
             else if (@User.IsInRole("user"))
             {
                 <a asp-action="Index" asp-controller="UserDashboard">
-                    <h5 class="brand-name-expand">AssistHub</h5>
+                    <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
             }
@@ -141,10 +141,14 @@
                             <div class="d-flex align-items-center flex-grow-1">
                                 <iconify-icon style="margin-right: 4.5% !important; " icon="flowbite:users-group-outline" class="menu-icon me-2" aria-hidden="true"></iconify-icon>
                                 <span class="me-auto">Notifications</span>
-                                <span class="badge text-sm bg-danger-500 border-0 d-flex justify-content-center align-items-center"
-                                      style="border-radius: 50%; width: 20px; height: 20px; color: white; font-weight: bold;">
-                                    @countNotif
-                                </span>
+                                @if(countNotif > 0)
+                                {
+                                    <span class="badge text-sm bg-danger-500 border-0 d-flex justify-content-center align-items-center"
+                                          style="border-radius: 50%; width: 20px; height: 20px; color: white; font-weight: bold;">
+                                        @countNotif
+                                    </span>
+                                }
+                         
                             </div>
                         </a>
                     }
@@ -254,15 +258,18 @@
                             List<Notification> _userNotif = _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
                             UserManager _userManager = new UserManager();
 
-                                
+
                             <div class="dropdown">
-                             @* <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
+                                @* <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"
                                         type="button" data-bs-toggle="dropdown">
                                     <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
                                 </button> *@
                                 <button class="has-indicator w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <iconify-icon icon="iconoir:bell" class="text-primary-light text-xl"></iconify-icon>
-                                    <span style="margin-top: 5px" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger-600 border-0">@countNotif</span>
+                                    @if (countNotif > 0)
+                                    {
+                                        <span style="margin-top: 5px" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger-600 border-0">@countNotif</span>
+                                    }
                                 </button>
 
 

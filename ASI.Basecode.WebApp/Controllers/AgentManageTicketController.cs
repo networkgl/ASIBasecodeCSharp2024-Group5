@@ -134,10 +134,13 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 return BadRequest();
             }
+
             TempData["temp"] = "update";
 
             //current ticket
             var ticket = _db.Tickets.Where(m => m.TicketId == customTicket.Ticket.TicketId).FirstOrDefault();
+            int? prevPrioId = ticket.PriorityId;
+
 
             if (ticket is null)
             {
@@ -248,6 +251,12 @@ namespace ASI.Basecode.WebApp.Controllers
                          Resolved = 3
                          Closed = 4  
                          */
+                        var hasChangedPriorityId = false;
+                        if (prevPrioId != customTicket.Ticket.PriorityId)
+                        {
+                            hasChangedPriorityId = true;
+                        }
+
                         if (customTicket.Ticket.StatusId == 3) 
                         {
                             if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, int.Parse(AssignerId), out errorMsg, out successMsg) == ErrorCode.Success)
@@ -259,7 +268,7 @@ namespace ASI.Basecode.WebApp.Controllers
                                 });
                             }
                         }
-                        else if (_notificationManger.AssignOrReAssignTicketNotif(true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, fromUserName, toUserName, out errorMsg, out successMsg) == ErrorCode.Success)
+                        else if (_notificationManger.AssignOrReAssignTicketNotif(hasChangedPriorityId, true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, fromUserName, toUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
@@ -323,6 +332,13 @@ namespace ASI.Basecode.WebApp.Controllers
                         Resolved = 3
                         Closed = 4  
                         */
+
+                        var hasChangedPriorityId = false;
+                        if (prevPrioId != customTicket.Ticket.PriorityId)
+                        {
+                            hasChangedPriorityId = true;
+                        }
+
                         if (customTicket.Ticket.StatusId == 3)
                         {
                             if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, int.Parse(AssignerId), out errorMsg, out successMsg) == ErrorCode.Success)
@@ -334,7 +350,7 @@ namespace ASI.Basecode.WebApp.Controllers
                                 });
                             }
                         }
-                        else if (_notificationManger.AssignOrReAssignTicketNotif(false, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, toUserName, fromUserName, out errorMsg, out successMsg) == ErrorCode.Success)
+                        else if (_notificationManger.AssignOrReAssignTicketNotif(hasChangedPriorityId, false, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, toUserName, fromUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
