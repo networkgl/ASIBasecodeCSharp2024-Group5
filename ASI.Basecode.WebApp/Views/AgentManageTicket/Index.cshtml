@@ -221,7 +221,7 @@
                             }
                         </td>
                         <td class="text-center">
-                            @if (item.StatusId == 1)
+                            @if (item.StatusId == 1 || (item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value) && item.StatusId != 3))
                             {
                                 <a asp-action="Edit" asp-route-id="@item.TicketId" title="Edit Ticket">
                                     <i class="bi bi-pencil-square" style="color:#0d6efd"></i>
@@ -232,7 +232,7 @@
                                 <i class="bi bi-info-circle" style="color:#0d6efd"></i>
                             </a>
 
-                            @if (item.StatusId == 1 && item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value))
+                            @if (item.StatusId == 1)
                             {
                                 @("|")
                                 <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId" title="Delete Ticket">
@@ -299,19 +299,18 @@
                             <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
                                 <i class="bi bi-info-circle"></i> Details
                             </a>
-                            @if (item.StatusId == 1)
+                            @if (item.StatusId == 1 || (item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value) && item.StatusId != 3))
                             {
                                 <a asp-action="Edit" asp-route-id="@item.TicketId" class="text-primary">
                                     <i class="bi bi-pencil-square"></i> Update
                                 </a>
-                                @if (item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value))
-                                {
-                                    <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </a>
-                                }
                             }
-                            
+                            @if(item.StatusId == 1)
+                            {
+                                <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>

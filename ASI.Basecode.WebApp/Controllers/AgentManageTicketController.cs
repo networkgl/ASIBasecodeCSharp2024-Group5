@@ -346,7 +346,8 @@ namespace ASI.Basecode.WebApp.Controllers
 
                         }
                         TempData["status"] = ErrorCode.Success;
-                        return RedirectToAction("Details", ticket.TicketId);
+                        TempData["TicketId"] = ticket.TicketId;
+                        return RedirectToAction("Index");
                     }
                 }
             }
@@ -359,6 +360,10 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 return BadRequest();
             }
+            //if (TempData["TicketId"] != null)
+            //{
+            //    id = Convert.ToInt32(ViewData["TicketId"]);
+            //}
 
             var userId = User.FindFirst("UserId")?.Value;
             var myTicket = _db.VwTicketDetailsViews.Where(m => m.TicketId == id).FirstOrDefault();
