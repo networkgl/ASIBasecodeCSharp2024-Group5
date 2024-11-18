@@ -4,6 +4,7 @@ using ASI.Basecode.Data.Models.CustomModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Linq;
 
@@ -17,33 +18,16 @@ namespace ASI.Basecode.WebApp.Controllers
         }
         public IActionResult Index()
         {
-            if (TempData["temp"] != null)
+            if (!User.Identity.IsAuthenticated)
             {
-                if (TempData["status"] as int? == 0)
-                {
-                    TempData["ResMsg"] = new AlertMessageContent()
-                    {
-                        Status = ErrorCode.Success,
-                        Message = "A ticket has deleted successfully!"
-                    };
-                }
-                else
-                {
-                    TempData["ResMsg"] = new AlertMessageContent()
-                    {
-                        Status = ErrorCode.Error,
-                        Message = "An error has occured upon deleting the ticket."
-                    };
-                }
+                return Unauthorized();
             }
-            if (User.Identity.IsAuthenticated)
-            {
-                var userId = User.FindFirst("UserId")?.Value;
-                var myTickets = _db.VwTicketDetailsViews.ToList();
-                ViewData["TableId"] = "adminManageTicketsTable";
-                return View(myTickets);
-            }
-            return NotFound();
+            HandleTempDataMessages();
+
+            var userId = User.FindFirst("UserId")?.Value;
+            var myTickets = _db.VwTicketDetailsViews.ToList();
+            ViewData["TableId"] = "adminManageTicketsTable";
+            return View(myTickets);
         }
 
         public IActionResult Edit(int id)
@@ -318,6 +302,22 @@ namespace ASI.Basecode.WebApp.Controllers
 
             TempData["status"] = 1;
             return BadRequest();
+        }
+
+        private void HandleTempDataMessages()
+        {
+            if (TempData["ResMsg"] is not null)
+            {
+                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+                if (resMsg is not null && User.Identity.IsAuthenticated)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                    {
+                        Status = resMsg.Status,
+                        Message = resMsg.Message
+                    });
+                }
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ namespace ASI.Basecode.Data.Models
             AssignedTicketAgents = new HashSet<AssignedTicket>();
             AssignedTicketAssigners = new HashSet<AssignedTicket>();
             Notifications = new HashSet<Notification>();
+            UserAgents = new HashSet<UserAgent>();
             UserRoles = new HashSet<UserRole>();
             UserTickets = new HashSet<UserTicket>();
         }
@@ -25,6 +26,7 @@ namespace ASI.Basecode.Data.Models
         public virtual ICollection<AssignedTicket> AssignedTicketAgents { get; set; }
         public virtual ICollection<AssignedTicket> AssignedTicketAssigners { get; set; }
         public virtual ICollection<Notification> Notifications { get; set; }
+        public virtual ICollection<UserAgent> UserAgents { get; set; }
         public virtual ICollection<UserRole> UserRoles { get; set; }
         public virtual ICollection<UserTicket> UserTickets { get; set; }
     }

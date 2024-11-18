@@ -4,7 +4,7 @@
 
 @{
     ViewData["Title"] = "Manage Users";
-    ViewBag.TableId = "manageUsersTable";
+    // ViewBag.TableId = "manageUsersTable";
     var resMsg = TempData["ResMsg"] as AlertMessageContent;
 }
 
@@ -30,7 +30,7 @@
             </div>
         </div>
     </div>
-    <table class="table bordered-table" id="manageAdminsTable">
+    <table class="table bordered-table" id="manageUsersTable">
         <thead>
             <tr>
                 <th style="text-align:center !important">
@@ -47,6 +47,9 @@
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.RoleName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Expertise)
                 </th>
                 @if (User.FindFirst("UserRole")?.Value == "administrator")
                 {
@@ -74,6 +77,15 @@
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.RoleName)
+                    </td>
+                    <td>
+                        @if(string.IsNullOrEmpty(item.Expertise))
+                        {
+                            @("Not applicable")
+                        } else
+                        {
+                            @Html.DisplayFor(modelItem => item.Expertise)
+                        }
                     </td>
                     @if (User.FindFirst("UserRole")?.Value == "administrator")
                     {

@@ -20,6 +20,7 @@ namespace ASI.Basecode.Data
         public virtual DbSet<Article> Articles { get; set; }
         public virtual DbSet<AssignedTicket> AssignedTickets { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
+        public virtual DbSet<Expertise> Expertises { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<Priority> Priorities { get; set; }
@@ -27,6 +28,7 @@ namespace ASI.Basecode.Data
         public virtual DbSet<Status> Statuses { get; set; }
         public virtual DbSet<Ticket> Tickets { get; set; }
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<UserAgent> UserAgents { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
         public virtual DbSet<UserTicket> UserTickets { get; set; }
         public virtual DbSet<VwAdminCount> VwAdminCounts { get; set; }
@@ -57,7 +59,7 @@ namespace ASI.Basecode.Data
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Trust Server Certificate=True");
+                optionsBuilder.UseSqlServer("workstation id=AssisthubDB.mssql.somee.com;packet size=4096;user id=XAssistHubX_SQLLogin_1;pwd=tpu83eivqf;data source=AssisthubDB.mssql.somee.com;persist security info=False;initial catalog=AssisthubDB;TrustServerCertificate=True");
             }
         }
 
@@ -117,6 +119,15 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.CategoryName)
                     .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Expertise>(entity =>
+            {
+                entity.ToTable("Expertise");
+
+                entity.Property(e => e.ExpertiseName)
+                    .HasMaxLength(255)
                     .IsUnicode(false);
             });
 
@@ -254,6 +265,21 @@ namespace ASI.Basecode.Data
                     .IsUnicode(false);
 
                 entity.Property(e => e.ProfilePicturePath).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<UserAgent>(entity =>
+            {
+                entity.ToTable("UserAgent");
+
+                entity.Property(e => e.Expertise)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Agent)
+                    .WithMany(p => p.UserAgents)
+                    .HasForeignKey(d => d.AgentId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK__UserAgent__Agent__59904A2C");
             });
 
             modelBuilder.Entity<UserRole>(entity =>
@@ -733,6 +759,10 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Expertise)
+                    .HasMaxLength(255)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Name)

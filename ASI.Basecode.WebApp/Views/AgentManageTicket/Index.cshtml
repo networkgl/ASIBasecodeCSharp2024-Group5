@@ -5,9 +5,9 @@
 @{
     ViewData["Title"] = "Manage Tickets";
     var resMsg = TempData["ResMsg"] as AlertMessageContent;
-    var priorities = ViewBag.Priorities as List<Priority>;
-    var categories = ViewBag.Categories as List<Category>;
-    var statuses = ViewBag.Statuses as List<Status>;
+    var priorities = ViewData["Priorities"] as List<Priority>;
+    var categories = ViewData["Categories"] as List<Category>;
+    var statuses = ViewData["Statuses"] as List<Status>;
 }
 
 @functions {
@@ -77,6 +77,7 @@
             </button>
         </div>
     </div>
+
     <!-- Filter Section -->
     <div class="d-flex justify-content-between mb-3">
         <div class="d-flex gap-3 flex-grow-1">
@@ -135,6 +136,8 @@
             </a>
         </div>
     </div>
+
+    <!-- Table View -->
     <div id="tableView" style="display: block;">
         <table class="table bordered-table" id="agentManageTicketsTable" style="transform:scale(0.95); table-layout:fixed">
             <thead>
@@ -218,9 +221,24 @@
                             }
                         </td>
                         <td class="text-center">
-                            <a asp-action="Edit" asp-route-id="@item.TicketId"><i class="bi bi-pencil-square" style="color:#0d6efd"></i></a> |
-                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId"><i class="bi bi-trash" style="color:red"></i></a> |
-                            <a asp-action="Details" asp-route-id="@item.TicketId"><i class="bi bi-info-circle" style="color:#0d6efd"></i></a>
+                            @if (item.StatusId == 1)
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.TicketId" title="Edit Ticket">
+                                    <i class="bi bi-pencil-square" style="color:#0d6efd"></i>
+                                </a> @("|")
+                            }
+
+                            <a asp-action="Details" asp-route-id="@item.TicketId" title="View Details">
+                                <i class="bi bi-info-circle" style="color:#0d6efd"></i>
+                            </a>
+
+                            @if (item.StatusId == 1 && item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value))
+                            {
+                                @("|")
+                                <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" id="@item.TicketId" title="Delete Ticket">
+                                    <i class="bi bi-trash" style="color:red"></i>
+                                </a> 
+                            }
                         </td>
                     </tr>
                 }
@@ -281,12 +299,19 @@
                             <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
                                 <i class="bi bi-info-circle"></i> Details
                             </a>
-                            <a asp-action="Edit" asp-route-id="@item.TicketId" class="text-primary">
-                                <i class="bi bi-pencil-square"></i> Update
-                            </a>
-                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
-                                <i class="bi bi-trash"></i> Delete
-                            </a>
+                            @if (item.StatusId == 1)
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.TicketId" class="text-primary">
+                                    <i class="bi bi-pencil-square"></i> Update
+                                </a>
+                                @if (item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value))
+                                {
+                                    <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </a>
+                                }
+                            }
+                            
                         </div>
                     </div>
                 </div>
@@ -406,7 +431,14 @@
             });
             // @ViewData["view"] = "card";
         }
+
+        localStorage.setItem("selectedView", view);
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const savedView = localStorage.getItem("selectedView") || "table";
+        switchView(savedView);
+    });
 
     function filterTickets() {
         const searchInput = document.getElementById("searchInput").value.toLowerCase();
@@ -448,9 +480,6 @@
         });
     }
 
-
-
-
     function updateCardColors() {
         const cards = document.querySelectorAll(".ticket-card");
 
@@ -485,4 +514,5 @@
             card.querySelector(".card").style.borderColor = borderColor;
         });
     }
+
 </script>

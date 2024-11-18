@@ -11,5 +11,8 @@ namespace ASI.Basecode.Data.Models.CustomModels
         public Role role { get; set; }
         public List<Role> roleList = new List<Role>();
         public IFormFile formFile { get; set; }
+        public List<Expertise> expertiseList = new List<Expertise>();
+        public string Expertise { get; set; }
+        public string OtherExpertise { get; set; }
     }
 }

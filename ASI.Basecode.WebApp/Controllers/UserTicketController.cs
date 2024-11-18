@@ -47,9 +47,9 @@ namespace ASI.Basecode.WebApp.Controllers
                     UpdateTicketStatusMessages(myTickets);
 
                     ViewData["TableId"] = "myTicketsTable";
-                    ViewBag.Priorities = _db.Priorities.ToList();
-                    ViewBag.Categories = _db.Categories.ToList();
-                    ViewBag.Statuses = _db.Statuses.ToList();
+                    ViewData["Priorities"] = _db.Priorities.ToList();
+                    ViewData["Categories"] = _db.Categories.ToList();
+                    ViewData["Statuses"] = _db.Statuses.ToList();
 
                     return View(myTickets);
                 }
@@ -92,78 +92,6 @@ namespace ASI.Basecode.WebApp.Controllers
             }
 
             return NotFound();
-        }
-
-        private void HandleTempDataMessages()
-        {
-            var temp = TempData["temp"]?.ToString();
-            if (temp == "create")
-            {
-                HandleCreateTempData();
-            }
-            else if (temp == "delete")
-            {
-                HandleDeleteTempData();
-            }
-            else if (temp == "update")
-            {
-                HandleUpdateTempData();
-            }
-        }
-
-        private void HandleCreateTempData()
-        {
-            if (TempData["ResMsg"] is not null)
-            {
-                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-                if (resMsg is not null && User.Identity.IsAuthenticated)
-                {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-                    {
-                        Status = resMsg.Status,
-                        Message = resMsg.Message
-                    });
-                }
-            }
-        }
-
-        private void HandleDeleteTempData()
-        {
-            var status = TempData["status"] as int?;
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-            {
-                Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
-                Message = status == 0
-                    ? "A ticket has been deleted successfully!"
-                    : "An error has occurred upon deleting the ticket."
-            });
-        }
-
-        private void HandleUpdateTempData()
-        {
-            var status = TempData["status"] as int?;
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-            {
-                Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
-                Message = status == 0
-                    ? "Ticket updated successfully!"
-                    : "An error has occurred when updating your ticket, please try again."
-            });
-        }
-
-        private void UpdateTicketStatusMessages(List<VwUserTicketView> tickets)
-        {
-            tickets.ForEach(ticket =>
-            {
-                ticket.StatusName = ticket.StatusId switch
-                {
-                    1 => "Your ticket is pending assignment to an agent.",
-                    2 => "Your ticket is currently in progress. An agent is working on it.",
-                    3 => "Your ticket has been resolved.",
-                    4 => "Your ticket is closed.",
-                    _ => "Status is unknown. Please contact support for more information."
-                };
-            });
         }
 
         public IActionResult Create()
@@ -307,7 +235,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var userId = User.FindFirst("UserId")?.Value;
             var myTicket = _db.VwUserTicketViews.Where(m => m.TicketId == id).FirstOrDefault();
-
+            UpdateTicketStatusMessages(myTicket);
             return View(myTicket);
         }
 
@@ -322,6 +250,89 @@ namespace ASI.Basecode.WebApp.Controllers
 
             TempData["status"] = 1;
             return BadRequest();
+        }
+
+        private void HandleTempDataMessages()
+        {
+            var temp = TempData["temp"]?.ToString();
+            if (temp == "create")
+            {
+                HandleCreateTempData();
+            }
+            else if (temp == "delete")
+            {
+                HandleDeleteTempData();
+            }
+            else if (temp == "update")
+            {
+                HandleUpdateTempData();
+            }
+        }
+
+        private void HandleCreateTempData()
+        {
+            if (TempData["ResMsg"] is not null)
+            {
+                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+                if (resMsg is not null && User.Identity.IsAuthenticated)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                    {
+                        Status = resMsg.Status,
+                        Message = resMsg.Message
+                    });
+                }
+            }
+        }
+
+        private void HandleDeleteTempData()
+        {
+            var status = TempData["status"] as int?;
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+            {
+                Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
+                Message = status == 0
+                    ? "A ticket has been deleted successfully!"
+                    : "An error has occurred upon deleting the ticket."
+            });
+        }
+
+        private void HandleUpdateTempData()
+        {
+            var status = TempData["status"] as int?;
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+            {
+                Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
+                Message = status == 0
+                    ? "Ticket updated successfully!"
+                    : "An error has occurred when updating your ticket, please try again."
+            });
+        }
+
+        private void UpdateTicketStatusMessages(List<VwUserTicketView> tickets)
+        {
+            tickets.ForEach(ticket =>
+            {
+                ticket.StatusName = ticket.StatusId switch
+                {
+                    1 => "Your ticket is pending assignment to an agent.",
+                    2 => "Your ticket is currently in progress. An agent is working on it.",
+                    3 => "Your ticket has been resolved.",
+                    4 => "Your ticket is closed.",
+                    _ => "Status is unknown. Please contact support for more information."
+                };
+            });
+        }
+        private void UpdateTicketStatusMessages(VwUserTicketView ticket)
+        {
+            ticket.StatusName = ticket.StatusId switch
+            {
+                1 => "Your ticket is pending assignment to an agent.",
+                2 => "Your ticket is currently in progress. An agent is working on it.",
+                3 => "Your ticket has been resolved.",
+                4 => "Your ticket is closed.",
+                _ => "Status is unknown. Please contact support for more information."
+            };
         }
     }
 }
