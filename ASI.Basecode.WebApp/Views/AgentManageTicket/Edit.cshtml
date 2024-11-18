@@ -70,8 +70,11 @@
                                 </div>
                             } *@
                             <div class="mb-20">
-                                <label asp-for="AssignedTicket.AgentId" class="form-label fw-semibold text-primary-light text-sm mb-8">Assign to <span class="text-danger-600"></span></label>
-                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="AssignedTicket.AgentId">
+                                <label asp-for="AssignedTicket.AgentId" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Assign to <span class="text-danger-600"></span>
+                                </label>
+                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px"
+                                        id="chooseAgent" asp-for="AssignedTicket.AgentId">
                                     @if (Model.Agent is null)
                                     {
                                         <option class="form-control radius-8" selected>Not Set</option>
@@ -80,28 +83,26 @@
                                     {
                                         if ((!string.IsNullOrEmpty(item.Name) && Model.Agent is not null) && Model.Agent.Name == item.Name)
                                         {
-                                            <option class="form-control radius-8" value="@item.UserId" selected>@item.Name
-                                                @{
-                                                    foreach (var agent in Model.ticketCountForAgent)
+                                            <option class="form-control radius-8" value="@item.UserId" selected>
+                                                @item.Name
+                                                @foreach (var agent in Model.ticketCountForAgent)
+                                                {
+                                                    if (agent.AgentId == item.UserId)
                                                     {
-                                                        if (agent.AgentId == item.UserId)
-                                                        {
-                                                            <span>@($"({agent.NoOfTickets})")</span>
-                                                        }
+                                                        <span>@($"({agent.NoOfTickets})")</span>
                                                     }
                                                 }
                                             </option>
                                         }
                                         else
                                         {
-                                            <option class="form-control radius-8" value="@item.UserId">@item.Name
-                                                @{
-                                                    foreach (var agent in Model.ticketCountForAgent)
+                                            <option class="form-control radius-8" value="@item.UserId">
+                                                @item.Name
+                                                @foreach (var agent in Model.ticketCountForAgent)
+                                                {
+                                                    if (agent.AgentId == item.UserId)
                                                     {
-                                                        if (agent.AgentId == item.UserId)
-                                                        {
-                                                            <span>@($"({agent.NoOfTickets})")</span>
-                                                        }
+                                                        <span>@($"({agent.NoOfTickets})")</span>
                                                     }
                                                 }
                                             </option>
@@ -204,6 +205,8 @@
         file.value = null;
         removedOriginalImg.value = 'true';
     }
+
+    function 
 </script>
 
 @* @section Scripts {

@@ -134,7 +134,6 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 return BadRequest();
             }
-
             TempData["temp"] = "update";
 
             //current ticket
@@ -277,7 +276,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         customTicket.Agent = userAgent;
                         customTicket.Category = categories;
                         TempData["status"] = ErrorCode.Success;
-                        return RedirectToAction("Details", ticket.TicketId);
+                        return RedirectToAction("Index");
                     }
                 }
             }
