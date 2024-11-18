@@ -99,8 +99,8 @@
                     <div class="d-flex align-items-center gap-2">
                         <span>
                             @notif.Content
-                            @if (User.IsInRole("support agent"))
-                            {
+
+                            @{
                                 int? ticketId = 0;
                                 using (var db = new AssisthubDBContext())
                                 {
@@ -108,9 +108,17 @@
                                 }
                                 if (ticketId != null)
                                 {
-                                    <a href="@Url.Action("Edit","AgentManageTicket", new { id = ticketId } )" class="text-decoration-underline">View ticket here</a>
+                                    if(User.IsInRole("user"))
+                                    {
+                                        <a href="@Url.Action("Details","UserTicket", new { id = ticketId, NotificationId = notif.NotificationId} )" class="text-decoration-underline">View ticket here</a>
+                                    }
+                                    else if(User.IsInRole("support agent"))
+                                    {
+                                        <a href="@Url.Action("Edit","AgentManageTicket", new { id = ticketId, NotificationId = notif.NotificationId} )" class="text-decoration-underline">View ticket here</a>
+                                    }
                                 }
                             }
+
                         </span>
                     </div>
                     <small class="text-muted text-primary-600">

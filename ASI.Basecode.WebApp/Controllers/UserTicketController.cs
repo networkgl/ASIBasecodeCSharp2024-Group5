@@ -1,6 +1,7 @@
 ﻿using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
+using ASI.Basecode.Resources.Constants;
 using ASI.Basecode.WebApp.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -226,7 +227,7 @@ namespace ASI.Basecode.WebApp.Controllers
             return uniqueName;
         }
 
-        public IActionResult Details(int id) 
+        public IActionResult Details(int id, int? NotificationId) 
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -236,6 +237,21 @@ namespace ASI.Basecode.WebApp.Controllers
             var userId = User.FindFirst("UserId")?.Value;
             var myTicket = _db.VwUserTicketViews.Where(m => m.TicketId == id).FirstOrDefault();
             UpdateTicketStatusMessages(myTicket);
+
+
+            //update notif mark as read if this route is visited from notification view
+            if (NotificationId != null)
+            {
+                var getNotifById = _notifRepo.Table.Where(m => m.NotificationId == NotificationId).FirstOrDefault();
+                getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                {
+                    //Possible error internal upon updating if there is
+                    return BadRequest();//temporary return...
+                };
+            }
+
             return View(myTicket);
         }
 

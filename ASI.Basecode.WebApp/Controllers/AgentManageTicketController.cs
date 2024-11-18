@@ -1,6 +1,7 @@
 ﻿using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
+using ASI.Basecode.Resources.Constants;
 using ASI.Basecode.WebApp.Repository;
 using ASI.Basecode.WebApp.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -62,7 +63,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
         //[HttpGet("UpdateTicket/{id}")]
         [HttpGet]
-        public IActionResult Edit(int id)
+        public IActionResult Edit(int id, int? NotificationId)
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -120,6 +121,22 @@ namespace ASI.Basecode.WebApp.Controllers
                 customTicket.Agents = agents;
                 customTicket.Agent = agent;
                 customTicket.ticketCountForAgent = ticketCount;
+
+
+                //update notif mark as read if this route is visited from notification view
+                if (NotificationId != null)
+                {
+                    var getNotifById = _notifRepo.Table.Where(m => m.NotificationId == NotificationId).FirstOrDefault();
+                    getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                    if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                    {
+                        //Possible error internal upon updating if there is
+                        return BadRequest();//temporary return...
+                    };
+                }
+
+
 
                 return View(customTicket);
             }

@@ -5,6 +5,7 @@
 @using ASI.Basecode.WebApp.Utils
 @using ASI.Basecode.WebApp.Functions
 @using ASI.Basecode.Resources.Constants;
+@using ASI.Basecode.Data;
 
 @{
     var tableId = string.Empty;
@@ -283,14 +284,31 @@
                                     </div>
 
                                     <div class="max-h-400-px overflow-y-auto scroll-sm pe-4">
-
+              
                                         @foreach (var notif in _userNotif)
                                         {
 
                                             var timeElapsed = Helper.GetTimeElapsed(
                                             Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow) - (notif.CreatedAt ?? DateTime.UtcNow), notif.CreatedAt ?? DateTime.UtcNow);
 
-                                            <a href="javascript:void(0)"
+
+                                            int? ticketId = 0;
+                                            using (var db = new AssisthubDBContext())
+                                            {
+                                                ticketId = db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault().TicketId;
+                                            }
+
+                                            string actionRoute = null;
+                                            if (User.IsInRole("user"))
+                                            {
+                                                actionRoute = Url.Action("Details", "UserTicket", new { id = ticketId, NotificationId = notif.NotificationId });
+                                            }
+                                            else if (User.IsInRole("support agent"))
+                                            {
+                                                actionRoute = Url.Action("Edit", "AgentManageTicket", new { id = ticketId, NotificationId = notif.NotificationId });
+                                            }
+
+                                            <a href="@actionRoute"
                                                 class="px-24 py-12 d-flex align-items-start gap-3 mb-2 justify-content-between">
                                                 <div class="text-black hover-bg-transparent hover-text-primary d-flex align-items-center gap-3">
                                                     <span class="w-44-px h-44-px bg-success-subtle text-success-main rounded-circle d-flex justify-content-center align-items-center flex-shrink-0">
