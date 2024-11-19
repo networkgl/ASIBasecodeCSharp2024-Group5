@@ -32,16 +32,22 @@ namespace ASI.Basecode.WebApp.Controllers
             if (userRole == null)
                 return Unauthorized("User role not found");
 
-            List<VwFeedbackView> feedbacks;
-            if (userRole.RoleId == 1)
+            List<VwFeedbackView> feedbacks = new List<VwFeedbackView>();
+
+            if (userRole.RoleId == 1) // Regular user
             {
-                feedbacks = _db.VwFeedbackViews.Where(f => f.UserId == loggedInUserId).ToList();
+                feedbacks = _db.VwFeedbackViews
+                    .Where(f => f.UserId == loggedInUserId)
+                    .ToList();
                 ViewData["UserRoleId"] = userRole.RoleId;
                 return View(feedbacks);
             }
-            else if (userRole.RoleId == 2)
+            else if (userRole.RoleId == 2) // Agent
             {
-                feedbacks = _db.VwFeedbackViews.Where(f => f.AgentId == loggedInUserId).ToList();
+                feedbacks = _db.VwFeedbackViews
+                    .Where(f => f.AgentId == loggedInUserId)
+                    .ToList();
+
                 var agentFeedbacks = feedbacks.Where(f => f.FeedbackRating.HasValue);
                 var averageRating = agentFeedbacks.Any() ? agentFeedbacks.Average(f => f.FeedbackRating.Value) : 0;
                 var feedbackCount = agentFeedbacks.Count();
@@ -51,27 +57,30 @@ namespace ASI.Basecode.WebApp.Controllers
                 ViewData["UserRoleId"] = userRole.RoleId;
                 return View(feedbacks);
             }
-            else if (userRole.RoleId == 3)
+            else if (userRole.RoleId == 3) // Admin
             {
-                if (agentId != null)
+                if (agentId.HasValue) // Admin viewing specific agent's feedback
                 {
-                    var agentFeedbacks = _db.VwFeedbackViews.Where(f => f.AgentId == agentId).ToList();
-                    var agentName = _db.VwUserRoleViews.FirstOrDefault(u => u.UserId == agentId)?.Name;
+                    var agentFeedbacks = _db.VwFeedbackViews
+                        .Where(f => f.AgentId == agentId)
+                        .ToList();
+
+                    var agentName = _db.VwUserRoleViews
+                        .FirstOrDefault(u => u.UserId == agentId)?.Name;
+
                     ViewData["AgentName"] = agentName;
                     ViewData["UserRoleId"] = userRole.RoleId;
                     return View("~/Views/Feedback/Index.cshtml", agentFeedbacks);
                 }
-                else
+                else // Admin overview
                 {
                     var agentFeedbackRatings = _db.VwAgentFeedbackRatingViews.ToList();
                     ViewData["UserRoleId"] = userRole.RoleId;
                     return View("~/Views/AdminFeedback/Index.cshtml", agentFeedbackRatings);
                 }
             }
-            else
-            {
-                return Forbid("Access denied for this user role.");
-            }
+
+            return Forbid("Access denied for this user role.");
         }
 
         [HttpGet]
@@ -81,12 +90,13 @@ namespace ASI.Basecode.WebApp.Controllers
             if (loggedInUserId == null)
                 return Unauthorized("User not logged in");
 
-            var tickets = _db.VwAssignedTicketViews
-                .Where(v => v.UserId == loggedInUserId)
-                .Where(tickets => tickets.StatusId == 3 || tickets.StatusId == 4)
+            // Fetch tickets assigned to the logged-in user that are resolved or closed
+            var ticketsWithNoFeedback = _db.VwAssignedTicketViews
+                .Where(v => v.UserId == loggedInUserId && (v.StatusId == 3 || v.StatusId == 4)) // Only resolved/closed tickets
+                .Where(v => !_db.VwFeedbackViews.Any(f => f.UserTicketId == v.TicketId)) // Exclude tickets with feedback
                 .ToList();
 
-            ViewBag.Tickets = tickets;
+            ViewBag.Tickets = ticketsWithNoFeedback;
 
             return View(new Feedback());
         }
