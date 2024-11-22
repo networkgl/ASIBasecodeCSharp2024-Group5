@@ -6,13 +6,13 @@
     var averageRating = ViewData["AverageRating"] != null ? (decimal)ViewData["AverageRating"] : 0;
     var feedbackCount = ViewData["FeedbackCount"] != null ? (int)ViewData["FeedbackCount"] : 0;
     var agentName = ViewData["AgentName"] != null ? (string)ViewData["AgentName"] : "";
+    var categories = Model.Select(m => m.TicketCategory).Distinct().ToList();
 }
-
 <div class="d-flex justify-content-between align-items-center mb-3">
-    @switch(userRoleId)
+    @switch (userRoleId)
     {
         case 1:
-            <h6>Feedbacks</h6>
+            <h6>My Feedbacks</h6>
             break;
         case 2:
             <h6 class="fw-bold">Feedbacks to <i>You</i></h6>
@@ -24,146 +24,364 @@
             <h6>Feedbacks</h6>
             break;
     }
-    @if (userRoleId == 1)
-    {
-        <a asp-controller="Feedback" asp-action="Create" class="btn btn-primary w-200-px">
-            <i class="bi bi-plus-circle"></i> Create Feedback
-        </a>
-    }
 </div>
-@if (userRoleId == 2)
-{
-    <div class="d-flex justify-content-around align-items-center mb-4 bg-light p-3 rounded">
-        <!-- Your Feedback Rating -->
-        <div class="text-center">
-            <span><b>Your Feedback Rating</b></span>
-        </div>
 
-        <!-- Average Rating with Stars -->
-        <div class="text-center">
-            <strong>Average Rating:</strong>
-            @{
-                int fullStars = (int)averageRating;
-                bool hasHalfStar = ((double)averageRating - fullStars) >= 0.5;
-            }
-            <span class="ms-2">
+<div class="card h-100 p-16 radius-12">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- VIEW TYPE BUTTONS -->
+        <div class="btn-group align-items-center" role="group" aria-label="View Toggle">
+            <button id="cardViewBtn" class="btn btn-outline-primary active" onclick="switchView('card')">
+                <i class="bi bi-card-list"></i>
+            </button>
+            <button id="tableViewBtn" class="btn btn-outline-primary" onclick="switchView('table')">
+                <i class="bi bi-table"></i>
+            </button>
+        </div>
+        <!-- LEGENDS -->
+        <div class="d-flex gap-3" id="cardLegends" style="display: flex;">
+            <span class="fw-semibold mb-0" id="legendsTitle">Ticket Status Legend</span>
+            <div class="d-flex align-items-center" id="legendsResolved">
+                <div class="status-legend" id="legendsResolvedColor" style="background-color: #28a745; width: 16px; height: 16px; border-radius: 50%;"></div>
+                <span class="ms-2" id="legendsResolvedLabel">Resolved</span>
+            </div>
+            <div class="d-flex align-items-center" id="legendsClosed">
+                <div class="status-legend" id="legendsClosedColor" style="background-color: #6c757d; width: 16px; height: 16px; border-radius: 50%;"></div>
+                <span class="ms-2"id="legendsClosedLabel">Closed</span>
+            </div>
+        </div>
+        <div>
+            <div id="createFeedbackBtn" style="display: flex;">
+                <a asp-controller="Feedback" asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle" id="createFeedbackBtnIcon"></i> Create Feedback
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <input id="searchBar" class="form-control me-2" type="text" placeholder="Search Feedback..." style="width: 300px;" />
+
+        <!-- Filters -->
+        <div class="d-flex gap-2" style="margin-left: auto;">
+            <select id="filterCategory" class="form-select me-2" style="width: 200px;">
+                <option value="">All Categories</option>
+                @foreach (var category in categories)
+                {
+                    <option value="@category">@category</option>
+                }
+            </select>
+
+            <select id="filterRating" class="form-select me-2" style="width: 150px;">
+                <option value="">All Ratings</option>
                 @for (int i = 1; i <= 5; i++)
                 {
-                    if (i <= fullStars)
+                    <option value="@($"{i}.00")">@i Star(s)</option>
+                }
+            </select>
+
+            <select id="filterStatus" class="form-select me-2" style="width: 150px;">
+                <option value="">All Statuses</option>
+                <option value="3">Resolved</option>
+                <option value="4">Closed</option>
+            </select>
+        </div>
+    </div>
+    @if (userRoleId == 2)
+    {
+        <div class="d-flex justify-content-around align-items-center mb-4 bg-light p-3 rounded">
+            <div class="text-center">
+                <span><b>Your Feedback Rating</b></span>
+            </div>
+
+            <div class="text-center">
+                <strong>Average Rating:</strong>
+                @{
+                    int fullStars = (int)averageRating;
+                    bool hasHalfStar = ((double)averageRating - fullStars) >= 0.5;
+                }
+                <span class="ms-2">
+                    @for (int i = 1; i <= 5; i++)
                     {
-                        <i class="bi bi-star-fill text-warning"></i>
+                        if (i <= fullStars)
+                        {
+                            <i class="bi bi-star-fill text-warning"></i>
+                        }
+                        else if (hasHalfStar && i == fullStars + 1)
+                        {
+                            <i class="bi bi-star-half text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star text-secondary"></i>
+                        }
                     }
-                    else if (hasHalfStar && i == fullStars + 1)
+                    <span> (@averageRating.ToString("0.0"))</span>
+                </span>
+            </div>
+            <div class="text-center">
+                <strong>Total Feedbacks:</strong> @feedbackCount
+            </div>
+        </div>
+    }
+
+    <div id="cardView" class="row">
+        @if(Model.Any())
+        {
+            @foreach (var feedback in Model)
+            {
+                var borderColor = feedback.StatusId == 3 ? "#28a745" : feedback.StatusId == 4 ? "#6c757d" : "#ccc";
+                var headerColor = feedback.StatusId == 3 ? "#28a745" : feedback.StatusId == 4 ? "#6c757d" : "#f8f9fa";
+                <div class="col-md-4 mb-3 feedback-card"
+                     data-category="@feedback.TicketCategory"
+                     data-rating="@feedback.FeedbackRating?.ToString("0.00")"
+                     data-status="@feedback.StatusId"
+                     data-search="@feedback.IssueDescription @feedback.FeedbackText">
+                    <div class="card text-white" style="border: 2px solid @borderColor;">
+                        <div class="card-header text-white" style="background-color: @headerColor;">
+                            Feedback ID: @feedback.FeedbackId
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Category:</strong> @feedback.TicketCategory</p>
+                            <p><strong>Description:</strong> @feedback.IssueDescription</p>
+                            <p><strong>Feedback:</strong> @feedback.FeedbackText</p>
+                            <p>
+                                <strong>Rating:</strong>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="bi @(
+                                    i <= feedback.FeedbackRating ?
+                                    "bi-star-fill text-warning" :
+                                    "bi-star text-secondary"
+                                )"></i>
+                                }
+                            </p>
+                        </div>
+                        @if (userRoleId == 1)
+                        {
+                            <div class="d-flex justify-content-evenly card-footer text-center" id="feedback-@feedback.FeedbackId">
+                                <a asp-controller="Feedback" asp-action="Edit" asp-route-id="@feedback.FeedbackId" class="text-info">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a href="#" class="text-danger" onclick="confirmDelete('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
+                        }
+                        else if (userRoleId == 3)
+                        {
+                            <div class="d-flex justify-content-evenly card-footer text-center" id="feedback-@feedback.FeedbackId">
+                                <a href="#" class="text-danger" onclick="confirmDelete('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center">
+                <span>No Feedbacks Found!</span>
+            </div>
+        }
+    </div>
+
+    <div id="tableView" style="display: none;">
+        <div class="table-responsive-scroll">
+            <table class="table bordered-table">
+                <thead>
+                    <tr>
+                        @if (userRoleId == 3)
+                        {
+                            <th>Feedback ID</th>
+                        }
+                        <th>Ticket ID</th>
+                        <th>Category</th>
+                        <th>Issue Description</th>
+                        <th>Status</th>
+                        <th>Feedback</th>
+                        @if (userRoleId == 3)
+                        {
+                            <th>Agent ID</th>
+                        }
+                        <th>Rating</th>
+                        <th>Date Created</th>
+                        @if (userRoleId == 1 || userRoleId == 3)
+                        {
+                            <th>Actions</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
                     {
-                        <i class="bi bi-star-half text-warning"></i>
+                        @foreach (var feedback in Model)
+                        {
+                            <tr class="feedback-row" id="feedback-@feedback.FeedbackId"
+                                data-category="@feedback.TicketCategory"
+                                data-rating="@feedback.FeedbackRating?.ToString("0.00")"
+                                data-status="@feedback.StatusId"
+                                data-search="@feedback.IssueDescription @feedback.FeedbackText">
+                                @if (userRoleId == 3)
+                                {
+                                    <td>@feedback.FeedbackId</td>
+                                }
+                                <td>@feedback.UserTicketId</td>
+                                <td>@feedback.TicketCategory</td>
+                                <td>@feedback.IssueDescription</td>
+                                <td>
+                                    @{
+                                        string statusText = feedback.StatusId == 3 ? "Resolved" :
+                                        feedback.StatusId == 4 ? "Closed" : "In Progress";
+                                    }
+                                    <span>@statusText</span>
+                                </td>
+                                <td>@feedback.FeedbackText</td>
+                                @if (userRoleId == 3)
+                                {
+                                    <td>@feedback.AgentId</td>
+                                }
+                                <td>
+                                    <span>
+                                        @{
+                                            int fullStars = (int)feedback.FeedbackRating;
+                                            bool hasHalfStar = ((double)feedback.FeedbackRating - fullStars) >= 0.5;
+                                        }
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= fullStars)
+                                            {
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            }
+                                            else if (hasHalfStar && i == fullStars + 1)
+                                            {
+                                                <i class="bi bi-star-half text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star text-secondary"></i>
+                                            }
+                                        }
+                                        <span>(@feedback.FeedbackRating.ToString())</span>
+                                    </span>
+                                </td>
+                                <td>@feedback.CreatedAt?.ToString("MM/dd/yyyy")</td>
+                                @if (userRoleId == 1)
+                                {
+                                    <td class="text-center">
+                                        <a asp-action="Edit" asp-route-id="@feedback.FeedbackId">
+                                            <i class="bi bi-pencil-square text-primary"></i>
+                                        </a> |
+                                        <a href="#" onclick="confirmDelete('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
+                                            <i class="bi bi-trash text-danger"></i>
+                                        </a>
+                                    </td>
+                                }
+                                @if (userRoleId == 3)
+                                {
+                                    <td class="text-center">
+                                        <a href="#" onclick="confirmDelete('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
+                                            <i class="bi bi-trash text-danger"></i>
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+                        }
                     }
                     else
                     {
-                        <i class="bi bi-star text-secondary"></i>
+                        <tr>
+                            <td colspan="8" class="text-center">No feedback available</td>
+                        </tr>
                     }
-                }
-                <span> (@averageRating.ToString("0.0"))</span>
-            </span>
-        </div>
-        <div class="text-center">
-            <strong>Total Feedbacks:</strong> @feedbackCount
+                </tbody>
+            </table>
         </div>
     </div>
-}
-<div class="table-responsive-scroll">
-    <table class="table bordered-table" id="myFeedbackTable">
-        <thead>
-            <tr>
-                @if(userRoleId == 3) { <th>Feedback ID</th> }
-                <th>Ticket ID</th>
-                <th>Category</th>
-                <th>Issue Description</th>
-                <th>Status</th>
-                <th>Feedback</th>
-                @if(userRoleId == 3) { <th>Agent ID</th> }
-                <th>Rating</th>
-                <th>Date Created</th>
-                @if(userRoleId == 1 || userRoleId == 3) { <th>Actions</th> }
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Any())
-            {
-                @foreach (var feedback in Model)
-                {
-                    <tr>
-                        @if(userRoleId == 3) { <td>@feedback.FeedbackId</td> }
-                        <td>@feedback.UserTicketId</td>
-                        <td>@feedback.TicketCategory</td>
-                        <td>@feedback.IssueDescription</td>
-                        <td>
-                            @{
-                                string statusText = feedback.StatusId == 3 ? "Resolved" :
-                                                    feedback.StatusId == 4 ? "Closed" : "In Progress";
-                            }
-                            <span>@statusText</span>
-                        </td>
-                        <td>@feedback.FeedbackText</td>
-                        @if(userRoleId == 3) { <td>@feedback.AgentId</td> }
-                        <td>
-                            <span>
-                                @{
-                                    int fullStars = (int)feedback.FeedbackRating;
-                                    bool hasHalfStar = ((double)feedback.FeedbackRating - fullStars) >= 0.5;
-                                }
-                                @for (int i = 1; i <= 5; i++)
-                                {
-                                    if (i <= fullStars)
-                                    {
-                                        <i class="bi bi-star-fill text-warning"></i>
-                                    }
-                                    else if (hasHalfStar && i == fullStars + 1)
-                                    {
-                                        <i class="bi bi-star-half text-warning"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-star text-secondary"></i>
-                                    }
-                                }
-                                <span>(@feedback.FeedbackRating.ToString())</span>
-                            </span>
-                        </td>
-                        <td>@feedback.CreatedAt?.ToString("MM/dd/yyyy")</td>
-                        @if(userRoleId == 1)
-                        {
-                            <td class="text-center">
-                                <a asp-action="Edit" asp-route-id="@feedback.FeedbackId">
-                                    <i class="bi bi-pencil-square text-primary"></i>
-                                </a> |
-                                <a href="#" onclick="confirmDelete('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
-                                    <i class="bi bi-trash text-danger"></i>
-                                </a>
-                            </td>
-                        }
-                        @if(userRoleId == 3)
-                        {
-                            <td class="text-center">
-                                <a href="#" onclick="confirmDelete('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
-                                    <i class="bi bi-trash text-danger"></i>
-                                </a>
-                            </td>
-                        }
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="8" class="text-center">No feedback available</td>
-                </tr>
-            }
-        </tbody>
-    </table>
 </div>
+
 <script>
-    function confirmDelete(feedbackId) 
-    {
+    if (@userRoleId == 2 || @userRoleId == 3) {
+        document.getElementById("createFeedbackBtn").style.display = "none";
+        document.getElementById("createFeedbackBtnIcon").style.display = "none";
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchBar = document.getElementById('searchBar');
+        const filterCategory = document.getElementById('filterCategory');
+        const filterRating = document.getElementById('filterRating');
+        const filterStatus = document.getElementById('filterStatus');
+        const feedbackCards = document.querySelectorAll('.feedback-card');
+        const feedbackRows = document.querySelectorAll('.feedback-row');
+        const cardViewBtn = document.getElementById('cardViewBtn');
+        const tableViewBtn = document.getElementById('tableViewBtn');
+        const cardView = document.getElementById('cardView');
+        const tableView = document.getElementById('tableView');
+
+        // Card View Logic
+        cardViewBtn.addEventListener('click', () => {
+            cardView.style.display = 'flex';
+            tableView.style.display = 'none';
+            cardViewBtn.classList.add('btn-primary');
+            cardViewBtn.classList.remove('btn-outline-primary');
+            tableViewBtn.classList.add('btn-outline-primary');
+            tableViewBtn.classList.remove('btn-primary');
+            document.getElementById("cardLegends").style.display = "flex";
+            document.getElementById("legendsTitle").style.display = "flex";
+            document.getElementById("legendsResolvedColor").style.display = "flex";
+            document.getElementById("legendsResolvedLabel").style.display = "flex";
+            document.getElementById("legendsClosed").style.display = "flex";
+            document.getElementById("legendsClosedColor").style.display = "flex";
+            document.getElementById("legendsClosedLabel").style.display = "flex";
+        });
+
+        // Table View Logic
+        tableViewBtn.addEventListener('click', () => {
+            tableView.style.display = 'block';
+            cardView.style.display = 'none';
+            tableViewBtn.classList.add('btn-primary');
+            tableViewBtn.classList.remove('btn-outline-primary');
+            cardViewBtn.classList.add('btn-outline-primary');
+            cardViewBtn.classList.remove('btn-primary');
+            cardViewBtn.classList.remove('active');
+            document.getElementById("cardLegends").style.display = "none";
+            document.getElementById("legendsTitle").style.display = "none";
+            document.getElementById("legendsResolved").style.display = "none";
+            document.getElementById("legendsResolvedColor").style.display = "none";
+            document.getElementById("legendsResolvedLabel").style.display = "none";
+            document.getElementById("legendsClosed").style.display = "none";
+            document.getElementById("legendsClosedColor").style.display = "none";
+            document.getElementById("legendsClosedLabel").style.display = "none";
+        });
+
+        // Apply Filters
+        const applyFilters = () => {
+            const searchQuery = searchBar.value.toLowerCase();
+            const categoryFilter = filterCategory.value;
+            const ratingFilter = filterRating.value;
+            const statusFilter = filterStatus.value;
+
+            const filterFeedback = (elements) => {
+                elements.forEach(el => {
+                    const matchesSearch = el.dataset.search.toLowerCase().includes(searchQuery);
+                    const matchesCategory = !categoryFilter || el.dataset.category === categoryFilter;
+                    const matchesRating = !ratingFilter || el.dataset.rating === ratingFilter;
+                    const matchesStatus = !statusFilter || el.dataset.status === statusFilter;
+
+                    el.style.display = (matchesSearch && matchesCategory && matchesRating && matchesStatus) ? '' : 'none';
+                });
+            };
+
+            filterFeedback(feedbackCards);
+            filterFeedback(feedbackRows);
+        };
+
+        searchBar.addEventListener('input', applyFilters);
+        filterCategory.addEventListener('change', applyFilters);
+        filterRating.addEventListener('change', applyFilters);
+        filterStatus.addEventListener('change', applyFilters);
+    });
+    function confirmDelete(feedbackId) {
         if (confirm("Are you sure you want to delete this feedback?")) {
             fetch(`/Feedback/Delete/${feedbackId}`, {
                 method: 'POST',
@@ -201,21 +419,25 @@
         width: 100%;
         border-collapse: collapse;
     }
-    
-    .bordered-table th, .bordered-table td {
-        padding: 12px 15px;
-        border: 1px solid #dee2e6;
-    }    
-    .bordered-table th {
-        background-color: #f8f9fa;
-        font-weight: 600;
-    }
+
+        .bordered-table th, .bordered-table td {
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+        }
+
+        .bordered-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
     .bi-star, .bi-star-fill, .bi-star-half {
         font-size: 1.1rem;
     }
+
     .text-warning {
         color: #ffc107 !important;
     }
+
     .text-secondary {
         color: #6c757d !important;
     }

@@ -16,12 +16,26 @@
                         ticket-fixed="@ticket.LastModified"
                         ticket-agent="@ticket.AgentId"
                         ticket-assigned="@ticket.AssignedTicketId"
-                        ticket-agentname="@ticket.Name">
-                    Ticket ID: @ticket.TicketId - Category: @ticket.CategoryName, Issue: @ticket.IssueDescription,
-                    Created: @ticket.CreateAt, Fixed: @ticket.LastModified, Agent: @ticket.Name
+                        ticket-agentname="@ticket.Name"
+                        title="Category: @ticket.CategoryName
+Issue: @ticket.IssueDescription
+Created: @ticket.CreateAt
+Fixed: @ticket.LastModified
+Agent: @ticket.Name">
+                        Ticket ID: @ticket.TicketId - Category: @ticket.CategoryName <br />
                 </option>
             }
         </select>
+    </div>
+
+    <div id="ticketPreview" class="card mt-3" style="display: none; border: 1px solid #ddd; padding: 10px;">
+        <h6>Selected Ticket Details:</h6>
+        <p><strong>Ticket ID:</strong> <span id="ticketId"></span></p>
+        <p><strong>Category:</strong> <span id="ticketCategory"></span></p>
+        <p><strong>Issue:</strong> <span id="ticketIssue"></span></p>
+        <p><strong>Created:</strong> <span id="ticketCreatedAt"></span></p>
+        <p><strong>Fixed:</strong> <span id="ticketFixedAt"></span></p>
+        <p><strong>Agent:</strong> <span id="ticketAgentName"></span></p>
     </div>
 
     <input type="hidden" id="AssignedTicketId" name="AssignedTicketId" />
@@ -51,36 +65,26 @@
 
 <script>
     document.getElementById('TicketDropdown').addEventListener('change', function () {
-        var selectedOption = this.options[this.selectedIndex];
-        var table = document.getElementById('selectedTicketTable');
+        const selectedOption = this.options[this.selectedIndex];
+        const preview = document.getElementById('ticketPreview');
 
         if (selectedOption.value === "") {
-            table.style.display = "none";
+            preview.style.display = "none";
             document.getElementById('TicketId').value = "";
             return;
         }
 
-        table.style.display = "table";
+        preview.style.display = "block";
         document.getElementById('ticketId').innerText = selectedOption.value;
-        document.getElementById('ticketCategory').innerText = selectedOption.getAttribute('data-category');
-        document.getElementById('ticketIssue').innerText = selectedOption.getAttribute('data-issue');
-        var attachmentPath = selectedOption.getAttribute('data-attachment');
-        document.getElementById('ticketAttachment').innerHTML = attachmentPath ? `<img src="${attachmentPath}" class="w-120-px h-120-px" />` : "No file attached";
-        document.getElementById('ticketCreatedAt').innerText = selectedOption.getAttribute('data-created');
-        document.getElementById('ticketModifiedAt').innerText = selectedOption.getAttribute('data-modified');
-        document.getElementById('TicketId').value = selectedOption.value;
-    });
-
-    document.querySelector("form").onsubmit = function () {
-        document.getElementById('selectedTicketTable').style.display = "none";
-        document.getElementById("TicketDropdown").selectedIndex = 0;
-    };
-    document.getElementById('TicketDropdown').addEventListener('change', function () {
-        var selectedOption = this.options[this.selectedIndex];
-
+        document.getElementById('ticketCategory').innerText = selectedOption.getAttribute('ticket-category');
+        document.getElementById('ticketIssue').innerText = selectedOption.getAttribute('ticket-issue');
+        document.getElementById('ticketCreatedAt').innerText = selectedOption.getAttribute('ticket-created');
+        document.getElementById('ticketFixedAt').innerText = selectedOption.getAttribute('ticket-fixed');
+        document.getElementById('ticketAgentName').innerText = selectedOption.getAttribute('ticket-agentname');
         document.getElementById('AssignedTicketId').value = selectedOption.getAttribute('ticket-assigned');
         document.getElementById('AgentId').value = selectedOption.getAttribute('ticket-agent');
         document.getElementById('CategoryName').value = selectedOption.getAttribute('ticket-category');
+        document.getElementById('TicketId').value = selectedOption.value;
     });
 </script>
 
