@@ -30,12 +30,19 @@ namespace ASI.Basecode.WebApp.Controllers
                 var TicketsByCategory = _db.VwTotalTicketSummaryWithCategories.ToList();
                 var TicketsByStatus = _db.VwTotalTicketSummaryWithStatuses.ToList();
                 var TicketsByPriority = _db.VwTotalTicketSummaryWithPriorities.ToList();
+                var agentResolvedTicket = _db.VwResolvedTicketByAgents.ToList();
+                //var agentResolutionTime = _db.VwAssignedTicketViews.ToList();
+                var agentCustSatRating = _db.VwCustomerSatisfactionRatings.ToList();
 
-                var summaryModel = new TicketSummaryModel
+                var summaryModel = new ReportingAndAnalyticsModel
                 {
                     TicketSummaryWithCategory = TicketsByCategory,
                     TicketSummaryWithStatus = TicketsByStatus,
-                    TicketSummaryWithPriority = TicketsByPriority
+                    TicketSummaryWithPriority = TicketsByPriority,
+                    TicketsResolved = agentResolvedTicket,
+                    //AverageResolutionTime = agentResolutionTime,
+                    CustomerSatisfactionRatings = agentCustSatRating,   
+
                 };
                 return View(summaryModel);
             }
@@ -46,7 +53,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 var TicketsByStatus = _db.VwTicketsByStatuses.Where(m => m.UserId == userId).ToList();
                 var TicketsByPriority = _db.VwTicketsByPriorities.Where(m => m.UserId == userId).ToList();
 
-                var summaryModel = new TicketSummaryModel
+                var summaryModel = new ReportingAndAnalyticsModel
                 {
                     TicketsByCategory = TicketsByCategory,
                     TicketsByStatus = TicketsByStatus,
@@ -59,9 +66,6 @@ namespace ASI.Basecode.WebApp.Controllers
             return View();
 
         }
-
-
-
 
 
     }

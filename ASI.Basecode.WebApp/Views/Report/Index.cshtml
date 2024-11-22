@@ -1,19 +1,26 @@
 ﻿@using ASI.Basecode.Data.Models.CustomModels;
-@model ASI.Basecode.Data.Models.CustomModels.TicketSummaryModel;
+@model ASI.Basecode.Data.Models.CustomModels.ReportingAndAnalyticsModel;
 @using Newtonsoft.Json;
 
 @{
     string totalCategoriesJson = "none";
     string totalStatusesJson = "none";
     string totalPrioritiesJson = "none";
-    var categoriesJson = "none";
-    var statusesJson = "none";
-    var prioritiesJson = "none";
+    string agentResolvedTicketsJson = "none";
+    string agentResolutionTimeJson = "none";
+    string agentSatisfactionJson = "none";
+    string categoriesJson = "none";
+    string statusesJson = "none";
+    string prioritiesJson = "none";
+
     if (User.FindFirst("UserRole")?.Value == "administrator" || User.FindFirst("UserRole")?.Value == "superadmin")
     {
         totalCategoriesJson = JsonConvert.SerializeObject(Model.TicketSummaryWithCategory);
         totalStatusesJson = JsonConvert.SerializeObject(Model.TicketSummaryWithStatus);
         totalPrioritiesJson = JsonConvert.SerializeObject(Model.TicketSummaryWithPriority);
+        agentResolvedTicketsJson = JsonConvert.SerializeObject(Model.TicketsResolved);
+        agentResolutionTimeJson = JsonConvert.SerializeObject(Model.AverageResolutionTime);
+        agentSatisfactionJson = JsonConvert.SerializeObject(Model.CustomerSatisfactionRatings);
     }
     else if (User.FindFirst("UserRole")?.Value == "support agent")
     {
@@ -21,67 +28,135 @@
         statusesJson = JsonConvert.SerializeObject(Model.TicketsByStatus);
         prioritiesJson = JsonConvert.SerializeObject(Model.TicketsByPriority);
     }
-    
-    
+
+
     // var userActivitiesJson = JsonConvert.SerializeObject(Model.UserActivities);
 }
 
-<div style="width: 100%; padding-bottom: 20px;" class="d-flex justify-content-center align-items-center">
-    <strong class="text-align-center" style="font-size: 30px;">Ticket Summary</strong>
-</div>
-<div class="row row-cols-xxxl-4 row-cols-lg-4 row-cols-sm-2 row-cols-1 gy-4">
-
-    <!-- Ticket Category Start  -->
-    <div class="col-md-6">
-        <div class="card h-100 p-0">
-            <div class="card-header border-bottom bg-base py-16 px-24">
-                <h6 class="text-lg fw-semibold mb-0">Ticket Category</h6>
-            </div>
-            <div class="card-body p-24 text-center chart-container">
-                <div id="pieChartCategory"></div>
-            </div>
+    <div style="width: 100%;" class="d-flex justify-content-center align-items-center">
+        <strong class="text-align-center" style="font-size: 30px;">Ticket Summary</strong>
+    </div>
+    <div id="dateRange" class="d-flex justify-content-start align-items-start mb-3" style="width: 300px; ">
+        <div class="mb-3" style="width: 100%; margin-right: 10px;">
+            <label for="startDate" class="form-label" style="font-weight: 600; color: #333;">Start Date</label>
+            <input type="datetime-local" name="startDate" id="startDate" class="form-control" style="border-radius: 5px; border-color: #ccc;">
+        </div>
+        <div class="mb-3" style="width: 100%;">
+            <label for="endDate" class="form-label" style="font-weight: 600; color: #333;">End Date</label>
+            <input type="datetime-local" name="endDate" id="endDate" class="form-control" style="border-radius: 5px; border-color: #ccc;">
+        </div>
+        <div class="mb-3">
+        <a href="#" class="button ms-3" style="margin-top: 2rem; width: 10rem"><button type="button" class="btn btn-primary-600 radius-8 px-20 py-11 w-100">Print Reports</button></a>
         </div>
     </div>
 
-    <!-- Ticket Status Start  -->
-    <div class="col-md-6">
-        <div class="card h-100 p-0">
-            <div class="card-header border-bottom bg-base py-16 px-24">
-                <h6 class="text-lg fw-semibold mb-0">Ticket Status</h6>
-            </div>
-            <div class="card-body p-24 text-center chart-container">
-                <div id="pieChartStatus"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ticket Priority Start -->
-    <div class="col-md-6">
-        <div class="card h-100 p-0">
-            <div class="card-header border-bottom bg-base py-16 px-24">
-                <h6 class="text-lg fw-semibold mb-0">Ticket Priority</h6>
-            </div>
-            <div class="card-body p-24 text-center chart-container">
-                <div id="pieChartPriority"></div>
+    <div class="row row-cols-xxxl-3 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4">
+        <!-- Ticket Category Start -->
+        <div class="col-md-4">
+            <div class="card h-100 p-0">
+                <div class="card-header border-bottom bg-base py-16 px-24">
+                    <h6 class="text-lg fw-semibold mb-0">
+                        Ticket Category
+                        <span id="categoryTotalCount" class="badge badge-secondary ml-2">0</span> <!-- Placeholder for total count -->
+                    </h6>
+                </div>
+                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
+                    <div id="pieChartCategory" style="height: 100%;"></div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Ticket User Activity Start -->
-    <div class="col-md-6">
-        <div class="card h-100 p-0">
-            <div class="card-header border-bottom bg-base py-16 px-24">
-                <h6 class="text-lg fw-semibold mb-0">Ticket User Activity</h6>
-            </div>
-            <div class="card-body p-24 text-center chart-container">
-                <div id="pieChartActivity"></div>
+        <!-- Ticket Status Start -->
+        <div class="col-md-4">
+            <div class="card h-100 p-0">
+                <div class="card-header border-bottom bg-base py-16 px-24">
+                    <h6 class="text-lg fw-semibold mb-0">
+                        Ticket Status
+                        <span id="statusTotalCount" class="badge badge-secondary ml-2">0</span> <!-- Placeholder for total count -->
+                    </h6>
+                </div>
+                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
+                    <div id="pieChartStatus" style="height: 100%;"></div>
+                </div>
             </div>
         </div>
+
+        <!-- Ticket Priority Start -->
+        <div class="col-md-4">
+            <div class="card h-100 p-0">
+                <div class="card-header border-bottom bg-base py-16 px-24">
+                    <h6 class="text-lg fw-semibold mb-0">
+                        Ticket Priority
+                        <span id="priorityTotalCount" class="badge badge-secondary ml-2">0</span> <!-- Placeholder for total count -->
+                    </h6>
+                </div>
+                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
+                    <div id="pieChartPriority" style="height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
+
     </div>
+    @if (User.FindFirst("UserRole")?.Value == "administrator" || User.FindFirst("UserRole")?.Value == "superadmin")
+    {
+        <!-- Agent Performance Report -->
 
-</div>
+        <div style="width: 100%; padding-bottom: 20px;" class="d-flex justify-content-center align-items-center mt-5">
+            <strong class="text-align-center" style="font-size: 30px;">Agent Performance Report</strong>
+        </div>
 
-<script type="text/javascript">
+        <div class="row row-cols-xxxl-3 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4">
+            <!-- Resolved Tickets -->
+            <div class="col-md-4">
+                <div class="card h-100 p-0">
+                    <div class="card-header border-bottom bg-base py-16 px-24">
+                        <h6 class="text-lg fw-semibold mb-0">
+                            Resolved Tickets by Agents
+                        </h6>
+                    </div>
+                    <div class="card-body p-24 text-center chart-container" style="height: 400px;">
+                        <div id="pieChartResolvedTickets" style="height: 100%;"></div>
+                        @* <canvas id="barChartResolvedTickets" width="400" height="200"></canvas> *@
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Resolution Time -->
+            <div class="col-md-4">
+                <div class="card h-100 p-0">
+                    <div class="card-header border-bottom bg-base py-16 px-24">
+                        <h6 class="text-lg fw-semibold mb-0">
+                            Average Resolution Time (in hours)
+                        </h6>
+                    </div>
+                    <div class="card-body p-24 text-center chart-container" style="height: 400px;">
+                        <div id="pieChartResolutionTime" style="height: 100%;"></div>
+                        @* <canvas id="barChartResolutionTime" width="400" height="200"></canvas> *@
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Satisfaction -->
+            <div class="col-md-4">
+                <div class="card h-100 p-0">
+                    <div class="card-header border-bottom bg-base py-16 px-24">
+                        <h6 class="text-lg fw-semibold mb-0">
+                            Customer Satisfaction Ratings
+                        </h6>
+                    </div>
+                    <div class="card-body p-24 text-center chart-container" style="height: 400px;">
+                        <div id="pieChartSatisfaction" style="height: 100%;"></div>
+                        @* <canvas id="barChartSatisfaction" width="400" height="200"></canvas> *@
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script >
     // Pass the user role to JavaScript
     var userRole = '@User.FindFirst("UserRole")?.Value';
 
@@ -89,9 +164,17 @@
     if (userRole === "administrator" || userRole === "superadmin") {
         var totalCategories = @Html.Raw(totalCategoriesJson);
         var totalStatuses = @Html.Raw(totalStatusesJson);
-
         var totalPriorities = @Html.Raw(totalPrioritiesJson);
-        console.log(totalPriorities)
+        var totalResolvedTickets = @Html.Raw(agentResolvedTicketsJson);
+        var avgResolutionTime = @Html.Raw(agentResolutionTimeJson);
+        var avgCustSatRating = @Html.Raw(agentSatisfactionJson);
+        console.log(totalCategories);
+        console.log(totalStatuses);
+        console.log(totalPriorities);
+
+        console.log(totalResolvedTickets);
+        console.log(avgResolutionTime);
+        console.log(avgCustSatRating);
 
     }
     else if (userRole === "support agent") {
@@ -100,29 +183,30 @@
         var priorities = @Html.Raw(prioritiesJson);
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        if (userRole === "administrator" || userRole === "superadmin") {
-            renderChart('pieChartCategory', totalCategories.map(c => c.TotalCount), totalCategories.map(c => c.CategoryName));
-            renderChart('pieChartStatus', totalStatuses.map(s => s.TotalCount), totalStatuses.map(s => s.StatusName));
-            renderChart('pieChartPriority', totalPriorities.map(p => p.TotalCount), totalPriorities.map(p => p.PriorityName));
-        }
-        else if (userRole === "support agent") {
-            renderChart('pieChartCategory', categories.map(c => c.TicketsByCategory), categories.map(c => c.CategoryName));
-            renderChart('pieChartStatus', statuses.map(s => s.TicketByStatus), statuses.map(s => s.StatusName));
-            renderChart('pieChartPriority', priorities.map(p => p.TicketByPriority), priorities.map(p => p.PriorityName));
-        }
-        // Optionally render user activity chart if needed
-        // renderChart('pieChartUserActivity', userActivities.map(u => u.TicketCount), userActivities.map(u => u.UserName));
-    });
-
     function renderChart(elementId, seriesData, labels) {
-        console.log(seriesData)
         var options = {
             series: seriesData,
-            chart: { type: 'pie', height: 264 },
+            chart: {
+                type: 'pie',
+                height: 300
+            },
             labels: labels,
-            legend: { position: 'bottom', horizontalAlign: 'center' },
-            colors: ['#487FFF', '#FF9F29', '#45B369', '#EF4A00'],
+            legend: {
+                position: 'right',
+                horizontalAlign: 'left',
+                verticalAlign: 'top',
+                itemMargin: { horizontal: 5, vertical: 5 },
+                layout: 'vertical',
+                formatter: function (seriesName, opts) {
+                    return seriesName + ' (' + opts.w.globals.series[opts.seriesIndex] + ')';
+                },
+                markers: {
+                    width: 12,
+                    height: 12,
+                    radius: 12
+                }
+            },
+            colors: ['#487FFF', '#FF9F29', '#45B369', '#EF4A00', '#F5C26B'],
             responsive: [{
                 breakpoint: 480,
                 options: {
@@ -132,10 +216,28 @@
             }]
         };
 
+
         var id = elementId;
-        console.log(id)
         var chart = new ApexCharts(document.getElementById(id), options);
         chart.render();
     }
-</script>
 
+    document.addEventListener('DOMContentLoaded', function () {
+        if (userRole === "administrator" || userRole === "superadmin") {
+            renderChart('pieChartCategory', totalCategories.map(c => c.TotalCount), totalCategories.map(c => c.CategoryName));
+            renderChart('pieChartStatus', totalStatuses.map(s => s.TotalCount), totalStatuses.map(s => s.StatusName));
+            renderChart('pieChartPriority', totalPriorities.map(p => p.TotalCount), totalPriorities.map(p => p.PriorityName));
+
+            renderChart('pieChartResolvedTickets', totalResolvedTickets.map(t => t.TotalResolvedCount), totalResolvedTickets.map(t => t.AgentName));
+            renderChart('pieChartResolutionTime', avgCustSatRating.map(cs => cs.AvgFeedbackRating), avgCustSatRating.map(cs => cs.AgentName));
+            // renderChart('pieChartResolutionTime', totalResolvedTickets.map(r => r.TotalResolvedCount), totalResolvedTickets.map(t => t.AgentName));
+            renderChart('pieChartSatisfaction', avgCustSatRating.map(cs => cs.AvgFeedbackRating), avgCustSatRating.map(cs => cs.AgentName));
+        } else if (userRole === "support agent") {
+            renderChart('pieChartCategory', categories.map(c => c.TicketsByCategory), categories.map(c => c.CategoryName));
+            renderChart('pieChartStatus', statuses.map(s => s.TicketByStatus), statuses.map(s => s.StatusName));
+            renderChart('pieChartPriority', priorities.map(p => p.TicketByPriority), priorities.map(p => p.PriorityName));
+        }
+    });
+
+    
+</script>

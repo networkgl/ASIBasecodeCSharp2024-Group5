@@ -36,8 +36,10 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwAgentCount> VwAgentCounts { get; set; }
         public virtual DbSet<VwAgentFeedbackRatingView> VwAgentFeedbackRatingViews { get; set; }
         public virtual DbSet<VwAssignedTicketView> VwAssignedTicketViews { get; set; }
+        public virtual DbSet<VwCustomerSatisfactionRating> VwCustomerSatisfactionRatings { get; set; }
         public virtual DbSet<VwFeedbackView> VwFeedbackViews { get; set; }
         public virtual DbSet<VwNotificationView> VwNotificationViews { get; set; }
+        public virtual DbSet<VwResolvedTicketByAgent> VwResolvedTicketByAgents { get; set; }
         public virtual DbSet<VwTicketAssignedToMeAgent> VwTicketAssignedToMeAgents { get; set; }
         public virtual DbSet<VwTicketCountForAgent> VwTicketCountForAgents { get; set; }
         public virtual DbSet<VwTicketDetailsView> VwTicketDetailsViews { get; set; }
@@ -414,6 +416,19 @@ namespace ASI.Basecode.Data
                     .IsUnicode(false);
             });
 
+            modelBuilder.Entity<VwCustomerSatisfactionRating>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_CustomerSatisfactionRatings");
+
+                entity.Property(e => e.AgentName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AvgFeedbackRating).HasColumnType("decimal(38, 6)");
+            });
+
             modelBuilder.Entity<VwFeedbackView>(entity =>
             {
                 entity.HasNoKey();
@@ -465,6 +480,17 @@ namespace ASI.Basecode.Data
                     .IsUnicode(false);
 
                 entity.Property(e => e.StatusName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwResolvedTicketByAgent>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_ResolvedTicketByAgent");
+
+                entity.Property(e => e.AgentName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
             });
