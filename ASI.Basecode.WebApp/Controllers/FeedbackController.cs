@@ -72,7 +72,7 @@ namespace ASI.Basecode.WebApp.Controllers
                     ViewData["UserRoleId"] = userRole.RoleId;
                     return View("~/Views/Feedback/Index.cshtml", agentFeedbacks);
                 }
-                else // Admin overview
+                else
                 {
                     var agentFeedbackRatings = _db.VwAgentFeedbackRatingViews.ToList();
                     ViewData["UserRoleId"] = userRole.RoleId;
@@ -90,7 +90,6 @@ namespace ASI.Basecode.WebApp.Controllers
             if (loggedInUserId == null)
                 return Unauthorized("User not logged in");
 
-            // Fetch tickets assigned to the logged-in user that are resolved or closed
             var ticketsWithNoFeedback = _db.VwAssignedTicketViews
                 .Where(v => v.UserId == loggedInUserId && (v.StatusId == 3 || v.StatusId == 4)) // Only resolved/closed tickets
                 .Where(v => !_db.VwFeedbackViews.Any(f => f.UserTicketId == v.TicketId)) // Exclude tickets with feedback
