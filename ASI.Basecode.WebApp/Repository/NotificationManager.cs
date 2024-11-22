@@ -15,7 +15,7 @@ namespace ASI.Basecode.WebApp.Repository
     {
         public NotificationManager() { }
 
-        protected List<Notification> GetUserAssociatedNotif(int? userId)
+        public List<Notification> GetUserAssociatedNotif(int? userId)
         {
             return _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
         }

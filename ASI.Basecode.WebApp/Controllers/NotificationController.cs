@@ -36,12 +36,17 @@ namespace ASI.Basecode.WebApp.Controllers
                         {
                             TempData["hasRead"] = (byte)NotifStatus.NotRead;
                             retValNotif = GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.NotRead || m.IsRead == null).ToList();
+                            TempData["totalCountNotRead"] = retValNotif.Count;
                         }
                     }
                     else
                     {
                         retValNotif = GetUserAssociatedNotif(userId);
                     }
+
+                    //Always get count for reference in the view.
+                    var notReadNotifCount = GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.NotRead || m.IsRead == null).ToList().Count;
+                    TempData["totalCountNotRead"] = notReadNotifCount;
                 }
             }
 
