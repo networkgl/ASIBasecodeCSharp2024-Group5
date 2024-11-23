@@ -1,15 +1,13 @@
-﻿using ASI.Basecode.WebApp.Controllers;
+﻿using ASI.Basecode.Data.Interfaces;
+using ASI.Basecode.Data.Models;
+using ASI.Basecode.Services.Controllers;
 using ASI.Basecode.WebApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ASI.Basecode.Data.Models;
-using ASI.Basecode.Data.Interfaces;
-using Microsoft.AspNetCore.Http;
-using ASI.Basecode.Resources.Messages;
 using static ASI.Basecode.Resources.Constants.Enums;
 
-namespace ASI.Basecode.WebApp.Repository
+namespace ASI.Basecode.Services.Repository
 {
     public class NotificationManager : BaseController
     {

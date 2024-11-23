@@ -2,35 +2,121 @@
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.Resources.Constants;
+using ASI.Basecode.Resources.Messages;
+using ASI.Basecode.Services.Controllers;
+using ASI.Basecode.Services.Repository;
+using ASI.Basecode.Services.Services;
 using ASI.Basecode.WebApp.Repository;
 using ASI.Basecode.WebApp.Utils;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
-    [Authorize(Policy = "SupportAgentPolicy")]
-    public class AgentManageTicketController : BaseController
+    [Authorize]
+    public class TicketController : TicketServices
     {
-        public AgentManageTicketController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public TicketController(IWebHostEnvironment webHostEnvironment)
         {
+            _webHostEnvironment = webHostEnvironment;
         }
-        [HttpGet("ManageTickets")]
-        public IActionResult Index()
+        [HttpGet("MyTickets")]
+        [Authorize(Policy ="UserPolicy")]
+        public IActionResult UserTicketIndex()
         {
             HandleTempDataMessages();
 
             if (User.Identity.IsAuthenticated)
             {
-                var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+                try
+                {
+                    return View(UserMyTicketIndex());
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex);
+                }
+            }
+            return NotFound();
+        }
 
-                var myTickets = _db.VwTicketDetailsViews.ToList().OrderByDescending(m => m.TicketId);
+        [HttpGet("MyTickets/{id}")]
+        [Authorize(Policy = "UserPolicy")]
+        public IActionResult UserTicketIndex(int id)
+        {
+            HandleTempDataMessages();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                try
+                {
+                    var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+                    var myTickets = _db.VwUserTicketViews
+                        .Where(m => m.UserId == userId && (id == 1 ? m.StatusId == 3 : m.StatusId != 3))
+                        .OrderByDescending(m => m.TicketId).ToList();
+
+                    UpdateTicketStatusMessages(myTickets);
+
+                    TempData["TableId"] = "myTicketsTable";
+                    ViewBag.Priorities = _db.Priorities.ToList();
+                    ViewBag.Categories = _db.Categories.ToList();
+                    ViewBag.Statuses = _db.Statuses.ToList();
+
+                    return View(myTickets);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex);
+                }
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet("AgentManageTickets")]
+        [Authorize(Policy = "SupportAgentPolicy")]
+        public IActionResult AgentTicketIndex()
+        {
+            HandleTempDataMessages();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                try
+                {
+                    return View(SupportAgentTicketIndex());
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex);
+                }
+            }
+            return NotFound();
+        }
+
+        [HttpGet("AgentManageTickets/{id}")]
+        [Authorize(Policy = "SupportAgentPolicy")]
+        public IActionResult AgentTicketIndex(int id)
+        {
+            HandleTempDataMessages();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = GetLoggedInUserId();
+
+                var myTickets = _db.VwTicketDetailsViews.OrderByDescending(m => m.TicketId).ToList();
                 ViewData["TableId"] = "agentManageTicketsTable";
                 ViewData["Priorities"] = _db.Priorities.ToList();
                 ViewData["Categories"] = _db.Categories.ToList();
@@ -41,29 +127,97 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
-        [HttpGet("ManageTickets/{id}")]
-        public IActionResult Index(int id)
+        [HttpGet("AdminManageTickets")]
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult AdministratorTicketIndex()
         {
             HandleTempDataMessages();
 
             if (User.Identity.IsAuthenticated)
             {
-                var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-
-                var myTickets = _db.VwTicketDetailsViews.ToList().OrderByDescending(m => m.TicketId);
-                ViewData["TableId"] = "agentManageTicketsTable";
-                ViewBag.Priorities = _db.Priorities.ToList();
-                ViewBag.Categories = _db.Categories.ToList();
-                ViewBag.Statuses = _db.Statuses.ToList();
-                return View(myTickets);
+                try
+                {
+                    return View(AdminTicketIndex());
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex);
+                }
             }
-
             return NotFound();
         }
 
-        //[HttpGet("UpdateTicket/{id}")]
+        [HttpGet("AdminManageTickets/{id}")]
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult AdministratorTicketIndex(int id)
+        {
+            HandleTempDataMessages();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                try
+                {
+                    return View(AdminTicketIndex());
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex);
+                }
+            }
+            return NotFound();
+        }
+
+        public IActionResult CreateTicket()
+        {
+            CustomTicket ticket = new CustomTicket();
+
+            var categories = _db.Categories.ToList();
+            ticket.category = categories;
+
+            var priorities = _db.Priorities.ToList();
+            ticket.priority = priorities;
+
+            var status = _db.Statuses.ToList();
+            ticket.status = status;
+
+            return View(ticket);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateTicket(CustomTicket customTicket)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return NotFound();
+            }
+
+            if (ValidateInput(customTicket) == ErrorCode.Error)
+            {
+                PopulateCustomTicket(customTicket);
+                return View(customTicket);
+            }
+
+            var userId = GetLoggedInUserId();
+            string errorMsg = string.Empty, successMsg = string.Empty;
+
+            SetDateToday(customTicket);
+            PopulateCustomTicket(customTicket);
+            await SetTicketAttachmentPath(customTicket);
+
+            if (UserTicketCreate(customTicket, userId, out errorMsg, out successMsg) == ErrorCode.Success)
+            {
+                CreateTempDataForAlertContent(ErrorCode.Success, successMsg);
+                Console.WriteLine(ViewData["ResMsg"]);
+                return RedirectToAction("UserTicketIndex");
+            }
+
+            // Handle errors
+            CreateTempDataForAlertContent(ErrorCode.Error, string.IsNullOrEmpty(errorMsg) ? "An error has occurred upon submitting the ticket, please try again." : errorMsg);
+            return View(customTicket);
+        }
+
         [HttpGet]
-        public IActionResult Edit(int id, int? NotificationId)
+        public IActionResult AgentUpdateTicket(int id, int? NotificationId)
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -143,9 +297,8 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
-        //[HttpPost("UpdateTicket/{id}")]
         [HttpPost]
-        public IActionResult Edit(CustomEditTicketAssignment customTicket)
+        public IActionResult AgentUpdateTicket(CustomEditTicketAssignment customTicket)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -181,7 +334,7 @@ namespace ASI.Basecode.WebApp.Controllers
             customTicket.Status = status;
             customTicket.Agents = agents;
 
-            //check if there is a chosen priority. if none then set priority to null, otherwise set to selected value
+            //check if there is a chosen priority. if none then set priority to null, otherwise set to selected value   
             if (customTicket.Ticket.PriorityId is null || customTicket.Ticket.PriorityId == 0)
             {
                 ticket.PriorityId = null;
@@ -229,7 +382,7 @@ namespace ASI.Basecode.WebApp.Controllers
             var AssignerId = User.FindFirst("UserId")?.Value;
 
             //if assignedTicket is null then we create new AssignedTicket, otherwise update existing assignedTicket
-            
+
             if (assignedTicket is null)
             {
                 ticket.StatusId = 2;
@@ -243,7 +396,7 @@ namespace ASI.Basecode.WebApp.Controllers
                     DateAssigned = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow),
                     LastModified = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow),
                 };
-                
+
                 if (_ticketRepo.Update(ticket.TicketId, ticket) == ErrorCode.Success)
                 {
                     if (_assignedTicketRepo.Create(assignedTicket) == ErrorCode.Success)
@@ -274,7 +427,7 @@ namespace ASI.Basecode.WebApp.Controllers
                             hasChangedPriorityId = true;
                         }
 
-                        if (customTicket.Ticket.StatusId == 3) 
+                        if (customTicket.Ticket.StatusId == 3)
                         {
                             if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, int.Parse(AssignerId), out errorMsg, out successMsg) == ErrorCode.Success)
                             {
@@ -295,14 +448,14 @@ namespace ASI.Basecode.WebApp.Controllers
                             });
 
                         }
-       
+
 
                         customTicket.Ticket = ticket;
                         customTicket.AssignedTicket = assignedTicket;
                         customTicket.Agent = userAgent;
                         customTicket.Category = categories;
                         TempData["status"] = ErrorCode.Success;
-                        return RedirectToAction("Index");
+                        return RedirectToAction("AgentTicketIndex");
                     }
                 }
             }
@@ -386,16 +539,12 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
-        public IActionResult Details(int id)
+        public IActionResult AgentTicketDetails(int id)
         {
             if (!User.Identity.IsAuthenticated)
             {
                 return BadRequest();
             }
-            //if (TempData["TicketId"] != null)
-            //{
-            //    id = Convert.ToInt32(ViewData["TicketId"]);
-            //}
 
             var userId = User.FindFirst("UserId")?.Value;
             var myTicket = _db.VwTicketDetailsViews.Where(m => m.TicketId == id).FirstOrDefault();
@@ -403,74 +552,99 @@ namespace ASI.Basecode.WebApp.Controllers
             return View(myTicket);
         }
 
-        private void HandleTempDataMessages()
+        public IActionResult UserTicketDetails(int id, int? NotificationId) 
         {
-            if (TempData["ResMsg"] is not null)
+            if (!User.Identity.IsAuthenticated)
             {
-                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-                if (resMsg is not null && User.Identity.IsAuthenticated)
+                return BadRequest();
+            }
+
+            var userId = User.FindFirst("UserId")?.Value;
+            var myTicket = _db.VwUserTicketViews.Where(m => m.TicketId == id).FirstOrDefault();
+            UpdateTicketStatusMessage(myTicket);
+
+
+            //update notif mark as read if this route is visited from notification view
+            if (NotificationId != null)
+            {
+                var getNotifById = _notifRepo.Table.Where(m => m.NotificationId == NotificationId).FirstOrDefault();
+                getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-                    {
-                        Status = resMsg.Status,
-                        Message = resMsg.Message
-                    });
+                    //Possible error internal upon updating if there is
+                    return BadRequest();//temporary return...
+                };
+            }
+
+            return View(myTicket);
+        }
+
+        public IActionResult Delete(int id)
+        {
+            ViewData["temp"] = "delete";
+            if (_ticketRepo.Delete(id) == ErrorCode.Success)
+            {
+                CreateTempDataForAlertContent(ErrorCode.Success, "Ticket deleted successfully.");
+                return Ok();
+            }
+            CreateTempDataForAlertContent(ErrorCode.Error, "An error has occured when deleting the ticket, please try again later.");
+            return BadRequest();
+        }
+
+        public async Task SetTicketAttachmentPath(CustomTicket customTicket)
+        {
+            var root = Path.Combine(_webHostEnvironment.WebRootPath, "images");
+            var imageFile = customTicket.formFile;
+
+            if (!Directory.Exists(root))
+            {
+                Directory.CreateDirectory(root);
+            }
+
+            ViewData["root"] = root;
+            customTicket.ticket.StatusId = 1;
+
+
+            if (imageFile != null)
+            {
+                string uniqueFileName = GetUniqueFileName(root, imageFile.FileName);
+                string filePath = Path.Combine(root, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
                 }
+
+                string relativePath = Path.Combine("/images", uniqueFileName).Replace("\\", "/");
+                customTicket.ticket.AttachmentPath = relativePath;
             }
         }
 
-        //private void HandleCreateTempData()
-        //{
-        //    if (TempData["ResMsg"] is not null)
-        //    {
-        //        var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-        //        if (resMsg is not null && User.Identity.IsAuthenticated)
-        //        {
-        //            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-        //            {
-        //                Status = resMsg.Status,
-        //                Message = resMsg.Message
-        //            });
-        //        }
-        //    }
-        //}
-
-        //private void HandleDeleteTempData()
-        //{
-        //    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-        //    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-        //    {
-        //        Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
-        //        Message = status == 0
-        //            ? "A ticket has been deleted successfully!"
-        //            : "An error has occurred upon deleting the ticket."
-        //    });
-        //}
-
-        //private void HandleUpdateTempData()
-        //{
-        //    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-        //    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-        //    {
-        //        Status = status == 0 ? ErrorCode.Success : ErrorCode.Error,
-        //        Message = status == 0
-        //            ? "Ticket updated successfully!"
-        //            : "An error has occurred when updating your ticket, please try again."
-        //    });
-        //}
-        private void UpdateTicketStatusMessages(List<VwUserTicketView> tickets)
+        public string GetUniqueFileName(string parentPath, string fileName)
         {
-            tickets.ForEach(ticket =>
+            string uniqueName = fileName;
+            int count = 1;
+
+            string folderPath = Path.Combine(_webHostEnvironment.WebRootPath, parentPath);
+
+            if (!Directory.Exists(folderPath))
             {
-                ticket.StatusName = ticket.StatusId switch
-                {
-                    1 => "Your ticket is pending assignment to an agent.",
-                    2 => "Your ticket is currently in progress. An agent is working on it.",
-                    3 => "Your ticket has been resolved.",
-                    4 => "Your ticket is closed.",
-                    _ => "Status is unknown. Please contact support for more information."
-                };
-            });
+                Directory.CreateDirectory(folderPath);
+            }
+
+            string filePath = Path.Combine(folderPath, uniqueName);
+
+            while (System.IO.File.Exists(filePath))
+            {
+                string extension = Path.GetExtension(fileName);
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                uniqueName = $"{fileNameWithoutExtension}_{count}{extension}";
+                filePath = Path.Combine(folderPath, uniqueName);
+                count++;
+            }
+
+            return uniqueName;
         }
-    } 
+    }
 }

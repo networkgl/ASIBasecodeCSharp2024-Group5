@@ -1,7 +1,7 @@
 ﻿using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
-using ASI.Basecode.Services.Interfaces;
+using ASI.Basecode.Services.Controllers;
 using ASI.Basecode.Services.Manager;
 using ASI.Basecode.WebApp.Authentication;
 using AutoMapper;
@@ -78,13 +78,13 @@ namespace ASI.Basecode.WebApp.Controllers
                 switch (User.FindFirst("UserRole")?.Value)
                 {
                     case "superadmin":
-                        return RedirectToAction("Index", "SuperAdminDashboard");
+                        return RedirectToAction("SuperAdminDashboard", "Dashboard");
                     case "administrator":
-                        return RedirectToAction("Index", "AdminDashboard");
+                        return RedirectToAction("AdminDashboard", "Dashboard");
                     case "user":
-                        return RedirectToAction("Index", "UserDashboard");
+                        return RedirectToAction("UserDashboard", "Dashboard");
                     case "support agent":
-                        return RedirectToAction("Index", "AgentDashboard");
+                        return RedirectToAction("AgentDashboard", "Dashboard");
                     default:
                         return View();
                 }
@@ -120,13 +120,13 @@ namespace ASI.Basecode.WebApp.Controllers
             switch (user.RoleName)
             {
                 case "superadmin":
-                    return RedirectToAction("Index", "SuperAdminDashboard");
+                    return RedirectToAction("SuperAdminDashboard", "Dashboard");
                 case "administrator":
-                    return RedirectToAction("Index", "AdminDashboard");
+                    return RedirectToAction("AdminDashboard", "Dashboard");
                 case "user":
-                    return RedirectToAction("Index", "UserDashboard");
+                    return RedirectToAction("UserDashboard", "Dashboard");
                 case "support agent":
-                    return RedirectToAction("Index", "AgentDashboard");
+                    return RedirectToAction("AgentDashboard", "Dashboard");
                 default:
                     // 認証NG
                     TempData["ErrorMsg"] = "An error has occured, please try again";

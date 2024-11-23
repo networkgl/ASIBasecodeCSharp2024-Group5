@@ -61,7 +61,11 @@ namespace ASI.Basecode.Data
             if (!optionsBuilder.IsConfigured)
             {
 
+
                 optionsBuilder.UseSqlServer("workstation id=AssisthubDB.mssql.somee.com;packet size=4096;user id=XAssistHubX_SQLLogin_1;pwd=tpu83eivqf;data source=AssisthubDB.mssql.somee.com;persist security info=False;initial catalog=AssisthubDB;TrustServerCertificate=True");
+
+                optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Trust Server Certificate=True");
+
             }
         }
 

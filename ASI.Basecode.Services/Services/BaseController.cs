@@ -6,14 +6,11 @@ using ASI.Basecode.Data.Repositories;
 using ASI.Basecode.WebApp.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Configuration;
-using System.Drawing;
 using System.Linq;
 using static ASI.Basecode.Resources.Constants.Enums;
 
-namespace ASI.Basecode.WebApp.Controllers
+namespace ASI.Basecode.Services.Controllers
 {
     public class BaseController : Controller
     {
@@ -74,6 +71,11 @@ namespace ASI.Basecode.WebApp.Controllers
             _catRepo = new BaseRepository<Category>();
             _feedbackRepo = new BaseRepository<Feedback>();
             _userAgentRepo = new BaseRepository<UserAgent>();
+        }
+
+        public int GetLoggedInUserId()
+        {
+            return Convert.ToInt32(User.FindFirst("UserId")?.Value);
         }
 
         public ErrorCode RemindTicketNotif(out string errorMsg, out string successMsg)

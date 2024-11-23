@@ -1,17 +1,9 @@
-﻿using ASI.Basecode.Data.Interfaces;
-using ASI.Basecode.Data.Models;
-using ASI.Basecode.Data.Models.CustomModels;
-using ASI.Basecode.WebApp.Repository;
-using ASI.Basecode.WebApp.Utils;
+﻿using ASI.Basecode.Data.Models.CustomModels;
+using ASI.Basecode.Services.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
