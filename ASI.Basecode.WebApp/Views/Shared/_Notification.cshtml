@@ -2,9 +2,9 @@
 @using ASI.Basecode.Data.Models.CustomModels
 @using Newtonsoft.Json
 @{
-    if (TempData["ResMsg"] != null)
+    if (ViewData["ResMsg"] != null)
     {
-        var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+        var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(ViewData["ResMsg"].ToString());
 
         if (resMsg != null)
         {

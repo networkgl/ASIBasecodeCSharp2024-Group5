@@ -69,28 +69,28 @@
         <div>
             @if (@User.IsInRole("superadmin"))
             {
-                <a asp-action="Index" asp-controller="user" class="sidebar-logo">
+                <a asp-action="SuperAdminDashboard" asp-controller="user" class="sidebar-logo">
                     <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
             }
             else if (@User.IsInRole("administrator"))
             {
-                <a asp-action="Index" asp-controller="AdminDashboard">
+                <a asp-action="AdminDashboard" asp-controller="Dashboard">
                     <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
             }
             else if (@User.IsInRole("support agent"))
             {
-                <a asp-action="Index" asp-controller="AgentDashboard">
+                <a asp-action="AgentDashboard" asp-controller="Dashboard">
                     <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
             }
             else if (@User.IsInRole("user"))
             {
-                <a asp-action="Index" asp-controller="UserDashboard">
+                <a asp-action="UserDashboard" asp-controller="Dashboard">
                     <h5 style="margin-left: 25px; margin-top: 10px;" class="brand-name-expand">AssistHub</h5>
                     <h5 class="brand-name-collapse">AH</h5>
                 </a>
@@ -101,28 +101,28 @@
                 <li>
                     @if (@User.IsInRole("superadmin"))
                     {
-                        <a asp-action="Index" asp-controller="SuperAdminDashboard">
+                        <a asp-action="SuperAdminDashboard" asp-controller="Dashboard">
                             <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
                             <span>Dashboard</span>
                         </a>
                     }
                     else if (@User.IsInRole("administrator"))
                     {
-                        <a asp-action="Index" asp-controller="AdminDashboard">
+                        <a asp-action="AdminDashboard" asp-controller="Dashboard">
                             <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
                             <span>Dashboard</span>
                         </a>
                     }
                     else if (@User.IsInRole("support agent"))
                     {
-                        <a asp-action="Index" asp-controller="AgentDashboard">
+                        <a asp-action="AgentDashboard" asp-controller="Dashboard">
                             <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
                             <span>Dashboard</span>
                         </a>
                     }
                     else if (@User.IsInRole("user"))
                     {
-                        <a asp-action="Index" asp-controller="UserDashboard">
+                        <a asp-action="UserDashboard" asp-controller="Dashboard">
                             <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
                             <span>Dashboard</span>
                         </a>
@@ -170,7 +170,7 @@
                             <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Users</span>
                         </a>
-                        <a asp-controller="AdminManageTicket" asp-action="Index">
+                        <a asp-controller="Ticket" asp-action="AdministratorTicketIndex">
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Tickets</span>
                         </a>
@@ -185,7 +185,7 @@
                     }
                     else if (@User.IsInRole("support agent"))
                     {
-                        <a asp-controller="AgentManageTicket" asp-action="Index">
+                        <a asp-controller="Ticket" asp-action="AgentTicketIndex">
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>Manage Tickets</span>
                         </a>
@@ -201,7 +201,7 @@
                     }
                     else if (@User.IsInRole("user"))
                     {
-                        <a asp-controller="UserTicket" asp-action="Index">
+                        <a asp-controller="Ticket" asp-action="UserTicketIndex">
                             <iconify-icon icon="mdi:ticket-outline" class="menu-icon"></iconify-icon>
                             <span>My Tickets</span>
                         </a>
