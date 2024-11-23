@@ -1,0 +1,116 @@
+﻿@using ASI.Basecode.Data.Models
+@using ASI.Basecode.Data.Models.CustomModels
+@model VwTicketDetailsView
+
+@{
+    ViewData["Title"] = "Details";
+    var resMsg = TempData["ResMsg"] as AlertMessageContent;
+    var userType = ViewData["UserType"];
+    var root = ViewData["root"] as string;
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+    <h6 class="fw-semibold mb-0">Submitted by: @Model.Reporter</h6>
+    <ul class="d-flex align-items-center gap-2">
+        <li class="fw-medium">
+            <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
+                <iconify-icon icon="solar:home-smile-angle-outline" class="icon text-lg"></iconify-icon>
+                Dashboard
+            </a>
+        </li>
+        <li>-</li>
+        <li class="fw-medium">Update Ticket</li>
+    </ul>
+</div>
+
+<div class="card h-100 p-16 radius-12">
+    <div id="cardView" style="display: block;">
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <strong>Ticket ID:</strong> @Html.DisplayFor(modelItem => modelItem.TicketId)
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Category:</strong> @Html.DisplayFor(modelItem => modelItem.CategoryName)</p>
+                        <p><strong>Description:</strong> @Html.DisplayFor(modelItem => modelItem.IssueDescription)</p>
+                        <p><strong>Priority:</strong> @(string.IsNullOrEmpty(Model.PriorityName) ? "Not Set" : Model.PriorityName)</p>
+                        <p><strong>Status:</strong> @Html.DisplayFor(modelItem => Model.StatusName)</p>
+                        <p><strong>Reporter:</strong> @Html.DisplayFor(modelItem => Model.Reporter)</p>
+                        <p><strong>Assigned to:</strong> @(string.IsNullOrEmpty(Model.AgentName) ? "No agent assigned" : Model.AgentName)</p>
+                        <p><strong>Assigned by:</strong> @(string.IsNullOrEmpty(Model.AssignerName) ? "None" : Model.AssignerName)</p>
+                        <p><strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(Model.CreateAt.Value.ToShortDateString()) ? Model.CreateAt.Value.ToLongDateString() : "N/A")</p>
+                        <p><strong>Date Assigned to Agent:</strong> 
+                        @if(Model.DateAssigned.HasValue){
+                            @(Model.DateAssigned.Value.ToShortDateString())
+                        } else
+                        {
+                                @("Not yet assigned")
+                            }
+                        </p>
+                        <p>
+                            <strong>File Attached:</strong>
+                            @if (!string.IsNullOrEmpty(Model.AttachmentPath))
+                            {
+                                <img src="@Model.AttachmentPath" class="w-100 h-100 cursor-pointer" onclick="openModal('@Model.AttachmentPath')" />
+                            }
+                            else
+                            {
+                                @("No file attached")
+                            }
+                        </p>
+                    </div>
+                    <div class="d-flex justify-content-evenly card-footer text-center">
+                        <button class="text-info" onclick="window.history.back()">
+                            <i class="bi bi-arrow-left"></i> Go back
+                        </button>
+                        @if (Model.StatusId == 1)
+                        {
+                            <a href="#" onclick="confirmDelete('@Model.TicketId'); return false;" class="text-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        document.getElementById('file').addEventListener('change', function (event) {
+            var input = event.target;
+            var reader = new FileReader();
+            var removeImgBtn = document.getElementById("removeImgBtn");
+            removeImgBtn.style.display = 'block';
+            reader.onload = function () {
+                var imgElement = document.getElementById('filePreview');
+                imgElement.src = reader.result;
+                imgElement.style.display = 'block';
+            };
+
+            if (input.files && input.files[0]) {
+                reader.readAsDataURL(input.files[0]);
+            }
+        });
+    });
+
+    function removeImg() {
+        var img = document.getElementById("filePreview");
+        var removeImgBtn = document.getElementById("removeImgBtn");
+        var file = document.getElementById("file");
+        var removedOriginalImg = document.getElementById("removedOriginalImg");
+        img.src = "";
+        img.style.display = 'none';
+        removeImgBtn.style.display = 'none';
+        file.value = null;
+        removedOriginalImg.value = 'true';
+    }
+</script>
+
+@* @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} *@

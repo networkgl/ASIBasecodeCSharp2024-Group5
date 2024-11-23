@@ -126,7 +126,7 @@
 
         <!-- Create Ticket Button -->
         <div>
-            <a asp-action="Create" class="btn btn-primary">
+            <a asp-action="CreateTicket" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i>&nbsp; Create Ticket
             </a>
         </div>
@@ -220,10 +220,11 @@
                             </p>
                         </div>
                         <div class="d-flex justify-content-evenly card-footer text-center">
-                            <a asp-action="Details" asp-route-id="@item.TicketId" class="text-info">
+                            <a asp-action="UserTicketDetails" asp-route-id="@item.TicketId" class="text-info">
                                 <i class="bi bi-info-circle"></i> Details
                             </a>
-                            @if(item.StatusId == 1){
+                            @if (item.StatusId == 1)
+                            {
                                 <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="text-danger">
                                     <i class="bi bi-trash"></i> Delete
                                 </a>
@@ -271,10 +272,10 @@
                     document.getElementById('confirmYes').addEventListener('click', async function () {
                         console.log('Confirmed delete for TicketId:', ticketId);
                         try {
-                            const url = `/UserTicket/Delete/?id=${ticketId}`;
+                            const url = `/Ticket/Delete/?id=${ticketId}`;
                             const response = await fetch(url, { method: "get" });
 
-                            window.location.href = `@Url.ActionLink("Index", "UserTicket")`;
+                            window.location.href = `@Url.ActionLink("UserTicketIndex", "Ticket")`;
                         } catch (error) {
                             console.error('Fetch error:', error);
                             window.location.reload();
