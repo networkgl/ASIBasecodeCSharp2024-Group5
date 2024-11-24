@@ -9,5 +9,6 @@ namespace ASI.Basecode.Data.Models
         public string Name { get; set; }
         public string PriorityName { get; set; }
         public int? TicketByPriority { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

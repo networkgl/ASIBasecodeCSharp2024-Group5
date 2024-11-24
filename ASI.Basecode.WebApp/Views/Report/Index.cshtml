@@ -33,135 +33,7 @@
     // var userActivitiesJson = JsonConvert.SerializeObject(Model.UserActivities);
 }
 
-
-<div id="dateRange" class="d-flex justify-content-start align-items-start mb-3" style="width: 300px; ">
-    <div class="mb-3" style="width: 100%; margin-right: 10px;">
-        <label for="startDate" class="form-label" style="font-weight: 600; color: #333;">Start Date</label>
-        <input type="date" name="startDate" id="startDate" class="form-control" style="border-radius: 5px; border-color: #ccc;">
-    </div>
-    <div class="mb-3" style="width: 100%;">
-        <label for="endDate" class="form-label" style="font-weight: 600; color: #333;">End Date</label>
-        <input type="date" name="endDate" id="endDate" class="form-control" style="border-radius: 5px; border-color: #ccc;">
-    </div>
-    <div class="mb-3">
-        <a href="#" class="button ms-3" style="margin-top: 2rem; width: 10rem">
-            <button id="filterData" type="button" class="btn btn-primary-600 radius-8 px-20 py-11 w-100">Filter Data</button>
-        </a>
-    </div>
-    <div class="mb-3">
-        <a href="#" class="button ms-3" style="margin-top: 2rem; width: 10rem">
-            <button id="printButton" type="button" class="btn btn-success-600 radius-8 px-20 py-11 w-100">Print Reports</button>
-        </a>
-    </div>
-</div>
-<div style="width: 100%;" class="d-flex justify-content-center align-items-center">
-    <strong class="text-align-center mt-3 mb-3" style="font-size: 30px;">Ticket Summary</strong>
-</div>
-
-<div id="contentToPrint">
-    <div class="row row-cols-xxxl-3 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4">
-        <!-- Ticket Category Start -->
-        <div class="col-md-4">
-            <div class="card h-100 p-0">
-                <div class="card-header border-bottom bg-base py-16 px-24">
-                    <h6 class="text-lg fw-semibold mb-0">
-                        Ticket Category
-                        <span id="categoryTotalCount" class="badge badge-secondary ml-2">0</span> <!-- Placeholder for total count -->
-                    </h6>
-                </div>
-                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
-                    <div id="pieChartCategory" style="height: 100%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ticket Status Start -->
-        <div class="col-md-4">
-            <div class="card h-100 p-0">
-                <div class="card-header border-bottom bg-base py-16 px-24">
-                    <h6 class="text-lg fw-semibold mb-0">
-                        Ticket Status
-                        <span id="statusTotalCount" class="badge badge-secondary ml-2">0</span> <!-- Placeholder for total count -->
-                    </h6>
-                </div>
-                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
-                    <div id="pieChartStatus" style="height: 100%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ticket Priority Start -->
-        <div class="col-md-4">
-            <div class="card h-100 p-0">
-                <div class="card-header border-bottom bg-base py-16 px-24">
-                    <h6 class="text-lg fw-semibold mb-0">
-                        Ticket Priority
-                        <span id="priorityTotalCount" class="badge badge-secondary ml-2">0</span> <!-- Placeholder for total count -->
-                    </h6>
-                </div>
-                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
-                    <div id="pieChartPriority" style="height: 100%;"></div>
-                </div>
-            </div>
-        </div>
-
-
-    </div>
-    @* @if (User.FindFirst("UserRole")?.Value == "administrator" || User.FindFirst("UserRole")?.Value == "superadmin")
-    { *@
-    <!-- Agent Performance Report -->
-
-    <div style="width: 100%; padding-bottom: 20px;" class="d-flex justify-content-center align-items-center mt-5">
-        <strong class="text-align-center" style="font-size: 30px;">Agent Performance Report</strong>
-    </div>
-
-    <div class="row row-cols-xxxl-3 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-4">
-        <!-- Resolved Tickets -->
-        <div class="col-md-4">
-            <div class="card h-100 p-0">
-                <div class="card-header border-bottom bg-base py-16 px-24">
-                    <h6 class="text-lg fw-semibold mb-0">
-                        Resolved Tickets by Agents
-                    </h6>
-                </div>
-                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
-                    <div id="pieChartResolvedTickets" style="height: 100%;"></div>
-                    @* <canvas id="barChartResolvedTickets" width="400" height="200"></canvas> *@
-                </div>
-            </div>
-        </div>
-
-        <!-- Average Resolution Time -->
-        <div class="col-md-4">
-            <div class="card h-100 p-0">
-                <div class="card-header border-bottom bg-base py-16 px-24">
-                    <h6 class="text-lg fw-semibold mb-0">
-                        Average Resolution Time (in hours)
-                    </h6>
-                </div>
-                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
-                    <div id="pieChartResolutionTime" style="height: 100%;"></div>
-                    @* <canvas id="barChartResolutionTime" width="400" height="200"></canvas> *@
-                </div>
-            </div>
-        </div>
-
-        <!-- Customer Satisfaction -->
-        <div class="col-md-4">
-            <div class="card h-100 p-0">
-                <div class="card-header border-bottom bg-base py-16 px-24">
-                    <h6 class="text-lg fw-semibold mb-0">
-                        Customer Satisfaction Ratings
-                    </h6>
-                </div>
-                <div class="card-body p-24 text-center chart-container" style="height: 400px;">
-                    <div id="pieChartSatisfaction" style="height: 100%;"></div>
-                    @* <canvas id="barChartSatisfaction" width="400" height="200"></canvas> *@
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+//add here the code
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -287,6 +159,50 @@
         printWindow.print();
 
 
+        printWindow.document.close();
+
+        // Restore original content after printing
+        document.body.innerHTML = originalContent;
+    });
+
+</script>
+
+<script>
+    document.getElementById("printButton").addEventListener("click", function () {
+        var contentToPrint = document.getElementById("contentToPrint").innerHTML;
+        var originalContent = document.body.innerHTML;
+
+        // Temporarily set the content to print
+        document.body.innerHTML = contentToPrint;
+
+        // Apply styles for printing
+        var style = `
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                .chart-container {
+                    display: block;
+                    margin-bottom: 20px;
+                }
+                .page-break {
+                    page-break-after: always;
+                }
+            </style>
+        `;
+
+        var printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Reports and Summary</title>');
+        printWindow.document.write(contentToPrint);
+        
+
+        // Close the document and trigger pri
+        // Wait for content to be fully loaded before invoking print
+
+            printWindow.print();
+
+        
         printWindow.document.close();
 
         // Restore original content after printing

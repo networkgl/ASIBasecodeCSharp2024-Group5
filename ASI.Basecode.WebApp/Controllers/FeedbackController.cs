@@ -125,41 +125,41 @@ namespace ASI.Basecode.WebApp.Controllers
 
             return RedirectToAction("Index", "Feedback");
         }
-        [HttpGet]
-        public IActionResult Edit(int id)
-        {
-            var feedbackView = _db.VwFeedbackViews.FirstOrDefault(f => f.FeedbackId == id);
-            if (feedbackView == null)
-            {
-                return NotFound("Feedback not found.");
-            }
+        //[HttpGet]
+        //public IActionResult Edit(int id)
+        //{
+        //    var feedbackView = _db.VwFeedbackViews.FirstOrDefault(f => f.FeedbackId == id);
+        //    if (feedbackView == null)
+        //    {
+        //        return NotFound("Feedback not found.");
+        //    }
 
-            return View(feedbackView);
-        }
+        //    return View(feedbackView);
+        //}
 
-        [HttpPost]
-        public IActionResult Edit(int feedbackId, string feedbackText, decimal feedbackRating)
-        {
-            if (!ModelState.IsValid)
-            {
-                var feedbackView = _db.VwFeedbackViews.FirstOrDefault(f => f.FeedbackId == feedbackId);
-                return View(feedbackView);
-            }
+        //[HttpPost]
+        //public IActionResult Edit(int feedbackId, string feedbackText, decimal feedbackRating)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        var feedbackView = _db.VwFeedbackViews.FirstOrDefault(f => f.FeedbackId == feedbackId);
+        //        return View(feedbackView);
+        //    }
 
-            var existingFeedback = _db.Feedbacks.FirstOrDefault(f => f.FeedbackId == feedbackId);
-            if (existingFeedback == null)
-            {
-                return NotFound("Feedback not found.");
-            }
+        //    var existingFeedback = _db.Feedbacks.FirstOrDefault(f => f.FeedbackId == feedbackId);
+        //    if (existingFeedback == null)
+        //    {
+        //        return NotFound("Feedback not found.");
+        //    }
 
-            existingFeedback.FeedbackText = feedbackText;
-            existingFeedback.FeedbackRating = feedbackRating;
-            existingFeedback.CreatedAt = DateTime.Now;
+        //    existingFeedback.FeedbackText = feedbackText;
+        //    existingFeedback.FeedbackRating = feedbackRating;
+        //    existingFeedback.CreatedAt = DateTime.Now;
 
-            _db.SaveChanges();
+        //    _db.SaveChanges();
 
-            return RedirectToAction("Index", "Feedback");
-        }
+        //    return RedirectToAction("Index", "Feedback");
+        //}
 
         [HttpPost]
         [Route("Feedback/Delete/{id:int}")]

@@ -177,25 +177,6 @@
                                 }
                             </p>
                         </div>
-                        @if (userRoleId == 1)
-                        {
-                            <div class="d-flex justify-content-evenly card-footer text-center" id="feedback-@feedback.FeedbackId">
-                                <a asp-controller="Feedback" asp-action="Edit" asp-route-id="@feedback.FeedbackId" class="text-info">
-                                    <i class="bi bi-pencil-square"></i> Edit
-                                </a>
-                                <a href="#" class="text-danger" onclick="showDeleteModal('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
-                                    <i class="bi bi-trash"></i> Delete
-                                </a>
-                            </div>
-                        }
-                        else if (userRoleId == 3)
-                        {
-                            <div class="d-flex justify-content-evenly card-footer text-center" id="feedback-@feedback.FeedbackId">
-                                <a href="#" class="text-danger" onclick="showDeleteModal('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
-                                    <i class="bi bi-trash"></i> Delete
-                                </a>
-                            </div>
-                        }
                     </div>
                 </div>
             }
@@ -288,25 +269,6 @@
                                     </span>
                                 </td>
                                 <td>@feedback.CreatedAt?.ToString("MM/dd/yyyy")</td>
-                                @if (userRoleId == 1)
-                                {
-                                    <td class="text-center">
-                                        <a asp-action="Edit" asp-route-id="@feedback.FeedbackId">
-                                            <i class="bi bi-pencil-square text-primary"></i>
-                                        </a> |
-                                        <a href="#" onclick="showDeleteModal('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </a>
-                                    </td>
-                                }
-                                @if (userRoleId == 3)
-                                {
-                                    <td class="text-center">
-                                        <a href="#" onclick="showDeleteModal('@feedback.FeedbackId'); return false;" id="@feedback.FeedbackId">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </a>
-                                    </td>
-                                }
                             </tr>
                         }
                     }

@@ -60,8 +60,12 @@ namespace ASI.Basecode.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+
+
+                optionsBuilder.UseSqlServer("workstation id=AssisthubDB.mssql.somee.com;packet size=4096;user id=XAssistHubX_SQLLogin_1;pwd=tpu83eivqf;data source=AssisthubDB.mssql.somee.com;persist security info=False;initial catalog=AssisthubDB;TrustServerCertificate=True");
+
                 optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Trust Server Certificate=True");
+
             }
         }
 
@@ -427,6 +431,8 @@ namespace ASI.Basecode.Data
                     .IsUnicode(false);
 
                 entity.Property(e => e.AvgFeedbackRating).HasColumnType("decimal(38, 6)");
+
+                entity.Property(e => e.FeedbackAt).HasColumnType("date");
             });
 
             modelBuilder.Entity<VwFeedbackView>(entity =>
@@ -493,6 +499,8 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.AgentName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
+
+                entity.Property(e => e.ResolvedAt).HasColumnType("date");
             });
 
             modelBuilder.Entity<VwTicketAssignedToMeAgent>(entity =>
@@ -593,6 +601,10 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.CategoryName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("date")
+                    .HasColumnName("Created At");
             });
 
             modelBuilder.Entity<VwTicketsByPriority>(entity =>
@@ -600,6 +612,8 @@ namespace ASI.Basecode.Data
                 entity.HasNoKey();
 
                 entity.ToView("vw_TicketsByPriority");
+
+                entity.Property(e => e.CreatedAt).HasColumnType("date");
 
                 entity.Property(e => e.Name)
                     .HasMaxLength(100)
@@ -618,6 +632,8 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_TicketsByStatus");
 
+                entity.Property(e => e.CreatedAt).HasColumnType("date");
+
                 entity.Property(e => e.StatusName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
@@ -632,6 +648,8 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.CategoryName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
+
+                entity.Property(e => e.CreatedAt).HasColumnType("date");
             });
 
             modelBuilder.Entity<VwTotalTicketSummaryWithPriority>(entity =>
@@ -639,6 +657,8 @@ namespace ASI.Basecode.Data
                 entity.HasNoKey();
 
                 entity.ToView("vw_TotalTicketSummaryWithPriority");
+
+                entity.Property(e => e.CreatedAt).HasColumnType("date");
 
                 entity.Property(e => e.PriorityName)
                     .HasMaxLength(100)
@@ -650,6 +670,8 @@ namespace ASI.Basecode.Data
                 entity.HasNoKey();
 
                 entity.ToView("vw_TotalTicketSummaryWithStatus");
+
+                entity.Property(e => e.CreatedAt).HasColumnType("date");
 
                 entity.Property(e => e.StatusName)
                     .HasMaxLength(100)
