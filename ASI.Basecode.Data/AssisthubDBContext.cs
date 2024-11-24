@@ -60,12 +60,8 @@ namespace ASI.Basecode.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-
-
-                optionsBuilder.UseSqlServer("workstation id=AssisthubDB.mssql.somee.com;packet size=4096;user id=XAssistHubX_SQLLogin_1;pwd=tpu83eivqf;data source=AssisthubDB.mssql.somee.com;persist security info=False;initial catalog=AssisthubDB;TrustServerCertificate=True");
-
-                optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Trust Server Certificate=True");
-
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Encrypt=True;Trust Server Certificate=True");
             }
         }
 
@@ -430,9 +426,9 @@ namespace ASI.Basecode.Data
                     .HasMaxLength(100)
                     .IsUnicode(false);
 
-                entity.Property(e => e.AvgFeedbackRating).HasColumnType("decimal(38, 6)");
+                entity.Property(e => e.AvgFeedbackRating).HasColumnType("decimal(38, 2)");
 
-                entity.Property(e => e.FeedbackAt).HasColumnType("date");
+                entity.Property(e => e.FeedbackedAt).HasColumnType("date");
             });
 
             modelBuilder.Entity<VwFeedbackView>(entity =>
@@ -602,9 +598,7 @@ namespace ASI.Basecode.Data
                     .HasMaxLength(100)
                     .IsUnicode(false);
 
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("date")
-                    .HasColumnName("Created At");
+                entity.Property(e => e.CreatedAt).HasColumnType("date");
             });
 
             modelBuilder.Entity<VwTicketsByPriority>(entity =>
@@ -614,10 +608,6 @@ namespace ASI.Basecode.Data
                 entity.ToView("vw_TicketsByPriority");
 
                 entity.Property(e => e.CreatedAt).HasColumnType("date");
-
-                entity.Property(e => e.Name)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
 
                 entity.Property(e => e.PriorityName)
                     .HasMaxLength(100)

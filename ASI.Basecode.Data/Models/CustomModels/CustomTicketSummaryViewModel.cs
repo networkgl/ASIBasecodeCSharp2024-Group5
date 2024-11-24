@@ -18,5 +18,6 @@ namespace ASI.Basecode.Data.Models.CustomModels
         public List<VwResolvedTicketByAgent> TicketsResolved { get; set; }
         public List<VwAssignedTicketView> AverageResolutionTime { get; set; }
         public List<VwCustomerSatisfactionRating> CustomerSatisfactionRatings { get; set; }
+        
     }
 }
