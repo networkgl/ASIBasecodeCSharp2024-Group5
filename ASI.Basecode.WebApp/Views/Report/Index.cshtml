@@ -161,10 +161,8 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Pass the user role to JavaScript
     var userRole = '@User.FindFirst("UserRole")?.Value';
 
-    // Now, you can pass the chart data from the server-side model
     if (userRole === "administrator" || userRole === "superadmin") {
         var totalCategories = @Html.Raw(totalCategoriesJson);
         var totalStatuses = @Html.Raw(totalStatusesJson);
@@ -251,10 +249,9 @@
         var contentToPrint = document.getElementById("contentToPrint").innerHTML;
         var originalContent = document.body.innerHTML;
 
-        // Temporarily set the content to print
+
         document.body.innerHTML = contentToPrint;
 
-        // Apply styles for printing
         var style = `
                     <style>
                         body {
@@ -276,35 +273,30 @@
         printWindow.document.write(contentToPrint);
 
 
-        // Close the document and trigger pri
-        // Wait for content to be fully loaded before invoking print
-
         printWindow.print();
 
 
         printWindow.document.close();
 
-        // Restore original content after printing
+
         document.body.innerHTML = originalContent;
     });
 
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        var today = new Date().toISOString().split('T')[0];  // Get today's date in yyyy-mm-dd format
+        var today = new Date().toISOString().split('T')[0];  
 
-        // Set the max date for both start and end date inputs to today's date
         document.getElementById("startDate").setAttribute("max", today);
         document.getElementById("endDate").setAttribute("max", today);
 
-        // Optional: Add validation on form submission
         document.querySelector("form").addEventListener("submit", function (e) {
             var startDate = document.getElementById("startDate").value;
             var endDate = document.getElementById("endDate").value;
 
             if (new Date(endDate) > new Date()) {
                 alert("End date should not exceed today.");
-                e.preventDefault();  // Prevent form submission
+                e.preventDefault();  
             }
         });
     });
