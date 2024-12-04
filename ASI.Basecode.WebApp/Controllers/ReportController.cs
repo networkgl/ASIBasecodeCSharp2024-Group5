@@ -17,8 +17,12 @@ namespace ASI.Basecode.WebApp.Controllers
 
         public IActionResult Index(DateTime? startDate, DateTime? endDate)
         {
+<<<<<<< Updated upstream
             ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd"); 
             ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
+=======
+            ViewData["Title"] = "Reports";
+>>>>>>> Stashed changes
 
             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 

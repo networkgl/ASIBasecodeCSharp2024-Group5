@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <None Remove="appsettings.json.rej" />
+    <None Remove="Views\ErrorPage\Forbidden.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Views\ErrorPage\Forbidden.html" />
   </ItemGroup>
 
   <ItemGroup>

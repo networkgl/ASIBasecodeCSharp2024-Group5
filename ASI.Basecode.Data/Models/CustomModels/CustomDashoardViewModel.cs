@@ -4,6 +4,7 @@
     {
         public int? UserCount { get; set; }
         public int? AgentCount { get; set; }
+        public int? AdminCount { get; set; }
         public int? TicketsResolvedCount{ get; set; }
         public int? TicketsAssignedByMeCount { get; set; }
         public int? TicketsAssignedToYouCount { get; set; }

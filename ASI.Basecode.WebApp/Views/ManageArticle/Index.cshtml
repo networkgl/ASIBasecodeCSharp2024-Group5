@@ -10,6 +10,8 @@
         ViewData["Title"] = userRole == "user" ? "Article" : "Manage Articles";
     }
 
+    var pendingList = Convert.ToInt32(ViewData["PendingList"].ToString());
+
     // var resMsg = TempData["ResMsg"] as string;
 }
 
@@ -40,11 +42,11 @@
         {
             <a asp-action="PendingList" class="btn btn-primary d-flex align-items-center" style="gap: 5px;">
                 Pending Articles
-                @if (ViewBag.PendingList > 0)
+                @if (pendingList > 0)
                 {
                     <span class="badge text-sm bg-danger-500 border-0 d-flex justify-content-center align-items-center"
                           style="border-radius: 50%; width: 20px; height: 20px; color: white; font-weight: bold;">
-                        @ViewBag.PendingList
+                        @pendingList
                     </span>
                 }
             </a>
