@@ -169,6 +169,8 @@ namespace ASI.Basecode.WebApp.Controllers
 
         public IActionResult CreateTicket()
         {
+            ViewData["Title"] = "Create Ticket";
+
             CustomTicket ticket = new CustomTicket();
 
             var categories = _db.Categories.ToList();

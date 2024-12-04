@@ -25,7 +25,7 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 return BadRequest();
             }
-
+            @ViewData["Title"] = "Dashboard";
             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
             var totalTicketsCreatedByMeParam = new SqlParameter("@result", SqlDbType.Int)
@@ -66,7 +66,7 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 return BadRequest();
             }
-
+            @ViewData["Title"] = "Dashboard";
             int agentId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
             var ticketsResolvedCount = new SqlParameter("@result", SqlDbType.Int)
             {
@@ -100,7 +100,7 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 return BadRequest();
             }
-
+            @ViewData["Title"] = "Dashboard";
             var adminId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
             var ticketAssignByMeCount = new SqlParameter("@result", SqlDbType.Int)
             {
@@ -111,8 +111,9 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var customAdminDashoardViewModel = new CustomDashoardViewModel()
             {
-                UserCount = _db.VwUserCounts.Select(m => m.TotalUserCount).FirstOrDefault(),
+                UserCount = _db.VwUserRoleViews.Where(m => m.RoleId == 1).ToList().Count(),
                 AgentCount = _db.VwAgentCounts.Select(m => m.TotalAgentCount).FirstOrDefault(),
+                AdminCount = _db.VwAdminCounts.Select(m => m.TotalAdminCount).FirstOrDefault(),
                 TicketsResolvedCount = _db.VwTotalTicketsResolveds.Select(m => m.TotalTicketsResolved).FirstOrDefault(),
                 TicketsAssignedByMeCount = Convert.ToInt32(ticketAssignByMeCount?.Value),
             };
@@ -122,6 +123,7 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy = "SuperAdminPolicy")]
         public IActionResult SuperAdminDashboard()
         {
+            @ViewData["Title"] = "Dashboard";
             var role = User.FindFirst("UserRole")?.Value;
             var customAdminDashoardViewModel = new CustomDashoardViewModel()
             {

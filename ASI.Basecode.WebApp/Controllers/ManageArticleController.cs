@@ -93,7 +93,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var pendingList = _db.VwNeedApprovalArticles.Count();
 
-            ViewBag.PendingList = pendingList;
+            ViewData["PendingList"] = pendingList;
 
             return View(articles);
         }
@@ -157,6 +157,19 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy= "AdminPolicy" )]
         public IActionResult PendingList(string searchTerm, string sortBy)
         {
+            if(TempData["ResMsg"] is not null)
+            {
+                var resMsg = TempData["ResMsg"] as string;
+                var alertMessage = JsonConvert.DeserializeObject<AlertMessageContent>(resMsg);
+
+                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = alertMessage.Status,
+                    Message = alertMessage.Message,
+                });
+            }
+
+            ViewData["Title"] = "Pending Articles";
             var articles = _db.VwNeedApprovalArticles.ToList();
             switch (sortBy)
             {

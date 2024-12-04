@@ -19,6 +19,7 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd"); 
             ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
+            ViewData["Title"] = "Reports";
 
             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
@@ -202,7 +203,5 @@ namespace ASI.Basecode.WebApp.Controllers
             return View();
 
         }
-
-
     }
 }

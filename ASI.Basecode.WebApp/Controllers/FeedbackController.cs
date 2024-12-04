@@ -24,6 +24,7 @@ namespace ASI.Basecode.WebApp.Controllers
         }
         public IActionResult Index(int? agentId = null)
         {
+            ViewData["Title"] = "My Feedback/s";
             ViewData["TableId"] = "myFeedbackTable";
 
             int? loggedInUserId = _userManager.GetLoggedInUserId(HttpContext);

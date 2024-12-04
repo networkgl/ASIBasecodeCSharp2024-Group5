@@ -1,14 +1,14 @@
-﻿@{
-    Layout = null;
-}
-
+﻿<!-- meta tags and other links -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>403 - Access Denie</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssistHub - @ViewData["Title"]</title>
     <link rel="icon" type="image/png" href="~/assets/images/favicon.png" sizes="16x16">
+    <!-- bootstrap fonts css-->
+    <link href="~/bootstrapfonts/font/bootstrap-icons.min.css" rel="stylesheet" />
     <!-- remix icon font css  -->
     <link href="~/assets/css/remixicon.css" rel="stylesheet" />
     <!-- BootStrap css -->
@@ -16,7 +16,7 @@
     <!-- Apex Chart css -->
     <link href="~/assets/css/lib/apexcharts.css" rel="stylesheet" />
     <!-- Data Table css -->
-    <link href="~/assets/css/lib/datatables.min.css" rel="stylesheet" />
+    <link href="~/datatables/datatables.css" rel="stylesheet" />
     <!-- Text Editor css -->
     <link href="~/assets/css/lib/editor-katex.min.css" rel="stylesheet" />
     <link href="~/assets/css/lib/editor.atom-one-dark.min.css" rel="stylesheet" />
@@ -36,26 +36,23 @@
     <!--toastr css-->
     <link href="~/toastr/toastr.min.css" rel="stylesheet" />
 </head>
+
 <body>
     <div class="card-body py-80 px-32 text-center">
-            <img src="~/assets/images/403-page.jpg" alt="" class="mb-24" />
-            <h6 class="mb-16">Access to this page is restricted</h6>
-            <p class="text-secondary-light">
-              Please check with the site admin if you believe this is a mistake.
-            </p>
-            <a onclick="window.history.back()"
-              class="btn btn-primary-600 radius-8 px-20 py-11">
-              Back to Home
-            </a>
+        <img src="assets/images/error-img.png" alt="" class="mb-24">
+        <h6 class="mb-16">Page not Found</h6>
+        <p class="text-secondary-light">Sorry, the page you are looking for doesn’t exist </p>
+        <a href="index.html" class="btn btn-primary-600 radius-8 px-20 py-11">Back to Home</a>
     </div>
+
     <!-- jQuery library js -->
     <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
     <!-- Bootstrap js -->
     <script src="~/assets/js/lib/bootstrap.bundle.min.js"></script>
     <!-- Apex Chart js -->
     <script src="~/assets/js/lib/apexcharts.min.js"></script>
-    <!-- Data Table js -->
-    <script src="~/assets/js/lib/dataTables.min.js"></script>
+
+    <script src="~/datatables/datatables.js"></script>
     <!-- Iconify Font js -->
     <script src="~/assets/js/lib/iconify-icon.min.js"></script>
     <!-- jQuery UI js -->
@@ -69,5 +66,7 @@
     <script src="~/assets/js/lib/slick.min.js"></script>
     <!-- main js -->
     <script src="~/assets/js/app.js"></script>
+    <!-- Pie Chart js -->
+    <script src="~/assets/js/piechartpagechart.js"></script>
 </body>
 </html>

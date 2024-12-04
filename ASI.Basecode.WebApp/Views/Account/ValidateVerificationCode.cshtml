@@ -1,0 +1,61 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssistHub - Verify Code</title>
+    <link rel="icon" type="image/png" href="~/assets/images/favicon.png" sizes="16x16">
+
+    <link href="~/assets/css/remixicon.css" rel="stylesheet" />
+    <link href="~/assets/css/lib/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/assets/css/style.css" rel="stylesheet" />
+    <!--toastr css-->
+    <link href="~/toastr/toastr.min.css" rel="stylesheet" />
+</head>
+<body>
+    <partial name="_Notification" />
+    <div class="py-32 px-24 d-flex flex-column justify-content-center">
+        <div class="max-w-464-px mx-auto w-100">
+            <div>
+                <h4 class="mb-12">Verify Code</h4>
+                <p class="mb-32 text-secondary-light text-lg">
+                    Please enter the verification code sent to your email.
+                </p>
+            </div>
+
+            <form asp-action="ValidateVerificationCode" method="post">
+
+                <div class="icon-field">
+                    <span class="icon top-50 translate-middle-y">
+                        <iconify-icon icon="fluent:code-circle-24-filled"></iconify-icon>
+                    </span>
+                    <input type="text"
+                           class="form-control h-56-px bg-neutral-50 radius-12"
+                           placeholder="Enter Verification Code"
+                           name="verificationCode"
+                           required />
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12 mt-32">
+                    Verify
+                </button>
+
+                <div class="text-center mt-24">
+                    <a asp-action="ForgotPassword" class="text-primary-600 fw-bold">
+                        Back to Forgot Password
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
+    <script src="~/assets/js/lib/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/js/app.js"></script>
+</body>
+</html>

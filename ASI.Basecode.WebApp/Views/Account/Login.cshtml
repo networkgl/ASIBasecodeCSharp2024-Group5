@@ -38,9 +38,11 @@
     <link href="~/assets/css/lib/slick.css" rel="stylesheet" />
     <!-- main css -->
     <link href="~/assets/css/style.css" rel="stylesheet" />
+    <!--toastr css-->
+    <link href="~/toastr/toastr.min.css" rel="stylesheet" />
 </head>
 <body>
-
+    <partial name="_Notification" />
     <section class="auth bg-base d-flex flex-wrap">
         <div class="auth-left d-lg-block d-none">
             <div class="d-flex align-items-center flex-column h-100 justify-content-center">
@@ -83,7 +85,7 @@
                                 <input class="form-check-input border border-neutral-300" type="checkbox" name="rememberMe" id="remeber">
                                 <label class="form-check-label" for="remeber">Remember me </label>
                             </div>
-                            <a href="forgot-password.html" class="text-primary-600 fw-medium">Forgot Password?</a>
+                            <a asp-action="ForgotPassword" class="text-primary-600 fw-medium">Forgot Password?</a>
                         </div>
                     </div>
 
