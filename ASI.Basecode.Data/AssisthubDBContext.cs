@@ -672,13 +672,11 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_TicketsByCategory");
 
+                entity.Property(e => e.AssignedDate).HasColumnType("date");
+
                 entity.Property(e => e.CategoryName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("date")
-                    .HasColumnName("Created At");
             });
 
             modelBuilder.Entity<VwTicketsByPriority>(entity =>
@@ -687,11 +685,7 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_TicketsByPriority");
 
-                entity.Property(e => e.CreatedAt).HasColumnType("date");
-
-                entity.Property(e => e.Name)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                entity.Property(e => e.AssignedDate).HasColumnType("date");
 
                 entity.Property(e => e.PriorityName)
                     .HasMaxLength(100)
@@ -706,7 +700,7 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_TicketsByStatus");
 
-                entity.Property(e => e.CreatedAt).HasColumnType("date");
+                entity.Property(e => e.AssignedDate).HasColumnType("date");
 
                 entity.Property(e => e.StatusName)
                     .HasMaxLength(100)

@@ -4,6 +4,7 @@ using ASI.Basecode.Services.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -151,23 +152,26 @@ namespace ASI.Basecode.WebApp.Controllers
                         .ToList();
                 }
 
-                if (!TicketsByCategory.Any() || !TicketsByStatus.Any() || !TicketsByPriority.Any() || !agentResolvedTicket.Any() || !agentAvgResTime.Any() || !agentCustSatRating.Any())
+                var dataCollections = new Dictionary<string, IEnumerable>
                 {
-                    ViewData["NoDataCategory"] = "No category data for the selected time period.";
-                    ViewData["NoDataStatus"] = "No status data for the selected time period.";
-                    ViewData["NoDataPriority"] = "No priority data for the selected time period.";
-                    ViewData["NoDataResolvedTickets"] = "No resolved ticket data for the selected time period.";
-                    ViewData["NoDataResolutionTime"] = "No resolved ticket data for the selected time period.";
-                    ViewData["NoDataSatisfaction"] = "No agent was feedbacked for the selected time period.";
-                }
-                else
+                    { "NoDataCategory", TicketsByCategory },
+                    { "NoDataStatus", TicketsByStatus },
+                    { "NoDataPriority", TicketsByPriority },
+                    { "NoDataResolvedTickets", agentResolvedTicket },
+                    { "NoDataResolutionTime", agentAvgResTime },
+                    { "NoDataSatisfaction", agentCustSatRating }
+                };
+
+                foreach (var collection in dataCollections)
                 {
-                    ViewData["NoDataCategory"] = null;
-                    ViewData["NoDataStatus"] = null;
-                    ViewData["NoDataPriority"] = null;
-                    ViewData["NoDataResolvedTickets"] = null;
-                    ViewData["NoDataResolutionTime"] = null;
-                    ViewData["NoDataSatisfaction"] = null;
+                    if (collection.Value == null)
+                    {
+                        ViewData[collection.Key] = $"No data for the selected time period in {collection.Key.Split('D')[1].ToLower()} data.";
+                    }
+                    else
+                    {
+                        ViewData[collection.Key] = null;  
+                    }
                 }
 
 
@@ -185,16 +189,101 @@ namespace ASI.Basecode.WebApp.Controllers
             }
             else if (User.FindFirst("UserRole")?.Value == "support agent")
             {
-                var TicketsAssignedByMeAgent = _db.VwTicketAssignedToMeAgents.Where(m => m.UserId == userId).ToList();
-                var TicketsByCategory = _db.VwTicketsByCategories.Where(m => m.UserId == userId).ToList();
-                var TicketsByStatus = _db.VwTicketsByStatuses.Where(m => m.UserId == userId).ToList();
-                var TicketsByPriority = _db.VwTicketsByPriorities.Where(m => m.UserId == userId).ToList();
+                List<VwTicketsByCategory> TicketsByCategoryAgent;
+                List<VwTicketsByStatus> TicketsByStatusAgent;
+                List<VwTicketsByPriority> TicketsByPriorityAgent;
+
+                if (startDate == null && endDate == null)
+                {
+                    TicketsByCategoryAgent = _db.VwTicketsByCategories
+                        .Where(m => m.UserId == userId)
+                        .GroupBy(x => x.CategoryName)
+                        .Select(g => new VwTicketsByCategory
+                        {
+                            CategoryName = g.Key,
+                            TicketsByCategory = g.Sum(x => x.TicketsByCategory)
+                        })
+                        .ToList();
+
+                    TicketsByStatusAgent = _db.VwTicketsByStatuses
+                            .Where(m => m.UserId == userId)
+                            .GroupBy(x => x.StatusName)
+                            .Select(g => new VwTicketsByStatus
+                            {
+                                StatusName = g.Key,
+                                TicketByStatus = g.Sum(x => x.TicketByStatus)
+                            })
+                            .ToList();
+
+                    TicketsByPriorityAgent = _db.VwTicketsByPriorities
+                            .Where(m => m.UserId == userId)
+                            .GroupBy(x => x.PriorityName)
+                            .Select(g => new VwTicketsByPriority
+                            {
+                                PriorityName = g.Key,
+                                TicketByPriority = g.Sum(x => x.TicketByPriority)
+                            })
+                            .ToList(); 
+                }
+                else
+                {
+                    TicketsByCategoryAgent = _db.VwTicketsByCategories
+                        .Where(m => m.UserId == userId)
+                        .Where(x => x.AssignedDate >= startDate && x.AssignedDate <= endDate)
+                        .GroupBy(x => x.CategoryName)
+                        .Select(g => new VwTicketsByCategory
+                        {
+                            CategoryName = g.Key,
+                            TicketsByCategory = g.Sum(x => x.TicketsByCategory)
+                        })
+                        .ToList();
+
+                    TicketsByStatusAgent = _db.VwTicketsByStatuses
+                            .Where(m => m.UserId == userId)
+                            .Where(x => x.AssignedDate >= startDate && x.AssignedDate <= endDate)
+                            .GroupBy(x => x.StatusName)
+                            .Select(g => new VwTicketsByStatus
+                            {
+                                StatusName = g.Key,
+                                TicketByStatus = g.Sum(x => x.TicketByStatus)
+                            })
+                            .ToList();
+
+                    TicketsByPriorityAgent = _db.VwTicketsByPriorities       
+                            .Where(m => m.UserId == userId)
+                            .Where(x => x.AssignedDate >= startDate && x.AssignedDate <= endDate)
+                            .GroupBy(x => x.PriorityName)
+                            .Select(g => new VwTicketsByPriority
+                            {
+                                PriorityName = g.Key,
+                                TicketByPriority = g.Sum(x => x.TicketByPriority)
+                            })
+                            .ToList();
+                }
+                //var TicketsAssignedByMeAgent = _db.VwTicketAssignedToMeAgents.Where(m => m.UserId == userId).ToList();
+                var dataCollections = new Dictionary<string, IEnumerable>
+                {
+                    { "NoDataCategory", TicketsByCategoryAgent },
+                    { "NoDataStatus", TicketsByStatusAgent },
+                    { "NoDataPriority", TicketsByPriorityAgent }
+                };
+                foreach (var collection in dataCollections)
+                {
+                    if (collection.Value == null)
+                    {
+                        ViewData[collection.Key] = $"No {collection.Key.Split('D')[1].ToLower()} data for the selected time period.";
+                    }
+                    else
+                    {
+                        ViewData[collection.Key] = null;  // Clear if there's data
+                    }
+                }
 
                 var summaryModel = new ReportingAndAnalyticsModel
                 {
-                    TicketsByCategory = TicketsByCategory,
-                    TicketsByStatus = TicketsByStatus,
-                    TicketsByPriority = TicketsByPriority
+                    TicketsByCategory = TicketsByCategoryAgent,
+                    TicketsByStatus = TicketsByStatusAgent,
+                    TicketsByPriority = TicketsByPriorityAgent
                 };
 
                 return View(summaryModel);
@@ -203,5 +292,6 @@ namespace ASI.Basecode.WebApp.Controllers
             return View();
 
         }
+
     }
 }
