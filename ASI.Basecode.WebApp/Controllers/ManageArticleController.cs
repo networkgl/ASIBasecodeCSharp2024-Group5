@@ -73,7 +73,8 @@ namespace ASI.Basecode.WebApp.Controllers
                 }
             }
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortBy) ? "title_desc" : "";
-            var articles = _articleRepo.GetAll().ToList();
+        
+            var articles = _db.VwApprovedArticles.ToList();
             switch (sortBy)
             {
                 case "title_desc":
@@ -89,6 +90,11 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.ArticleId).ToList();
             }
+
+            var pendingList = _db.VwNeedApprovalArticles.Count();
+
+            ViewBag.PendingList = pendingList;
+
             return View(articles);
         }
 
@@ -104,6 +110,18 @@ namespace ASI.Basecode.WebApp.Controllers
         public IActionResult Create(Article article)
         {
             article.UserId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            article.DateCreated = DateTimeToday();
+
+            var userRole = User.FindFirst("UserRole")?.Value;
+            if (userRole == "administrator")
+            {
+                article.Approved = "Yes";
+            }
+            else
+            {
+                article.Approved = "No";
+            }
 
             if (string.IsNullOrEmpty(article.Content))
             {
@@ -136,6 +154,68 @@ namespace ASI.Basecode.WebApp.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Policy= "AdminPolicy" )]
+        public IActionResult PendingList(string searchTerm, string sortBy)
+        {
+            var articles = _db.VwNeedApprovalArticles.ToList();
+            switch (sortBy)
+            {
+                case "title_desc":
+                    articles = articles.OrderByDescending(u => u.Title).ToList();
+                    break;
+                default:
+                    articles = articles.OrderBy(u => u.Title).ToList();
+                    break;
+
+            }
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.ArticleId).ToList();
+            }
+            return View(articles);
+        }
+
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult Approve(int id)
+        {
+            var article = _articleRepo.Get(id);
+
+            if (article == null)
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Error,
+                    Message = "Article not found."
+                });
+                return RedirectToAction("PendingList");
+            }
+
+            article.Approved = "Yes";
+
+            var result = _articleRepo.Update(id, article); 
+
+            if (result == ErrorCode.Success)
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Success,
+                    Message = "Article approved successfully!"
+                });
+            }
+            else
+            {
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = ErrorCode.Error,
+                    Message = "An error occurred while approving the article."
+                });
+            }
+
+            return RedirectToAction("PendingList");
+        }
+
+
         [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Edit(int id)
         {
@@ -158,6 +238,18 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Edit(Article article)
         {
+            article.DateUpdated = DateTimeToday();
+            var userRole = User.FindFirst("UserRole")?.Value;
+            if (userRole == "administrator")
+            {
+                article.Approved = "Yes";
+            }
+            else
+            {
+                article.Approved = "No";
+            }
+            article.UpdatedBy = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             TempData["temp"] = "update";
             if (!ModelState.IsValid)
             {
@@ -201,7 +293,6 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             var result = _articleRepo.Delete(id);
 
-
             if (result == ErrorCode.Success)
             {
                 TempData["ResMsg"] = "Article deleted successfully!";
@@ -213,7 +304,8 @@ namespace ASI.Basecode.WebApp.Controllers
                 TempData["ResStatus"] = "error";
             }
 
-            return RedirectToAction("Index");
+            var currentUrl = HttpContext.Request.Path + HttpContext.Request.QueryString;
+            return Redirect(currentUrl);
         }
     }
 }
