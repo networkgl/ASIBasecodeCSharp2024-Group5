@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ASI.Basecode.Data.Models
 {
-    public partial class Article
+    public partial class VwApprovedArticle
     {
         public int ArticleId { get; set; }
         public int? UserId { get; set; }
@@ -13,7 +13,5 @@ namespace ASI.Basecode.Data.Models
         public DateTime? DateUpdated { get; set; }
         public int? UpdatedBy { get; set; }
         public string Approved { get; set; }
-
-        public virtual User User { get; set; }
     }
 }

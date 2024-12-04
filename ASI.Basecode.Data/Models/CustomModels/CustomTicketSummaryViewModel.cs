@@ -14,9 +14,8 @@ namespace ASI.Basecode.Data.Models.CustomModels
         public List<VwTotalTicketSummaryWithCategory> TicketSummaryWithCategory { get; set; }
         public List<VwTotalTicketSummaryWithStatus> TicketSummaryWithStatus { get; set; }
         public List<VwTotalTicketSummaryWithPriority> TicketSummaryWithPriority { get; set; }
-        public List<VwTicketAssignedToMeAgent> TicketsAssignedToMeAgent { get; set; }
         public List<VwResolvedTicketByAgent> TicketsResolved { get; set; }
-        public List<VwAssignedTicketView> AverageResolutionTime { get; set; }
+        public List<VwAverageResolutionTime> AverageResolutionTime { get; set; }
         public List<VwCustomerSatisfactionRating> CustomerSatisfactionRatings { get; set; }
         
     }

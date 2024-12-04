@@ -17,15 +17,18 @@ namespace ASI.Basecode.WebApp.Controllers
 
         public IActionResult Index(DateTime? startDate, DateTime? endDate)
         {
+            ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd"); 
+            ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
 
             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
 
-            if (User.FindFirst("UserRole")?.Value == "administrator" || User.FindFirst("UserRole")?.Value == "superadmin")
+            if (User.FindFirst("UserRole")?.Value == "administrator")
             {
                 List<VwTotalTicketSummaryWithCategory> TicketsByCategory;
                 List<VwTotalTicketSummaryWithStatus> TicketsByStatus;
                 List<VwTotalTicketSummaryWithPriority> TicketsByPriority;
                 List<VwResolvedTicketByAgent> agentResolvedTicket;
+                List<VwAverageResolutionTime> agentAvgResTime;
                 List<VwCustomerSatisfactionRating> agentCustSatRating;
 
                 if (startDate == null && endDate == null)
@@ -44,7 +47,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         .Select(g => new VwTotalTicketSummaryWithStatus
                         {
                             StatusName = g.Key,
-                            TotalCount = g.Sum(x => x.TotalCount) // Assuming TotalCount is the field you want to sum
+                            TotalCount = g.Sum(x => x.TotalCount) 
                         })
                         .ToList();
 
@@ -53,24 +56,34 @@ namespace ASI.Basecode.WebApp.Controllers
                         .Select(g => new VwTotalTicketSummaryWithPriority
                         {
                             PriorityName = g.Key,
-                            TotalCount = g.Sum(x => x.TotalCount) // Assuming TotalCount is the field you want to sum
+                            TotalCount = g.Sum(x => x.TotalCount) 
                         })
                         .ToList();
+
                     agentResolvedTicket = _db.VwResolvedTicketByAgents
                         .GroupBy(x => x.AgentName)
                         .Select(g => new VwResolvedTicketByAgent
                         {
                             AgentName = g.Key,
-                            TotalResolvedCount = g.Sum(x => x.TotalResolvedCount) // Assuming TotalCount is the field you want to sum
+                            TotalResolvedCount = g.Sum(x => x.TotalResolvedCount) 
                         })
                         .ToList();
-                    //var agentResolutionTime = _db.VwAssignedTicketViews.ToList();
+
+                    agentAvgResTime = _db.VwAverageResolutionTimes
+                        .GroupBy(x => x.AgentName)
+                        .Select(g => new VwAverageResolutionTime
+                        {
+                            AgentName = g.Key,
+                            AvgResolutionTime = Math.Round((decimal)g.Average(x => x.AvgResolutionTime), 2)
+                        })
+                        .ToList();
+
                     agentCustSatRating = _db.VwCustomerSatisfactionRatings
                         .GroupBy(x => x.AgentName)
                         .Select(g => new VwCustomerSatisfactionRating
                         {
                             AgentName = g.Key,
-                            AvgFeedbackRating = g.Average(x => x.AvgFeedbackRating) // Assuming TotalCount is the field you want to sum
+                            AvgFeedbackRating = g.Average(x => x.AvgFeedbackRating) 
                         })
                         .ToList();
                 }
@@ -82,7 +95,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         .Select(g => new VwTotalTicketSummaryWithCategory
                         {
                             CategoryName = g.Key,
-                            TotalCount = g.Sum(x => x.TotalCount) // Assuming TotalCount is the field you want to sum
+                            TotalCount = g.Sum(x => x.TotalCount) 
                         })
                         .ToList();
 
@@ -92,46 +105,68 @@ namespace ASI.Basecode.WebApp.Controllers
                         .Select(g => new VwTotalTicketSummaryWithStatus
                         {
                             StatusName = g.Key,
-                            TotalCount = g.Sum(x => x.TotalCount) // Assuming TotalCount is the field you want to sum
+                            TotalCount = g.Sum(x => x.TotalCount)
                         })
                         .ToList();
+
                     TicketsByPriority = _db.VwTotalTicketSummaryWithPriorities
                         .Where(x => x.CreatedAt >= startDate && x.CreatedAt <= endDate)
                         .GroupBy(x => x.PriorityName)
                         .Select(g => new VwTotalTicketSummaryWithPriority
                         {
                             PriorityName = g.Key,
-                            TotalCount = g.Sum(x => x.TotalCount) // Assuming TotalCount is the field you want to sum
+                            TotalCount = g.Sum(x => x.TotalCount)
                         })
                         .ToList();
+
                     agentResolvedTicket = _db.VwResolvedTicketByAgents
                         .Where(x => x.ResolvedAt >= startDate && x.ResolvedAt <= endDate)
                         .GroupBy(x => x.AgentName)
                         .Select(g => new VwResolvedTicketByAgent
                         {
                             AgentName = g.Key,
-                            TotalResolvedCount = g.Sum(x => x.TotalResolvedCount) // Assuming TotalCount is the field you want to sum
+                            TotalResolvedCount = g.Sum(x => x.TotalResolvedCount) 
                         })
                         .ToList();
-                    //var agentResolutionTime = _db.VwAssignedTicketViews.ToList();
+
+                    agentAvgResTime = _db.VwAverageResolutionTimes
+                        .Where(x => x.ResolvedAt >= startDate && x.ResolvedAt <= endDate)
+                        .GroupBy(x => x.AgentName)
+                        .Select(g => new VwAverageResolutionTime
+                        {
+                            AgentName = g.Key,
+                            AvgResolutionTime = Math.Round((decimal)g.Average(x => x.AvgResolutionTime), 2)
+                        })
+                        .ToList();
+
                     agentCustSatRating = _db.VwCustomerSatisfactionRatings
-                        .Where(x => x.FeedbackedAt >= startDate && x.FeedbackedAt <= endDate)
+                        .Where(x => x.FeedbackAt >= startDate && x.FeedbackAt <= endDate)
                         .GroupBy(x => x.AgentName)
                         .Select(g => new VwCustomerSatisfactionRating
                         {
                             AgentName = g.Key,
-                            AvgFeedbackRating = g.Average(x => x.AvgFeedbackRating) // Assuming TotalCount is the field you want to sum
+                            AvgFeedbackRating = g.Average(x => x.AvgFeedbackRating) 
                         })
                         .ToList();
                 }
 
-                if (!TicketsByCategory.Any() || !TicketsByStatus.Any() || !TicketsByPriority.Any() || !agentResolvedTicket.Any() || !agentCustSatRating.Any())
+                if (!TicketsByCategory.Any() || !TicketsByStatus.Any() || !TicketsByPriority.Any() || !agentResolvedTicket.Any() || !agentAvgResTime.Any() || !agentCustSatRating.Any())
                 {
-                    ViewData["NoDataMessage"] = "No data available for the selected time period.";
+                    ViewData["NoDataCategory"] = "No category data for the selected time period.";
+                    ViewData["NoDataStatus"] = "No status data for the selected time period.";
+                    ViewData["NoDataPriority"] = "No priority data for the selected time period.";
+                    ViewData["NoDataResolvedTickets"] = "No resolved ticket data for the selected time period.";
+                    ViewData["NoDataResolutionTime"] = "No resolved ticket data for the selected time period.";
+                    ViewData["NoDataSatisfaction"] = "No agent was feedbacked for the selected time period.";
                 }
                 else
                 {
-                    ViewData["NoDataMessage"] = null;
+                    ViewData["NoDataCategory"] = null;
+                    ViewData["NoDataStatus"] = null;
+                    ViewData["NoDataPriority"] = null;
+                    ViewData["NoDataResolvedTickets"] = null;
+                    ViewData["NoDataResolutionTime"] = null;
+                    ViewData["NoDataSatisfaction"] = null;
                 }
 
 
@@ -141,7 +176,7 @@ namespace ASI.Basecode.WebApp.Controllers
                     TicketSummaryWithStatus = TicketsByStatus,
                     TicketSummaryWithPriority = TicketsByPriority,
                     TicketsResolved = agentResolvedTicket,
-                    //AverageResolutionTime = agentResolutionTime,
+                    AverageResolutionTime = agentAvgResTime,
                     CustomerSatisfactionRatings = agentCustSatRating,   
 
                 };
@@ -163,9 +198,6 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 return View(summaryModel);
             }
-
-            ViewData["startDate"] = startDate?.ToString("yyyy-MM-dd");
-            ViewData["endDate"] = endDate?.ToString("yyyy-MM-dd");
 
             return View();
 
