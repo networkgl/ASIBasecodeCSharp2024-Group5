@@ -3,7 +3,7 @@
 
 @{
     ViewData["Title"] = "Create";
-    var resMsg = TempData["ResMsg"] as AlertMessageContent;
+    // var resMsg = TempData["ResMsg"] as AlertMessageContent;
     var userType = ViewData["UserType"];
 }
 
@@ -27,7 +27,7 @@
             <div class="col-xxl-6 col-xl-8 col-lg-10">
                 <div class="card border">
                     <div class="card-body">
-                        <h6 class="text-md text-primary-light mb-16">Profile Image</h6>
+                        @* <h6 class="text-md text-primary-light mb-16">Profile Image</h6>
 
                         <!-- Upload Image Start -->
                         <div class="mb-24 mt-16">
@@ -46,7 +46,7 @@
                                 <img class="w-240-px h-240-px" id="filePreviewCreateUser" style="display:none" />
                             </div>
                         </div>
-                        <!-- Upload Image End -->
+                        <!-- Upload Image End --> *@
                         <form asp-action="Create">
                             <!--Name-->
                             <div class="mb-20">

@@ -4,7 +4,7 @@ namespace ASI.Basecode.Data.Interfaces
 {
     public enum ErrorCode
     {
-        Success, Error, Duplicate
+        Success, Error, Duplicate, ForeignKeyConstraintError
     }
     public interface IBaseRepository<T>
     {

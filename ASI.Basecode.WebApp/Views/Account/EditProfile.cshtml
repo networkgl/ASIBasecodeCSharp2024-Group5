@@ -28,7 +28,7 @@
                 <div class="card border">
                     <div class="card-body">
                         <form asp-action="EditProfile" asp-controller="Account" enctype="multipart/form-data" method="post">
-                            <div class="mb-20">
+                            @* <div class="mb-20">
                                 <label asp-for="formFile" class="form-label fw-semibold text-primary-light text-sm mb-8">Select a profile picture</label>
                                 @if (string.IsNullOrEmpty(Model.user.ProfilePicturePath))
                                 {
@@ -40,7 +40,7 @@
                                     <input asp-for="formFile" type="file" class="form-control radius-8" accept="image/png, image/gif, image/jpeg" id="file" value="@Model.user.ProfilePicturePath">
                                     <button type="button" id="removeImgBtn" onclick="removeImg()" class="btn btn-danger mt-1">Remove Image</button>
                                 }
-                            </div>
+                            </div> *@
                             <input type="hidden" asp-for="user.UserId" />
                             <input type="hidden" asp-for="userRole.UserRoleId" />
                             <input type="hidden" asp-for="userRole.UserId" />

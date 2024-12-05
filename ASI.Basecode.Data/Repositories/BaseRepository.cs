@@ -48,6 +48,10 @@ namespace ASI.Basecode.Data.Repositories
                 _dbContext.SaveChanges();
                 return ErrorCode.Success;
             }
+            catch (DbUpdateException)
+            {
+                return ErrorCode.ForeignKeyConstraintError;
+            }
             catch (Exception)
             {
                 return ErrorCode.Error;
