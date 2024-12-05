@@ -66,6 +66,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 string.IsNullOrWhiteSpace(customUser.user.Password))
             {
                 SetTempDataMessage(ErrorCode.Error, "Please fill out all required fields.");
+                ViewData["ResMsg"] = TempData["ResMsg"];
                 return View(customUser);
             }
 
@@ -73,12 +74,14 @@ namespace ASI.Basecode.WebApp.Controllers
             if (domain == null || !AllowedDomains.Contains(domain))
             {
                 SetTempDataMessage(ErrorCode.Error, "Invalid email address.");
+                ViewData["ResMsg"] = TempData["ResMsg"];
                 return View(customUser);
             }
 
             if (!IsPasswordValid(customUser.user.Password))
             {
                 SetTempDataMessage(ErrorCode.Error, "Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a number, and a special character.");
+                ViewData["ResMsg"] = TempData["ResMsg"];
                 return View(customUser);
             }
 
@@ -93,6 +96,7 @@ namespace ASI.Basecode.WebApp.Controllers
             if (result.Status == ErrorCode.Error)
             {
                 SetTempDataMessage(result.Status, result.Message);
+                ViewData["ResMsg"] = TempData["ResMsg"];
                 return View(customUser);
             }
 
@@ -256,21 +260,19 @@ namespace ASI.Basecode.WebApp.Controllers
 
         public IActionResult Delete(int id)
         {
-            TempData["temp"] = "delete";
-            if (_userRepo.Delete(id) == ErrorCode.Success)
+            var result = _userRepo.Delete(id);
+            if (result == ErrorCode.Success)
             {
-                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                {
-                    Status = ErrorCode.Success,
-                    Message = "User is deleted successfully!"
-                });
+                SetTempDataMessage(ErrorCode.Success, "User is deleted successfully!");
                 return Ok();
-            }
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+            } else if (result == ErrorCode.ForeignKeyConstraintError)
             {
-                Status = ErrorCode.Success,
-                Message = "An error has occured upon deleting the user, try again later."
-            });
+                SetTempDataMessage(ErrorCode.Error, "Cannot delete an agent who has currently assigned tickets, this agent must resolve or reassign their tickets before they can be deleted to ensure that ongoing issues are properly managed.");
+            } else
+            {
+                SetTempDataMessage(ErrorCode.Error, "An error has occured upon deleting the user, try again later.");
+            }
+
             return BadRequest();
         }
 
@@ -294,7 +296,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
                 if (resMsg is not null && User.Identity.IsAuthenticated)
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                    ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
                     {
                         Status = resMsg.Status,
                         Message = resMsg.Message

@@ -363,14 +363,21 @@
                         <div class="dropdown">
                             <button class="d-flex justify-content-center align-items-center rounded-circle" type="button"
                                     data-bs-toggle="dropdown">
-                                @if (string.IsNullOrEmpty(User.FindFirst("ProfilePicPath")?.Value))
+                                @switch (User.FindFirst("UserRole").Value.ToLower())
                                 {
-                                    <img src="~/profilepics/noprofile.png" alt="image"
-                                    class="w-40-px h-40-px object-fit-cover rounded-circle">
-                                } else
-                                {
-                                    <img src="@User.FindFirst("ProfilePicPath")?.Value" alt="image"
-                                         class="w-40-px h-40-px object-fit-cover rounded-circle">
+                                    case "administrator":
+                                    case "superadmin":
+                                        <img src="~/profilepics/admin-panel.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+                                        break;
+                                    case "user":
+                                        <img src="~/profilepics/client.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle">
+                                        break;
+                                    case "support agent":
+                                        <img src="~/profilepics/customer-service.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle border-1">
+                                        break;
+                                    default:
+                                        <img src="~/profilepics/noprofile.png" alt="image" class="w-40-px h-40-px object-fit-cover rounded-circle border-1">
+                                        break;
                                 }
                             </button>
                             <div class="dropdown-menu to-top dropdown-menu-sm">

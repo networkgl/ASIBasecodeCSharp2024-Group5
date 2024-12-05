@@ -209,7 +209,7 @@ namespace ASI.Basecode.Services.Controllers
                             UserAgent userAgent = new UserAgent()
                             {
                                 AgentId = user.UserId,
-                                Expertise = string.IsNullOrEmpty(expertise) || expertise == "Other" ? otherExpertise : expertise,
+                                Expertise = string.IsNullOrEmpty(expertise) ? (string.IsNullOrEmpty(otherExpertise) ? "Technical Support" : otherExpertise) : expertise
                             };
 
                             if(_userAgentRepo.Create(userAgent) == ErrorCode.Success)
