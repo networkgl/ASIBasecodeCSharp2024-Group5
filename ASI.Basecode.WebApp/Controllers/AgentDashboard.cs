@@ -17,6 +17,7 @@ namespace ASI.Basecode.WebApp.Controllers
     {
         public AgentDashboard(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
         {
+            @ViewData["Title"] = "Agent Dashboard";
         }
         public async Task<IActionResult> Index()
         {

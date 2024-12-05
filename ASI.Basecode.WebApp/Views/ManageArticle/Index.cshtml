@@ -1,10 +1,8 @@
 ﻿@using ASI.Basecode.Data.Models.CustomModels
 @using ASI.Basecode.Data.Models
-@model IEnumerable<Article>
+@model IEnumerable<ASI.Basecode.Data.Models.VwApprovedArticle>
 
 @{
-    // ViewData["Title"] = "Article";
-
     var userRole = User.FindFirst("UserRole")?.Value;
 
     if (!string.IsNullOrEmpty(userRole))
@@ -12,11 +10,13 @@
         ViewData["Title"] = userRole == "user" ? "Article" : "Manage Articles";
     }
 
-    var resMsg = TempData["ResMsg"] as string;
+    var pendingList = Convert.ToInt32(ViewData["PendingList"].ToString());
+
+    // var resMsg = TempData["ResMsg"] as string;
 }
 
-<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
-    <h6 class="fw-semibold mb-0">Article</h6>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <h6 class="fw-semibold mb-0">@ViewData["Title"]</h6>
     <ul class="d-flex align-items-center gap-2">
         <li class="fw-medium">
             <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
@@ -25,47 +25,76 @@
             </a>
         </li>
         <li>-</li>
-        <li class="fw-medium">Article</li>
+        <li class="fw-medium">Articles</li>
     </ul>
 </div>
 
 @* @if (!string.IsNullOrEmpty(resMsg))
 {
-    <div class="alert alert-success" role="alert">
+    <div class="alert alert-success mb-4" role="alert">
         @resMsg
     </div>
 } *@
 
-<div class="mb-3">
-    <form asp-action="Index" method="get" class="d-flex">
-        <input type="text" name="searchTerm" class="form-control me-2" placeholder="Search articles..." />
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
-</div>
-<a asp-action="Index" asp-route-sortBy="@ViewData["TitleSortParm"]" class = "btn btn-primary"> Sort </a>
-@if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user")
-{
-    <div class="text-end mt-3">
-        <a asp-action="Create" class="btn btn-primary w-200-px"><i class="bi bi-plus-circle"></i>&nbsp; Add New Article</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex gap-3">
+        @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user")
+        {
+            <a asp-action="PendingList" class="btn btn-primary d-flex align-items-center" style="gap: 5px;">
+                Pending Articles
+                @if (pendingList > 0)
+                {
+                    <span class="badge text-sm bg-danger-500 border-0 d-flex justify-content-center align-items-center"
+                          style="border-radius: 50%; width: 20px; height: 20px; color: white; font-weight: bold;">
+                        @pendingList
+                    </span>
+                }
+            </a>
+        }
+
+        <form asp-action="Index" method="get" class="d-flex">
+            <input type="text" name="searchTerm" class="form-control me-2" placeholder="Search articles..." />
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
     </div>
-}
+
+    @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user")
+    {
+        <a asp-action="Create" class="btn btn-primary w-200-px"><i class="bi bi-plus-circle"></i>&nbsp; Add New Article</a>
+    }
+</div>
+
+<div class="mb-4">
+    <a asp-action="Index" asp-route-sortBy="@ViewData["TitleSortParm"]" class="btn btn-secondary">Sort</a>
+</div>
+
 <div class="row g-4">
     @foreach (var item in Model)
     {
-        <div class="col-md-4">
-            <div class="card h-100">
+        <div class="col-md-6 col-lg-4">
+      
+            <div class="card shadow-sm border-light rounded h-100">
                 <div class="card-body">
-                    <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
-                    <p class="card-text">@Html.DisplayFor(modelItem => item.Content)</p>
+          
+                    <h5 class="card-title fw-bold">@Html.DisplayFor(modelItem => item.Title)</h5>
+                    <p class="card-text truncated-text" id="content-@item.ArticleId">@Html.DisplayFor(modelItem => item.Content)</p>
+                    <a href="javascript:void(0);" class="btn btn-link text-primary read-more" data-target="content-@item.ArticleId" style="display: none;">Read More</a>
 
+                    <p class="text-muted small"><strong>Published On:</strong> @item.DateCreated?.ToString("MM/dd/yyyy")</p>
+                </div>
+
+                <div class="card-footer d-flex justify-content-between align-items-center">
                     @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user")
                     {
-                        <div class="card-footer text-end">
-                            <a asp-action="Edit" asp-route-id="@item.ArticleId" class="btn btn-outline-primary">
-                                <i class="bi bi-pencil-square"> </i>
-                            </a>
-                            <a href="#" onclick="confirmDelete('@item.ArticleId'); return false;" id="@item.ArticleId"><i class="bi bi-trash" style="color:red"></i></a>
-                        </div>
+                        <a asp-action="Edit" asp-route-id="@item.ArticleId" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </a>
+                    }
+                    @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user" && Convert.ToString(User.FindFirst("UserRole")?.Value) != "support agent")
+                    {
+                        <a href="#" onclick="confirmDelete('@item.ArticleId'); return false;" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
                     }
                 </div>
             </div>
@@ -73,11 +102,9 @@
     }
 </div>
 
-
 <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
 <script src="~/toastr/toastr.min.js"></script>
 <script type="text/javascript">
-
     function confirmDelete(articleId) {
         toastr.options = {
             closeButton: true,
@@ -114,4 +141,40 @@
             }
         );
     }
+
+    $(document).ready(function () {
+        // Toggle full content visibility on "Read More" click
+        $(".read-more").on("click", function () {
+            var targetId = $(this).data("target");
+            var fullContent = $("#" + targetId);
+
+            if (fullContent.hasClass("truncated-text")) {
+                fullContent.removeClass("truncated-text");
+                $(this).text("Read Less");
+            } else {
+                fullContent.addClass("truncated-text");
+                $(this).text("Read More");
+            }
+        });
+
+        // Check if content overflows, and only show "Read More" if necessary
+        $(".card-text").each(function () {
+            var content = $(this);
+            var contentHeight = content[0].scrollHeight;
+            var maxHeight = parseInt(content.css("max-height"));
+
+            // If content is taller than the max-height, show the "Read More" button
+            if (contentHeight > maxHeight) {
+                content.siblings(".read-more").show();
+            }
+        });
+    });
 </script>
+
+<style>
+    .truncated-text {
+        max-height: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

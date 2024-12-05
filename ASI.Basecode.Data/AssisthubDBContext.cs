@@ -35,9 +35,12 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwAdminUsersView> VwAdminUsersViews { get; set; }
         public virtual DbSet<VwAgentCount> VwAgentCounts { get; set; }
         public virtual DbSet<VwAgentFeedbackRatingView> VwAgentFeedbackRatingViews { get; set; }
+        public virtual DbSet<VwApprovedArticle> VwApprovedArticles { get; set; }
         public virtual DbSet<VwAssignedTicketView> VwAssignedTicketViews { get; set; }
+        public virtual DbSet<VwAverageResolutionTime> VwAverageResolutionTimes { get; set; }
         public virtual DbSet<VwCustomerSatisfactionRating> VwCustomerSatisfactionRatings { get; set; }
         public virtual DbSet<VwFeedbackView> VwFeedbackViews { get; set; }
+        public virtual DbSet<VwNeedApprovalArticle> VwNeedApprovalArticles { get; set; }
         public virtual DbSet<VwNotificationView> VwNotificationViews { get; set; }
         public virtual DbSet<VwResolvedTicketByAgent> VwResolvedTicketByAgents { get; set; }
         public virtual DbSet<VwTicketAssignedToMeAgent> VwTicketAssignedToMeAgents { get; set; }
@@ -51,6 +54,7 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwTotalTicketSummaryWithStatus> VwTotalTicketSummaryWithStatuses { get; set; }
         public virtual DbSet<VwTotalTicketsResolved> VwTotalTicketsResolveds { get; set; }
         public virtual DbSet<VwUserCount> VwUserCounts { get; set; }
+        public virtual DbSet<VwUserNotificationListView> VwUserNotificationListViews { get; set; }
         public virtual DbSet<VwUserRoleView> VwUserRoleViews { get; set; }
         public virtual DbSet<VwUserTicketView> VwUserTicketViews { get; set; }
         public virtual DbSet<VwUserTicketViewForAdminsAndAgent> VwUserTicketViewForAdminsAndAgents { get; set; }
@@ -60,12 +64,8 @@ namespace ASI.Basecode.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-
-
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer("workstation id=AssisthubDB.mssql.somee.com;packet size=4096;user id=XAssistHubX_SQLLogin_1;pwd=tpu83eivqf;data source=AssisthubDB.mssql.somee.com;persist security info=False;initial catalog=AssisthubDB;TrustServerCertificate=True");
-
-                optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Trust Server Certificate=True");
-
             }
         }
 
@@ -75,7 +75,15 @@ namespace ASI.Basecode.Data
             {
                 entity.ToTable("Article");
 
+                entity.Property(e => e.Approved)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Content).IsUnicode(false);
+
+                entity.Property(e => e.DateCreated).HasColumnType("datetime");
+
+                entity.Property(e => e.DateUpdated).HasColumnType("datetime");
 
                 entity.Property(e => e.Title)
                     .HasMaxLength(255)
@@ -262,6 +270,10 @@ namespace ASI.Basecode.Data
                     .HasMaxLength(100)
                     .IsUnicode(false);
 
+                entity.Property(e => e.EmailVerificationCode)
+                    .HasMaxLength(10)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Name)
                     .HasMaxLength(100)
                     .IsUnicode(false);
@@ -377,6 +389,29 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.ProfilePicture).IsUnicode(false);
             });
 
+            modelBuilder.Entity<VwApprovedArticle>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_ApprovedArticles");
+
+                entity.Property(e => e.Approved)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ArticleId).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Content).IsUnicode(false);
+
+                entity.Property(e => e.DateCreated).HasColumnType("datetime");
+
+                entity.Property(e => e.DateUpdated).HasColumnType("datetime");
+
+                entity.Property(e => e.Title)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+            });
+
             modelBuilder.Entity<VwAssignedTicketView>(entity =>
             {
                 entity.HasNoKey();
@@ -420,6 +455,21 @@ namespace ASI.Basecode.Data
                     .IsUnicode(false);
             });
 
+            modelBuilder.Entity<VwAverageResolutionTime>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_AverageResolutionTime");
+
+                entity.Property(e => e.AgentName)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.AvgResolutionTime).HasColumnType("numeric(38, 6)");
+
+                entity.Property(e => e.ResolvedAt).HasColumnType("date");
+            });
+
             modelBuilder.Entity<VwCustomerSatisfactionRating>(entity =>
             {
                 entity.HasNoKey();
@@ -441,6 +491,8 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_FeedbackView");
 
+                entity.Property(e => e.AttachmentPath).IsUnicode(false);
+
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at");
@@ -452,6 +504,29 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.IssueDescription).IsUnicode(false);
 
                 entity.Property(e => e.TicketCategory).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<VwNeedApprovalArticle>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_NeedApprovalArticles");
+
+                entity.Property(e => e.Approved)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ArticleId).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Content).IsUnicode(false);
+
+                entity.Property(e => e.DateCreated).HasColumnType("datetime");
+
+                entity.Property(e => e.DateUpdated).HasColumnType("datetime");
+
+                entity.Property(e => e.Title)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<VwNotificationView>(entity =>
@@ -598,13 +673,11 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_TicketsByCategory");
 
+                entity.Property(e => e.AssignedDate).HasColumnType("date");
+
                 entity.Property(e => e.CategoryName)
                     .HasMaxLength(100)
                     .IsUnicode(false);
-
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("date")
-                    .HasColumnName("Created At");
             });
 
             modelBuilder.Entity<VwTicketsByPriority>(entity =>
@@ -613,11 +686,7 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_TicketsByPriority");
 
-                entity.Property(e => e.CreatedAt).HasColumnType("date");
-
-                entity.Property(e => e.Name)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                entity.Property(e => e.AssignedDate).HasColumnType("date");
 
                 entity.Property(e => e.PriorityName)
                     .HasMaxLength(100)
@@ -632,7 +701,7 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_TicketsByStatus");
 
-                entity.Property(e => e.CreatedAt).HasColumnType("date");
+                entity.Property(e => e.AssignedDate).HasColumnType("date");
 
                 entity.Property(e => e.StatusName)
                     .HasMaxLength(100)
@@ -696,6 +765,27 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.TotalUserCount).HasColumnName("Total user count");
             });
 
+            modelBuilder.Entity<VwUserNotificationListView>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_UserNotificationListView");
+
+                entity.Property(e => e.Approved)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Content).IsUnicode(false);
+
+                entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.DateAssigned).HasColumnType("datetime");
+
+                entity.Property(e => e.DateResolved).HasColumnType("datetime");
+
+                entity.Property(e => e.LastModified).HasColumnType("datetime");
+            });
+
             modelBuilder.Entity<VwUserRoleView>(entity =>
             {
                 entity.HasNoKey();
@@ -704,6 +794,10 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.EmailVerificationCode)
+                    .HasMaxLength(10)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Name)
@@ -807,6 +901,10 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.Email)
                     .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.EmailVerificationCode)
+                    .HasMaxLength(10)
                     .IsUnicode(false);
 
                 entity.Property(e => e.Expertise)

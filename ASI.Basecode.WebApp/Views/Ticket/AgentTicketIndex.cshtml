@@ -223,7 +223,7 @@
                         <td class="text-center">
                             @if (item.StatusId == 1 || (item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value) && item.StatusId != 3))
                             {
-                                <a asp-action="Edit" asp-route-id="@item.TicketId" title="Edit Ticket">
+                                <a asp-action="AgentUpdateTicket" asp-route-id="@item.TicketId" title="Edit Ticket">
                                     <i class="bi bi-pencil-square" style="color:#0d6efd"></i>
                                 </a> @("|")
                             }

@@ -71,6 +71,8 @@ namespace ASI.Basecode.Services.Controllers
             _catRepo = new BaseRepository<Category>();
             _feedbackRepo = new BaseRepository<Feedback>();
             _userAgentRepo = new BaseRepository<UserAgent>();
+
+
         }
 
         public int GetLoggedInUserId()
@@ -87,7 +89,7 @@ namespace ASI.Basecode.Services.Controllers
                 var currentTime = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow);
 
                 // Simulate advancing time by adding hours
-                int hoursToAdvance = 1; // Adjust this value as needed for your tests
+                int hoursToAdvance = 1; // 
                 currentTime = currentTime.AddHours(hoursToAdvance);
 
                 var tickets = _db.VwNotificationViews
@@ -121,7 +123,7 @@ namespace ASI.Basecode.Services.Controllers
                         {
                             ToUserId = ticket.AgentId,  // Notify the assigned support agent
                             UserTicketId = ticket.TicketId,
-                            Content = $"Unresolved Ticket Reminder for Ticket ID: {ticket.TicketId} Date Assigned: {ticketAssignedTime} Hours To Be Resolve: {ticket.ResolutionTime}. Please resolve this ticket within {hoursBeforeTrigger} hours immediately!",
+                            Content = $"Unresolved Ticket Reminder for Ticket ID: {ticket.TicketId} Date Assigned: {ticketAssignedTime} Hours To Be Resolve: {ticket.ResolutionTime}. Please resolve this ticket within {ticket.ResolutionTime - hoursBeforeTrigger} hour(s) immediately!",
                             CreatedAt = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow)
                         };
 

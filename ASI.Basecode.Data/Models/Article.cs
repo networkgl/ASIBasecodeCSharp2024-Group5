@@ -9,6 +9,10 @@ namespace ASI.Basecode.Data.Models
         public int? UserId { get; set; }
         public string Content { get; set; }
         public string Title { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public DateTime? DateUpdated { get; set; }
+        public int? UpdatedBy { get; set; }
+        public string Approved { get; set; }
 
         public virtual User User { get; set; }
     }

@@ -21,6 +21,7 @@ namespace ASI.Basecode.Data.Models
         public string Email { get; set; }
         public string Password { get; set; }
         public string ProfilePicturePath { get; set; }
+        public string EmailVerificationCode { get; set; }
 
         public virtual ICollection<Article> Articles { get; set; }
         public virtual ICollection<AssignedTicket> AssignedTicketAgents { get; set; }

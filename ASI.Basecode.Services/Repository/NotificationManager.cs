@@ -1,4 +1,5 @@
-﻿using ASI.Basecode.Data.Interfaces;
+﻿using ASI.Basecode.Data;
+using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Services.Controllers;
 using ASI.Basecode.WebApp.Utils;
@@ -13,9 +14,17 @@ namespace ASI.Basecode.Services.Repository
     {
         public NotificationManager() { }
 
-        public List<Notification> GetUserAssociatedNotif(int? userId)
+        //public List<Notification> GetUserAssociatedNotif(int? userId)
+        //{
+        //    return _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
+        //}
+
+        public List<VwUserNotificationListView> GetUserAssociatedNotif(int? userId)
         {
-            return _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
+            using (var db = new AssisthubDBContext())
+            {
+                return db.VwUserNotificationListViews.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
+            }
         }
 
         public ErrorCode CreateTicketNotif(int toUserId, string userName, int categoryId, int userTicketId, out string errorMsg, out string successMsg)
@@ -281,7 +290,7 @@ namespace ASI.Basecode.Services.Repository
         }
 
 
-        protected ErrorCode MarkUserNotifAllAsRead(int userId, byte? value, out string errorMsg, out string successMsg)
+        public ErrorCode MarkUserNotifAllAsRead(int userId, byte? value, out string errorMsg, out string successMsg)
         {
             errorMsg = successMsg = string.Empty;
 
