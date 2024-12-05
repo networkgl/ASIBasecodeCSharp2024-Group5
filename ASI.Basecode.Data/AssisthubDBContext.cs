@@ -85,6 +85,10 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.DateUpdated).HasColumnType("datetime");
 
+                entity.Property(e => e.PreviousContent).IsUnicode(false);
+
+                entity.Property(e => e.PreviousTitle).IsUnicode(false);
+
                 entity.Property(e => e.Title)
                     .HasMaxLength(255)
                     .IsUnicode(false);
@@ -407,6 +411,10 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.DateUpdated).HasColumnType("datetime");
 
+                entity.Property(e => e.PreviousContent).IsUnicode(false);
+
+                entity.Property(e => e.PreviousTitle).IsUnicode(false);
+
                 entity.Property(e => e.Title)
                     .HasMaxLength(255)
                     .IsUnicode(false);
@@ -523,6 +531,10 @@ namespace ASI.Basecode.Data
                 entity.Property(e => e.DateCreated).HasColumnType("datetime");
 
                 entity.Property(e => e.DateUpdated).HasColumnType("datetime");
+
+                entity.Property(e => e.PreviousContent).IsUnicode(false);
+
+                entity.Property(e => e.PreviousTitle).IsUnicode(false);
 
                 entity.Property(e => e.Title)
                     .HasMaxLength(255)

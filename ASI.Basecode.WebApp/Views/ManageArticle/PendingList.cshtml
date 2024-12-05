@@ -4,6 +4,9 @@
 
 @{
    var resMsg = TempData["ResMsg"] as string;
+
+    var newArticles = Model.Where(a => !a.UpdatedBy.HasValue || a.UpdatedBy == 0).ToList();
+    var editedArticles = Model.Where(a => a.UpdatedBy.HasValue && a.UpdatedBy > 0).ToList();
 }
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
@@ -32,38 +35,86 @@
     <a asp-action="PendingList" asp-route-sortBy="@ViewData["TitleSortParm"]" class="btn btn-secondary">Sort</a>
 </div>
 
-<div class="row g-4">
-    @foreach (var item in Model)
-    {
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
-                    <p class="card-text truncated-text" id="content-@item.ArticleId">@Html.DisplayFor(modelItem => item.Content)</p>
-                    <a href="javascript:void(0);" class="btn btn-link text-primary read-more" data-target="content-@item.ArticleId" style="display: none;">Read More</a>
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="new-tab" data-bs-toggle="tab" data-bs-target="#new-articles" type="button" role="tab" aria-controls="new-articles" aria-selected="true">New Articles</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="edited-tab" data-bs-toggle="tab" data-bs-target="#edited-articles" type="button" role="tab" aria-controls="edited-articles" aria-selected="false">Edited Articles</button>
+    </li>
+</ul>
 
-                @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user" && Convert.ToString(User.FindFirst("UserRole")?.Value) != "support agent")
-                {  
-                    <div class="additional-details" id="details-@item.ArticleId" style="display: none;">
-                        <p class="card-text"><strong>Created By (User Id):</strong> @item.UserId</p>
-                            <p class="card-text"> <strong>Date Created:</strong> @(item.DateCreated?.ToString("MM/dd/yyyy") ?? "N/A")</p>
-                        <p class="card-text"><strong>Date Updated:</strong> @(item.DateUpdated.HasValue ? item.DateUpdated?.ToString("MM/dd/yyyy") : "N/A")</p>
-                        <p class="card-text"><strong>Updated By (User Id):</strong> @(item.UpdatedBy > 0 ? item.UpdatedBy.ToString() : "N/A")</p>
-                    </div>
+<div class="tab-content mt-4" id="myTabContent">
+    <div class="tab-pane fade show active" id="new-articles" role="tabpanel" aria-labelledby="new-tab">
+        <div class="row g-4">
+            @foreach (var item in newArticles)
+            {
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
+                            <p class="card-text truncated-text" id="content-@item.ArticleId">@Html.DisplayFor(modelItem => item.Content)</p>
+                            <a href="javascript:void(0);" class="btn btn-link text-primary read-more" data-target="content-@item.ArticleId">Read More</a>
 
-                    <div class="card-footer text-end">
-                        <a asp-action="Approve" asp-route-id="@item.ArticleId" class="btn btn-outline-primary">
-                            <i class="bi bi-check-square"></i> Approve
-                        </a>
-                        <a href="#" onclick="confirmDelete('@item.ArticleId'); return false;" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-trash"></i> Delete
-                        </a>
+                            @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user" && Convert.ToString(User.FindFirst("UserRole")?.Value) != "support agent")
+                            {
+                                <div class="additional-details" id="details-@item.ArticleId" style="display: none;">
+                                    <p class="card-text"><strong>Created By (User Id):</strong> @item.UserId</p>
+                                    <p class="card-text"> <strong>Date Created:</strong> @(item.DateCreated?.ToString("MM/dd/yyyy") ?? "N/A")</p>
+                                    <p class="card-text"><strong>Date Updated:</strong> @(item.DateUpdated.HasValue ? item.DateUpdated?.ToString("MM/dd/yyyy") : "N/A")</p>
+                                    <p class="card-text"><strong>Updated By (User Id):</strong> @(item.UpdatedBy > 0 ? item.UpdatedBy.ToString() : "N/A")</p>
+                                </div>
+
+                                <div class="card-footer text-end">
+                                    <a asp-action="Approve" asp-route-id="@item.ArticleId" class="btn btn-outline-primary">
+                                        <i class="bi bi-check-square"></i> Approve
+                                    </a>
+                                    <a href="#" onclick="confirmDelete('@item.ArticleId'); return false;" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </a>
+                                </div>
+                            }
+                        </div>
                     </div>
-                }
                 </div>
-            </div>
+            }
         </div>
-    }
+    </div>
+
+    <div class="tab-pane fade" id="edited-articles" role="tabpanel" aria-labelledby="edited-tab">
+        <div class="row g-4">
+            @foreach (var item in editedArticles)
+            {
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
+                            <p class="card-text truncated-text" id="content-@item.ArticleId">@Html.DisplayFor(modelItem => item.Content)</p>
+                            <a href="javascript:void(0);" class="btn btn-link text-primary read-more" data-target="content-@item.ArticleId">Read More</a>
+                            @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user" && Convert.ToString(User.FindFirst("UserRole")?.Value) != "support agent")
+                            {
+                                <div class="additional-details" id="details-@item.ArticleId" style="display: none;">
+                                    <p class="card-text"><strong>Created By (User Id):</strong> @item.UserId</p>
+                                    <p class="card-text"> <strong>Date Created:</strong> @(item.DateCreated?.ToString("MM/dd/yyyy") ?? "N/A")</p>
+                                    <p class="card-text"><strong>Date Updated:</strong> @(item.DateUpdated.HasValue ? item.DateUpdated?.ToString("MM/dd/yyyy") : "N/A")</p>
+                                    <p class="card-text"><strong>Updated By (User Id):</strong> @(item.UpdatedBy > 0 ? item.UpdatedBy.ToString() : "N/A")</p>
+                                </div>
+
+                                <div class="card-footer text-end">
+                                    <a asp-action="Approve" asp-route-id="@item.ArticleId" class="btn btn-outline-primary">
+                                        <i class="bi bi-check-square"></i> Approve
+                                    </a>
+                                    <a asp-action="Decline" asp-route-id="@item.ArticleId" class="btn btn-outline-warning">
+                                        <i class="bi bi-x-square"></i> Decline
+                                    </a>
+                                </div>
+                            }    
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>
 
 <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
