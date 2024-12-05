@@ -1,7 +1,12 @@
-﻿using ASI.Basecode.Data.Interfaces;
+﻿using ASI.Basecode.Data;
+using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
+using ASI.Basecode.Resources.Constants;
 using ASI.Basecode.Services.Controllers;
+//using ASI.Basecode.WebApp.Data.Models;
+using ASI.Basecode.WebApp.Utils;
+
 //using ASI.Basecode.WebApp.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +15,7 @@ using Newtonsoft.Json;
 using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -21,7 +27,7 @@ namespace ASI.Basecode.WebApp.Controllers
         {
         }
         [Authorize(Policy = "AllRoleTypePolicy")]
-        public IActionResult Index(string searchTerm, string sortBy)
+        public IActionResult Index(string searchTerm, string sortBy, int? ArticleId)
         {
             if (TempData["temp"] is not null)
             {
@@ -93,6 +99,14 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.ArticleId).ToList();
             }
+            else if(ArticleId != null)
+            {
+                var getArticleId = _articleRepo.Get(ArticleId);
+                if (getArticleId != null)
+                {
+                    articles = articles.Where(m => m.ArticleId == ArticleId).ToList();
+                }
+            }
 
             var pendingList = _db.VwNeedApprovalArticles.Count();
 
@@ -156,40 +170,117 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var result = _articleRepo.Create(article);
 
+            //Notification Here...
             if (result == ErrorCode.Success)
             {
-                ////Notify administrator...
-                //var notifAdmin = new Notification()
-                //{
-                //    FromUserId = article.UserId,
-                //    Content = $"You have . Ticket ID: {}",
-                //    CreatedAt = DateTimeToday()
-                //};
+                if (User.IsInRole("administrator")) //if admin then just send notif to his/her self only
+                {
+                    //Notify Administrator who created...
+                    var notifAdmin = new Notification()
+                    {
+                        ToUserId = article.UserId,
+                        ArticleId = article.ArticleId,
+                        Content = $"You have created a new article. Article ID: {article.ArticleId}. User is able to view it already.",
+                        CreatedAt = DateTimeToday()
+                    };
 
-                //if (_notifRepo.Create(notifAdmin) == ErrorCode.Success)
-                //{
+
+                    if (_notifRepo.Create(notifAdmin) == ErrorCode.Error)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error occured while inserting notification for notify admin create article"
+                        });
+                    }
+                }
+                else if(User.IsInRole("support agent"))
+                {
+                    int[] getAllAdminId = null;
+
+                    using (var db = new AssisthubDBContext())
+                    {
+                        //getting all userId for Adminstrator accounts..
+                        //anyone can perform approval..
+                        getAllAdminId = db.VwUserRoleViews.Where(m => m.RoleId == (byte)RoleType.Administrator).Select(m => m.UserId).ToArray();
+                    }
+
+                    int i = 0;
+
+                    do
+                    {
+                        //Notify administrator...
+                        var notifAdmin = new Notification()
+                        {
+                            FromUserId = article.UserId,
+                            ToUserId = getAllAdminId[i],
+                            ArticleId = article.ArticleId,
+                            Content = $"Support Agent created a new article. Article ID: {article.ArticleId}. Please review it and take necessarry actions.",
+                            CreatedAt = DateTimeToday()
+                        };
+
+                        if (_notifRepo.Create(notifAdmin) == ErrorCode.Success)
+                        {
+                            i++;
+                        }
+                        else
+                        {
+                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                            {
+                                Status = ErrorCode.Error,
+                                Message = "An error occured while inserting notification for notify supp agent create article"
+                            });
+
+                            return RedirectToAction("Index");
+                        }
+
+                        if ((i + 1) == getAllAdminId.Length)
+                        {
+                            break;
+                        }
+
+                    } while (true);
 
 
-                //    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                //    {
-                //        Status = result == ErrorCode.Success ? ErrorCode.Success : ErrorCode.Error,
-                //        Message = result == ErrorCode.Success ? "Article created successfully!" : "An error has occurred upon creating the article."
-                //    });
-                //}
+                    //Notify Supp Agent who created...
+                    var notifSuppAgent = new Notification()
+                    {
+                        ToUserId = article.UserId,
+                        ArticleId = article.ArticleId,
+                        Content = $"You have created a new article. Administrator will review it shortly. Article ID: {article.ArticleId}. You'll be notified once your created article is approved.",
+                        CreatedAt = DateTimeToday()
+                    };
+
+                    if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error occured while inserting notification for notify supp agent create article"
+                        });
+                    }
+                }
+
+
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                {
+                    Status = result == ErrorCode.Success ? ErrorCode.Success : ErrorCode.Error,
+                    Message = result == ErrorCode.Success ? "Article created successfully!" : "An error has occurred upon creating the article."
+                });
             }
 
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-            {
-                Status = result == ErrorCode.Success ? ErrorCode.Success : ErrorCode.Error,
-                Message = result == ErrorCode.Success ? "Article created successfully!" : "An error has occurred upon creating the article."
-            });
+            //TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+            //{
+            //    Status = result == ErrorCode.Success ? ErrorCode.Success : ErrorCode.Error,
+            //    Message = result == ErrorCode.Success ? "Article created successfully!" : "An error has occurred upon creating the article."
+            //});
 
 
             return RedirectToAction("Index");
         }
 
         [Authorize(Policy = "AdminAndAgentPolicy")]
-        public IActionResult PendingList(string searchTerm, string sortBy)
+        public IActionResult PendingList(string searchTerm, string sortBy, int? ArticleId, int? NotificationId)
         {
             if(TempData["ResMsg"] is not null)
             {
@@ -229,6 +320,33 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.ArticleId).ToList();
             }
+            else if (ArticleId != null && NotificationId != null) //For redirection from notification
+            {
+                articles = articles.Where(m => m.ArticleId == ArticleId).ToList();
+
+                if (articles != null)
+                {
+                    //update notif mark as read if this route is visited from notification view
+                    if (NotificationId != null)
+                    {
+                        var getNotifById = _notifRepo.Get(NotificationId);
+
+                        if (getNotifById != null)
+                        {
+                            getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                            if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                            {
+                                //Possible error internal upon updating if there is
+                                return BadRequest();//temporary return...
+                            };
+                        }
+
+                    }
+                }
+            }
+
+            
 
             return View(articles);
         }
@@ -251,10 +369,63 @@ namespace ASI.Basecode.WebApp.Controllers
 
             article.Approved = "Yes";
 
-            var result = _articleRepo.Update(id, article); 
+            var result = _articleRepo.Update(id, article);
+            int? toUserId = null;
+            string content = null;
+            if (article.UserId == null)  // Always basing on the last updated if not null
+            {
+                toUserId = article.UpdatedBy;
+                content = $"The article you've been updated has been approved by the administrator and already visible to users. Article ID: {article.ArticleId}.";
+            }
+            else
+            {
+                toUserId = article.UserId;
+                content = $"Your article has been approved by the administrator and already visible to users. Article ID: {article.ArticleId}.";
+            }
 
             if (result == ErrorCode.Success)
             {
+                //Notify Supp Agent who trigger the article either being updated or just newly created...
+                var notifSuppAgent = new Notification()
+                {
+                    ToUserId = toUserId,
+                    ArticleId = article.ArticleId,
+                    Content = content,
+                    CreatedAt = DateTimeToday()
+                };
+
+                if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    {
+                        Status = ErrorCode.Error,
+                        Message = "An error occured while inserting notification for notify supp agent approved article"
+                    });
+                }
+
+                //Holds the userId of Admin who currently login
+                int.TryParse(User.FindFirstValue("UserId"), out int userId);
+
+                //Notify Administrator who approves the article ...
+                var notifAdministrator = new Notification()
+                {
+                    ToUserId = userId,
+                    ArticleId = article.ArticleId,
+                    Content = $"You have successfully approved an article. Article ID: {article.ArticleId}. It's already visible to user now.",
+                    CreatedAt = DateTimeToday()
+                };
+
+                if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    {
+                        Status = ErrorCode.Error,
+                        Message = "An error occured while inserting notification for notify supp agent approved article"
+                    });
+                }
+
+
+
                 TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Success,
@@ -306,7 +477,76 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 article.Approved = "No";
             }
+
             article.UpdatedBy = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+
+            if (User.IsInRole("support agent"))
+            {
+                int[] getAllAdminId = null;
+
+                using (var db = new AssisthubDBContext())
+                {
+                    //getting all userId for Adminstrator accounts..
+                    //anyone can perform approval..
+                    getAllAdminId = db.VwUserRoleViews.Where(m => m.RoleId == (byte)RoleType.Administrator).Select(m => m.UserId).ToArray();
+                }
+
+                int i = 0;
+
+                do
+                {
+                    //Notify administrator...
+                    var notifAdmin = new Notification()
+                    {
+                        FromUserId = article.UserId,
+                        ToUserId = getAllAdminId[i],
+                        ArticleId = article.ArticleId,
+                        Content = $"Support Agent updated an existing article. Article ID: {article.ArticleId}. Please review it and take necessarry actions.",
+                        CreatedAt = DateTimeToday()
+                    };
+
+                    if (_notifRepo.Create(notifAdmin) == ErrorCode.Success)
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error occured while inserting notification for notify supp agent create article"
+                        });
+
+                        return RedirectToAction("Index");
+                    }
+
+                    if ((i + 1) == getAllAdminId.Length)
+                    {
+                        break;
+                    }
+
+                } while (true);
+
+                //Notify Supp Agent who trigger the article either being updated or just newly created...
+                var notifSuppAgent = new Notification()
+                {
+                    ToUserId = article.UpdatedBy,
+                    ArticleId = article.ArticleId,
+                    Content = $"You are trying to update an existing article. Article ID: {article.ArticleId}. Administrator will review it shortly. You will be notified for the update.",
+                    CreatedAt = DateTimeToday()
+                };
+
+                if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    {
+                        Status = ErrorCode.Error,
+                        Message = "An error occured while inserting notification for notify supp agent update article"
+                    });
+                }
+            }
+
 
             TempData["temp"] = "update";
             if (!ModelState.IsValid)
@@ -328,7 +568,8 @@ namespace ASI.Basecode.WebApp.Controllers
                     Message = "Updated Successfully!",
                     Status = ErrorCode.Success
                 });
-            } else
+            } 
+            else
             {
                 TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {

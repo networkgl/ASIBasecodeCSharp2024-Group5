@@ -132,12 +132,9 @@
 
 
                 <li>
-                    @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
+@*                     @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
+*@                  @if (!User.IsInRole("superadmin"))
                     {
-     @*                    NotificationManager _notifManager = new NotificationManager();
-                        int? userId = int.Parse(User.FindFirstValue("UserId")); *@
-
-
                         <a asp-controller="Notification" asp-action="List" class="d-flex align-items-center">
                             <div class="d-flex align-items-center flex-grow-1">
                                 <iconify-icon style="margin-right: 4.5% !important; " icon="flowbite:users-group-outline" class="menu-icon me-2" aria-hidden="true"></iconify-icon>
@@ -254,7 +251,7 @@
                         <button type="button" data-theme-toggle
                                 class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"></button>
 
-                        @if (!User.IsInRole("superadmin") && !User.IsInRole("administrator"))
+                        @if (!User.IsInRole("superadmin"))
                         {                       
                             List<Notification> _userNotif = _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
                             UserManager _userManager = new UserManager();
@@ -287,25 +284,34 @@
               
                                         @foreach (var notif in _userNotif)
                                         {
-
                                             var timeElapsed = Helper.GetTimeElapsed(
                                             Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow) - (notif.CreatedAt ?? DateTime.UtcNow), notif.CreatedAt ?? DateTime.UtcNow);
 
-
-                                            int? ticketId = 0;
+                                            int? ticketOrArticleId = 0;
                                             using (var db = new AssisthubDBContext())
                                             {
-                                                ticketId = db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault().TicketId;
+                                                if (notif.UserTicketId == null && notif.ArticleId != null)
+                                                {
+                                                    ticketOrArticleId = db.Articles.Where(m => m.ArticleId == notif.ArticleId).FirstOrDefault() == null ? null : db.Articles.Where(m => m.ArticleId == notif.ArticleId).FirstOrDefault().ArticleId;
+                                                }
+                                                else if ( notif.ArticleId == null && notif.UserTicketId != null)
+                                                {
+                                                    ticketOrArticleId = db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault() == null ? null : db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault().TicketId;
+                                                }
                                             }
 
                                             string actionRoute = null;
                                             if (User.IsInRole("user"))
                                             {
-                                                actionRoute = Url.Action("UserTicketDetails", "Ticket", new { id = ticketId, NotificationId = notif.NotificationId });
+                                                actionRoute = Url.Action("UserTicketDetails", "Ticket", new { id = ticketOrArticleId, NotificationId = notif.NotificationId });
                                             }
                                             else if (User.IsInRole("support agent"))
                                             {
-                                                actionRoute = Url.Action("AgentTicketDetails", "Ticket", new { id = ticketId, NotificationId = notif.NotificationId });
+                                                actionRoute = Url.Action("AgentTicketDetails", "Ticket", new { id = ticketOrArticleId, NotificationId = notif.NotificationId });
+                                            }
+                                            else if(User.IsInRole("administrator"))
+                                            {
+                                                actionRoute = Url.Action("PendingList","ManageArticle", new { ArticleId = ticketOrArticleId, NotificationId = notif.NotificationId });
                                             }
 
                                             <a href="@actionRoute"

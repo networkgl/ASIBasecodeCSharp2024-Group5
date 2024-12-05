@@ -4,8 +4,8 @@
     {
         User = 1,
         SupportAgent = 2,
-        SuperAdmin = 3,
-        Administrator = 4
+        Administrator = 3,
+        SuperAdmin = 4
     }
 
     public class Constant

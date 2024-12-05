@@ -771,6 +771,10 @@ namespace ASI.Basecode.Data
 
                 entity.ToView("vw_UserNotificationListView");
 
+                entity.Property(e => e.Approved)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Content).IsUnicode(false);
 
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime");

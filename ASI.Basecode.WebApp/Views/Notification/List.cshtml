@@ -90,12 +90,14 @@
                             @notif.Content
 
                             @{
-                                int? ticketId = 0;
+                                int? ticketId = null;
+                                int? articleId = null;
                                 using (var db = new AssisthubDBContext())
                                 {
-                                    ticketId = db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault().TicketId;
+                                    ticketId = db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault() == null ? null : db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault().TicketId;
+                                    articleId = db.Articles.Where(m => m.ArticleId == notif.ArticleId).FirstOrDefault() == null ? null : db.Articles.Where(m => m.ArticleId == notif.ArticleId).FirstOrDefault().ArticleId;
                                 }
-                                if (ticketId != null)
+                                if (articleId == null && ticketId != null)
                                 {
                                     if (User.IsInRole("user"))
                                     {
@@ -111,6 +113,17 @@
                                         {
                                             <a href="@Url.Action("AgentTicketDetails","Ticket", new { id = ticketId, NotificationId = notif.NotificationId} )" class="text-decoration-underline">View ticket here</a>
                                         }
+                                    }
+                                }
+                                else if (ticketId == null && articleId != null)
+                                {
+                                    if (notif.Approved == "Yes")
+                                    {
+                                        <a href="@Url.Action("Index","ManageArticle", new { ArticleId = articleId } )" class="text-decoration-underline">View article here</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("PendingList","ManageArticle", new { ArticleId = articleId, NotificationId = notif.NotificationId} )" class="text-decoration-underline">View article here</a>
                                     }
                                 }
                             }
@@ -135,10 +148,12 @@
                         <span>
                             @notif.Content
                             @{
-                                int? ticketId = 0;
+                                int? ticketId = null;
+                                int? articleId = null;
                                 using (var db = new AssisthubDBContext())
                                 {
-                                    ticketId = db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault().TicketId;
+                                    ticketId = db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault() == null ? null : db.UserTickets.Where(m => m.UserTicketId == notif.UserTicketId).FirstOrDefault().TicketId;
+                                    articleId = db.Articles.Where(m => m.ArticleId == notif.ArticleId).FirstOrDefault() == null ? null : db.Articles.Where(m => m.ArticleId == notif.ArticleId).FirstOrDefault().ArticleId;
                                 }
                                 if (ticketId != null)
                                 {
@@ -156,6 +171,17 @@
                                         {
                                             <a href="@Url.Action("AgentTicketDetails","Ticket", new { id = ticketId, NotificationId = notif.NotificationId} )" class="text-decoration-underline">View ticket here</a>
                                         }
+                                    }
+                                }
+                                else if (ticketId == null && articleId != null)
+                                {
+                                    if (notif.Approved == "Yes")
+                                    {
+                                        <a href="@Url.Action("Index","ManageArticle", new { ArticleId = articleId } )" class="text-decoration-underline">View article here</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("PendingList","ManageArticle", new { ArticleId = articleId, NotificationId = notif.NotificationId} )" class="text-decoration-underline">View article here</a>
                                     }
                                 }
                             }
