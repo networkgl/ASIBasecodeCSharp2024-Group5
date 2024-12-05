@@ -1,5 +1,6 @@
 ﻿using ASI.Basecode.Data.Interfaces;
 using ASI.Basecode.Data.Models;
+using ASI.Basecode.Services.Controllers;
 using ASI.Basecode.Services.Repository;
 using ASI.Basecode.WebApp.Repository;
 using Microsoft.AspNetCore.Authorization;
@@ -13,14 +14,19 @@ using static ASI.Basecode.Resources.Constants.Enums;
 namespace ASI.Basecode.WebApp.Controllers
 {
     [Authorize(Policy = "AdminAgentUserPolicy")]
-    public class NotificationController : NotificationManager
+    public class NotificationController : BaseController
     {
-        public NotificationController()
+        //public NotificationController()
+        //{
+        //}
+        public NotificationController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
         {
         }
+
         public IActionResult List(byte? option)
         {
-            List<Notification> retValNotif = null;
+            List<VwUserNotificationListView> retValNotif = null;
+            NotificationManager _nManager = new NotificationManager();
 
             if (User.Identity.IsAuthenticated)
             {
@@ -31,22 +37,22 @@ namespace ASI.Basecode.WebApp.Controllers
                         if (option == (byte)NotifStatus.HasRead)
                         {
                             TempData["hasRead"] = (byte)NotifStatus.HasRead;
-                            retValNotif = GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.HasRead).ToList();
+                            retValNotif = _nManager.GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.HasRead).ToList();
                         }
                         else if (option == (byte)NotifStatus.NotRead)
                         {
                             TempData["hasRead"] = (byte)NotifStatus.NotRead;
-                            retValNotif = GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.NotRead || m.IsRead == null).ToList();
+                            retValNotif = _nManager.GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.NotRead || m.IsRead == null).ToList();
                             TempData["totalCountNotRead"] = retValNotif.Count;
                         }
                     }
                     else
                     {
-                        retValNotif = GetUserAssociatedNotif(userId);
+                        retValNotif = _nManager.GetUserAssociatedNotif(userId);
                     }
 
                     //Always get count for reference in the view.
-                    var notReadNotifCount = GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.NotRead || m.IsRead == null).ToList().Count;
+                    var notReadNotifCount = _nManager.GetUserAssociatedNotif(userId).Where(m => m.IsRead == (byte)NotifStatus.NotRead || m.IsRead == null).ToList().Count;
                     TempData["totalCountNotRead"] = notReadNotifCount;
                 }
             }
@@ -64,10 +70,11 @@ namespace ASI.Basecode.WebApp.Controllers
         public IActionResult MarkAllAsRead(byte? value)
         {
             string errorMsg, successMsg = string.Empty;
+            NotificationManager _nManager = new NotificationManager();
 
             if (int.TryParse(User.FindFirstValue("UserId"), out int userId))
             {
-                if (MarkUserNotifAllAsRead(userId, value, out errorMsg, out successMsg) == ErrorCode.Error)
+                if (_nManager.MarkUserNotifAllAsRead(userId, value, out errorMsg, out successMsg) == ErrorCode.Error)
                 {
                     TempData["ErrorOrExcetion"] = errorMsg;
                 }

@@ -54,6 +54,7 @@ namespace ASI.Basecode.Data
         public virtual DbSet<VwTotalTicketSummaryWithStatus> VwTotalTicketSummaryWithStatuses { get; set; }
         public virtual DbSet<VwTotalTicketsResolved> VwTotalTicketsResolveds { get; set; }
         public virtual DbSet<VwUserCount> VwUserCounts { get; set; }
+        public virtual DbSet<VwUserNotificationListView> VwUserNotificationListViews { get; set; }
         public virtual DbSet<VwUserRoleView> VwUserRoleViews { get; set; }
         public virtual DbSet<VwUserTicketView> VwUserTicketViews { get; set; }
         public virtual DbSet<VwUserTicketViewForAdminsAndAgent> VwUserTicketViewForAdminsAndAgents { get; set; }
@@ -762,6 +763,23 @@ namespace ASI.Basecode.Data
                 entity.ToView("vw_UserCount");
 
                 entity.Property(e => e.TotalUserCount).HasColumnName("Total user count");
+            });
+
+            modelBuilder.Entity<VwUserNotificationListView>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vw_UserNotificationListView");
+
+                entity.Property(e => e.Content).IsUnicode(false);
+
+                entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+
+                entity.Property(e => e.DateAssigned).HasColumnType("datetime");
+
+                entity.Property(e => e.DateResolved).HasColumnType("datetime");
+
+                entity.Property(e => e.LastModified).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<VwUserRoleView>(entity =>

@@ -301,11 +301,11 @@
                                             string actionRoute = null;
                                             if (User.IsInRole("user"))
                                             {
-                                                actionRoute = Url.Action("Details", "UserTicket", new { id = ticketId, NotificationId = notif.NotificationId });
+                                                actionRoute = Url.Action("UserTicketDetails", "Ticket", new { id = ticketId, NotificationId = notif.NotificationId });
                                             }
                                             else if (User.IsInRole("support agent"))
                                             {
-                                                actionRoute = Url.Action("Edit", "AgentManageTicket", new { id = ticketId, NotificationId = notif.NotificationId });
+                                                actionRoute = Url.Action("AgentTicketDetails", "Ticket", new { id = ticketId, NotificationId = notif.NotificationId });
                                             }
 
                                             <a href="@actionRoute"

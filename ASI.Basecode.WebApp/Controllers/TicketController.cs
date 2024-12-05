@@ -541,7 +541,7 @@ namespace ASI.Basecode.WebApp.Controllers
             return NotFound();
         }
 
-        public IActionResult AgentTicketDetails(int id)
+        public IActionResult AgentTicketDetails(int id, int? NotificationId)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -550,6 +550,26 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var userId = User.FindFirst("UserId")?.Value;
             var myTicket = _db.VwTicketDetailsViews.Where(m => m.TicketId == id).FirstOrDefault();
+
+
+            //update notif mark as read if this route is visited from notification view
+            if (NotificationId != null)
+            {
+                var getNotifById = _notifRepo.Get(NotificationId);
+
+                if (getNotifById != null)
+                {
+                    getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                    if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                    {
+                        //Possible error internal upon updating if there is
+                        return BadRequest();//temporary return...
+                    };
+                }
+     
+            }
+
 
             return View(myTicket);
         }
@@ -569,14 +589,19 @@ namespace ASI.Basecode.WebApp.Controllers
             //update notif mark as read if this route is visited from notification view
             if (NotificationId != null)
             {
-                var getNotifById = _notifRepo.Table.Where(m => m.NotificationId == NotificationId).FirstOrDefault();
-                getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+                var getNotifById = _notifRepo.Get(NotificationId);
 
-                if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                if (getNotifById != null)
                 {
-                    //Possible error internal upon updating if there is
-                    return BadRequest();//temporary return...
-                };
+                    getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                    if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                    {
+                        //Possible error internal upon updating if there is
+                        return BadRequest();//temporary return...
+                    };
+                }
+
             }
 
             return View(myTicket);

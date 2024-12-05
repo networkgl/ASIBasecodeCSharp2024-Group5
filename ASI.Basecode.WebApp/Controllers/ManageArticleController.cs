@@ -2,6 +2,7 @@
 using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.Services.Controllers;
+//using ASI.Basecode.WebApp.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -145,11 +146,34 @@ namespace ASI.Basecode.WebApp.Controllers
 
             var result = _articleRepo.Create(article);
 
+            if (result == ErrorCode.Success)
+            {
+                ////Notify administrator...
+                //var notifAdmin = new Notification()
+                //{
+                //    FromUserId = article.UserId,
+                //    Content = $"You have . Ticket ID: {}",
+                //    CreatedAt = DateTimeToday()
+                //};
+
+                //if (_notifRepo.Create(notifAdmin) == ErrorCode.Success)
+                //{
+
+
+                //    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                //    {
+                //        Status = result == ErrorCode.Success ? ErrorCode.Success : ErrorCode.Error,
+                //        Message = result == ErrorCode.Success ? "Article created successfully!" : "An error has occurred upon creating the article."
+                //    });
+                //}
+            }
+
             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
             {
                 Status = result == ErrorCode.Success ? ErrorCode.Success : ErrorCode.Error,
                 Message = result == ErrorCode.Success ? "Article created successfully!" : "An error has occurred upon creating the article."
             });
+
 
             return RedirectToAction("Index");
         }
