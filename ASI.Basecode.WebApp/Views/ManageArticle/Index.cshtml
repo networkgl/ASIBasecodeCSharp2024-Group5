@@ -38,7 +38,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex gap-3">
-        @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user" && Convert.ToString(User.FindFirst("UserRole")?.Value) != "support agent")
+        @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user")
         {
             <a asp-action="PendingList" class="btn btn-primary d-flex align-items-center" style="gap: 5px;">
                 Pending Articles

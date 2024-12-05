@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Data.Entity;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
@@ -93,6 +95,14 @@ namespace ASI.Basecode.WebApp.Controllers
             }
 
             var pendingList = _db.VwNeedApprovalArticles.Count();
+
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var userRole = User.FindFirst("UserRole")?.Value;
+            if (userRole == "support agent")
+            {
+                pendingList = _db.VwNeedApprovalArticles.Where(a => a.UserId == userId).Count();
+            }
+
 
             ViewData["PendingList"] = pendingList;
 
@@ -178,7 +188,7 @@ namespace ASI.Basecode.WebApp.Controllers
             return RedirectToAction("Index");
         }
 
-        [Authorize(Policy= "AdminPolicy" )]
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult PendingList(string searchTerm, string sortBy)
         {
             if(TempData["ResMsg"] is not null)
@@ -194,7 +204,16 @@ namespace ASI.Basecode.WebApp.Controllers
             }
 
             ViewData["Title"] = "Pending Articles";
+
+            var userId = Convert.ToInt32(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var articles = _db.VwNeedApprovalArticles.ToList();
+
+            var userRole = User.FindFirst("UserRole")?.Value;
+            if (userRole == "support agent")
+            {
+                articles = articles.Where(a => a.UserId == userId).ToList();
+            }
+
             switch (sortBy)
             {
                 case "title_desc":
@@ -210,8 +229,10 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 articles = articles.Where(a => a.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) || a.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).OrderByDescending(m => m.ArticleId).ToList();
             }
+
             return View(articles);
         }
+
 
         [Authorize(Policy = "AdminPolicy")]
         public IActionResult Approve(int id)

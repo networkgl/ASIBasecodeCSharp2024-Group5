@@ -3,7 +3,7 @@
 @model IEnumerable<ASI.Basecode.Data.Models.VwNeedApprovalArticle>
 
 @{
-    // var resMsg = TempData["ResMsg"] as string;
+   var resMsg = TempData["ResMsg"] as string;
 }
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
@@ -42,9 +42,11 @@
                     <p class="card-text truncated-text" id="content-@item.ArticleId">@Html.DisplayFor(modelItem => item.Content)</p>
                     <a href="javascript:void(0);" class="btn btn-link text-primary read-more" data-target="content-@item.ArticleId" style="display: none;">Read More</a>
 
+                @if (Convert.ToString(User.FindFirst("UserRole")?.Value) != "user" && Convert.ToString(User.FindFirst("UserRole")?.Value) != "support agent")
+                {  
                     <div class="additional-details" id="details-@item.ArticleId" style="display: none;">
                         <p class="card-text"><strong>Created By (User Id):</strong> @item.UserId</p>
-                        <p class="card-text"><strong>Date Created:</strong> @item.DateCreated?.ToString("MM/dd/yyyy")</p>
+                            <p class="card-text"> <strong>Date Created:</strong> @(item.DateCreated?.ToString("MM/dd/yyyy") ?? "N/A")</p>
                         <p class="card-text"><strong>Date Updated:</strong> @(item.DateUpdated.HasValue ? item.DateUpdated?.ToString("MM/dd/yyyy") : "N/A")</p>
                         <p class="card-text"><strong>Updated By (User Id):</strong> @(item.UpdatedBy > 0 ? item.UpdatedBy.ToString() : "N/A")</p>
                     </div>
@@ -57,6 +59,7 @@
                             <i class="bi bi-trash"></i> Delete
                         </a>
                     </div>
+                }
                 </div>
             </div>
         </div>
@@ -103,31 +106,26 @@
         );
     }
 
-    $(document).ready(function () {
+        $(document).ready(function () {
         $(".card-text").each(function () {
-            var content = $(this);
-            var contentHeight = content[0].scrollHeight;
-            var maxHeight = parseInt(content.css("max-height")); 
-
-            if (contentHeight > maxHeight) {
-                content.siblings(".read-more").show();
-            }
+            $(this).siblings(".read-more").show();
         });
 
-    
+        
         $(".read-more").on("click", function () {
-            var targetId = $(this).data("target"); 
+            var targetId = $(this).data("target");
             var fullContent = $("#" + targetId); 
             var details = $("#details-" + targetId.split('-')[1]); 
 
+            
             if (fullContent.hasClass("truncated-text")) {
                 fullContent.removeClass("truncated-text"); 
                 details.show(); 
                 $(this).text("Read Less"); 
             } else {
-                fullContent.addClass("truncated-text"); 
+                fullContent.addClass("truncated-text");
                 details.hide(); 
-                $(this).text("Read More"); 
+                $(this).text("Read More");
             }
         });
     });
