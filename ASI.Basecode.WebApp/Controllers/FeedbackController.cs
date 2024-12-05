@@ -10,7 +10,6 @@ using ASI.Basecode.Data.Interfaces;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using ASI.Basecode.Services.Controllers;
-//using Microsoft.AspNetCore.MV
 
 namespace ASI.Basecode.WebApp.Controllers
 {
@@ -125,57 +124,6 @@ namespace ASI.Basecode.WebApp.Controllers
             _db.SaveChanges();
 
             return RedirectToAction("Index", "Feedback");
-        }
-        //[HttpGet]
-        //public IActionResult Edit(int id)
-        //{
-        //    var feedbackView = _db.VwFeedbackViews.FirstOrDefault(f => f.FeedbackId == id);
-        //    if (feedbackView == null)
-        //    {
-        //        return NotFound("Feedback not found.");
-        //    }
-
-        //    return View(feedbackView);
-        //}
-
-        //[HttpPost]
-        //public IActionResult Edit(int feedbackId, string feedbackText, decimal feedbackRating)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        var feedbackView = _db.VwFeedbackViews.FirstOrDefault(f => f.FeedbackId == feedbackId);
-        //        return View(feedbackView);
-        //    }
-
-        //    var existingFeedback = _db.Feedbacks.FirstOrDefault(f => f.FeedbackId == feedbackId);
-        //    if (existingFeedback == null)
-        //    {
-        //        return NotFound("Feedback not found.");
-        //    }
-
-        //    existingFeedback.FeedbackText = feedbackText;
-        //    existingFeedback.FeedbackRating = feedbackRating;
-        //    existingFeedback.CreatedAt = DateTime.Now;
-
-        //    _db.SaveChanges();
-
-        //    return RedirectToAction("Index", "Feedback");
-        //}
-
-        [HttpPost]
-        [Route("Feedback/Delete/{id:int}")]
-        public IActionResult Delete(int id)
-        {
-            var feedback = _db.Feedbacks.FirstOrDefault(f => f.FeedbackId == id);
-            if (feedback == null)
-            {
-                return NotFound(new { message = "Feedback not found." });
-            }
-
-            _db.Feedbacks.Remove(feedback);
-            _db.SaveChanges();
-
-            return Ok(new { message = "Feedback deleted successfully." });
         }
     }
 }
