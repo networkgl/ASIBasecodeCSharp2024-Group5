@@ -4,10 +4,7 @@ using ASI.Basecode.Data.Models;
 using ASI.Basecode.Data.Models.CustomModels;
 using ASI.Basecode.Resources.Constants;
 using ASI.Basecode.Services.Controllers;
-//using ASI.Basecode.WebApp.Data.Models;
 using ASI.Basecode.WebApp.Utils;
-
-//using ASI.Basecode.WebApp.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -353,7 +350,15 @@ namespace ASI.Basecode.WebApp.Controllers
                 }
             }
 
-            
+
+            if (articles.Count == 1 && articles.Select(m => m.Approved == null || (m.UpdatedBy != null && m.Approved == "No")).SingleOrDefault())
+            {
+                TempData["EditTab"] = 1; //Yes
+            }
+            else
+            {
+                TempData["EditTab"] = 0; //No
+            }
 
             return View(articles);
         }
@@ -463,7 +468,59 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 article.Approved = "Yes";
 
-                _articleRepo.Update(id, article);
+                if(_articleRepo.Update(id, article) == ErrorCode.Success)
+                {
+                    int? toUserId = null;
+
+                    if (article.UserId == null)  // Always basing on the last updated if not null
+                    {
+                        toUserId = article.UpdatedBy;
+                    }
+                    else
+                    {
+                        toUserId = article.UserId;
+                    }
+
+                    //Notify Supp Agent who trigger the article either being updated or just newly created...
+                    var notifSuppAgent = new Notification()
+                    {
+                        ToUserId = toUserId,
+                        ArticleId = article.ArticleId,
+                        Content = $"The article you've been updated has been declined by the administrator and changes made are not publish. Article ID: {article.ArticleId}.",
+                        CreatedAt = DateTimeToday()
+                    };
+
+                    if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error occured while inserting notification for notify supp agent declined article"
+                        });
+                    }
+
+                    //Holds the userId of Admin who currently login
+                    int.TryParse(User.FindFirstValue("UserId"), out int userId);
+
+                    //Notify Administrator perform action.
+                    var notifAdministrator = new Notification()
+                    {
+                        ToUserId = userId,
+                        ArticleId = article.ArticleId,
+                        Content = $"You've declined to publish the updated changes made by support agent for the article. Article ID: {article.ArticleId}. Changes made is not being publish.",
+                        CreatedAt = DateTimeToday()
+                    };
+
+                    if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
+                    {
+                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                        {
+                            Status = ErrorCode.Error,
+                            Message = "An error occured while inserting notification for notify supp agent declined article"
+                        });
+                    }
+
+                }
             }
 
             return RedirectToAction("PendingList");
@@ -626,10 +683,60 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Delete(int id)
         {
+            var article = _articleRepo.Get(id);
             var result = _articleRepo.Delete(id);
-
+      
             if (result == ErrorCode.Success)
             {
+                var toUserId = article.UserId;
+                string content = null;
+
+                if (article.UpdatedBy == null && (article.Approved == null || article.Approved == "No")) //still to be reviewed
+                {
+                    content = $"The article you've been created has been deleted by the administrator. Article ID: {id}.";
+                }
+
+                //Notify Supp Agent who trigger the article either being updated or just newly created...
+                var notifSuppAgent = new Notification()
+                {
+                    ToUserId = toUserId,
+                    ArticleId = null, //since deleted
+                    Content = content,
+                    CreatedAt = DateTimeToday()
+                };
+
+                if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    {
+                        Status = ErrorCode.Error,
+                        Message = "An error occured while inserting notification for notify supp agent delete article"
+                    });
+                }
+
+
+                //Holds the userId of Admin who currently login
+                int.TryParse(User.FindFirstValue("UserId"), out int userId);
+
+                //Notify Administrator perform action.
+                var notifAdministrator = new Notification()
+                {
+                    ToUserId = userId,
+                    ArticleId = null, //since deleted
+                    Content = $"You've deleted the article that has been created by support agent. Article ID: {article.ArticleId}.",
+                    CreatedAt = DateTimeToday()
+                };
+
+                if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    {
+                        Status = ErrorCode.Error,
+                        Message = "An error occured while inserting notification for notify supp agent delete article"
+                    });
+                }
+
+
                 TempData["ResMsg"] = "Article deleted successfully!";
                 TempData["ResStatus"] = "success";
             }
@@ -639,8 +746,10 @@ namespace ASI.Basecode.WebApp.Controllers
                 TempData["ResStatus"] = "error";
             }
 
-            var currentUrl = HttpContext.Request.Path + HttpContext.Request.QueryString;
-            return Redirect(currentUrl);
+            //var currentUrl = HttpContext.Request.Path + HttpContext.Request.QueryString;
+            //return Redirect(currentUrl);
+
+            return RedirectToAction("Index","ManageArticle");
         }
     }
 }
