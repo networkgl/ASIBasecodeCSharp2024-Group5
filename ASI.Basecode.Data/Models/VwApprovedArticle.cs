@@ -13,5 +13,7 @@ namespace ASI.Basecode.Data.Models
         public DateTime? DateUpdated { get; set; }
         public int? UpdatedBy { get; set; }
         public string Approved { get; set; }
+        public string PreviousContent { get; set; }
+        public string PreviousTitle { get; set; }
     }
 }

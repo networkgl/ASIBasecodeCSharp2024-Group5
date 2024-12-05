@@ -222,12 +222,15 @@
                         <span>Profile</span>
                     </a>
                 </li> *@
-                <li>
-                    <a asp-controller="Report" asp-action="Index">
-                        <iconify-icon icon="heroicons:document" class="menu-icon"></iconify-icon>
-                        <span>Reports</span>
-                    </a>
-                </li>
+                @if (User.IsInRole("administrator") || User.IsInRole("support agent"))
+                {
+                    <li>
+                        <a asp-controller="Report" asp-action="Index">
+                            <iconify-icon icon="heroicons:document" class="menu-icon"></iconify-icon>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                }
             </ul>
         </div>
     </aside>

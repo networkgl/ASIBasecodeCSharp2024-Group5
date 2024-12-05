@@ -305,6 +305,13 @@ namespace ASI.Basecode.WebApp.Controllers
                 articles = articles.Where(a => a.UserId == userId).ToList();
             }
 
+            var editedArticles = articles.Where(a => a.UpdatedBy.HasValue && a.UpdatedBy > 0).ToList();
+            var newArticles = articles.Where(a => !a.UpdatedBy.HasValue || a.UpdatedBy == 0).ToList();
+
+           
+            ViewData["EditedArticles"] = editedArticles;
+            ViewData["NewArticles"] = newArticles;
+
             switch (sortBy)
             {
                 case "title_desc":
@@ -444,8 +451,26 @@ namespace ASI.Basecode.WebApp.Controllers
             return RedirectToAction("PendingList");
         }
 
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult Decline(int id)
+        {
+            var article = _articleRepo.Get(id);
 
-        [Authorize(Policy = "AdminAndAgentPolicy")]
+            if (article != null)
+            {
+                article.Title = article.PreviousTitle;
+                article.Content = article.PreviousContent;
+
+                article.Approved = "Yes";
+
+                _articleRepo.Update(id, article);
+            }
+
+            return RedirectToAction("PendingList");
+        }
+        
+
+            [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Edit(int id)
         {
             var article = _articleRepo.Get(id);
@@ -467,8 +492,19 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult Edit(Article article)
         {
-            article.DateUpdated = DateTimeToday();
             var userRole = User.FindFirst("UserRole")?.Value;
+            if (userRole == "support agent")
+            {
+                var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
+
+                if (existingArticle != null)
+                {
+                    article.PreviousTitle = existingArticle.Title;
+                    article.PreviousContent = existingArticle.Content;
+                }
+
+            }
+            article.DateUpdated = DateTimeToday();
             if (userRole == "administrator")
             {
                 article.Approved = "Yes";
