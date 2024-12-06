@@ -171,32 +171,35 @@
                     <!--Feedback Modal-->
                     <div class="modal fade" id="feedbackModal-@feedback.FeedbackId" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content" style="border: 2px solid @borderColor">
-                                <div class="modal-header card-header" style="background-color: @headerColor">
+                            <div class="modal-content" style="border: 2px solid @borderColor;">
+                                <div class="modal-header card-header" style="background-color: @headerColor;">
                                     <h5 class="modal-title text-white">Feedback Details</h5>
                                     <button type="button" class="btn-close" style="color: white;" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p><strong>Ticket ID:</strong> @feedback.UserTicketId</p>
-                                    <p><strong>Category:</strong> @feedback.TicketCategory</p>
-                                    <p><strong>Description:</strong> @feedback.IssueDescription</p>
-                                    <p><strong>Reported On:</strong> @feedback.CreateAt</p>
-                                    <p><strong>Resolved On:</strong> @feedback.ResolveAt</p>
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <img src="@feedback.AttachmentPath" alt="Attachment" class="img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;">
+                                        </div>
+                                        <div>
+                                            <p><strong>Ticket ID:</strong> @feedback.UserTicketId</p>
+                                            <p><strong>Category:</strong> @feedback.TicketCategory</p>
+                                            <p><strong>Description:</strong> @feedback.IssueDescription</p>
+                                            <p><strong>Reported On:</strong> @feedback.CreateAt?.ToString("MM/dd/yyyy")</p>
+                                            <p><strong>Resolved On:</strong> @feedback.ResolveAt?.ToString("MM/dd/yyyy")</p>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="modal-footer bg-light text-dark" style="flex-direction: column; align-items: start;">
                                     <div>
-                                        <p>
-                                            <strong>Feedback:</strong> @feedback.FeedbackText
-                                        </p>
+                                        <p><strong>Feedback:</strong> @feedback.FeedbackText</p>
                                     </div>
                                     <div>
                                         <p>
                                             <strong>Rating:</strong>
                                             @for (int i = 1; i <= 5; i++)
                                             {
-                                                <i class="bi
-                                        @(i <= feedback.FeedbackRating ? "bi-star-fill text-warning" : "bi-star text-secondary")
-                                                                "></i>
+                                                <i class="bi @(i <= feedback.FeedbackRating ? "bi-star-fill text-warning" : "bi-star text-secondary")"></i>
                                             }
                                         </p>
                                     </div>

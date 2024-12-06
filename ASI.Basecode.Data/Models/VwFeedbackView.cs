@@ -13,11 +13,12 @@ namespace ASI.Basecode.Data.Models
         public string IssueDescription { get; set; }
         public string AttachmentPath { get; set; }
         public int? StatusId { get; set; }
+        public DateTime? CreateAt { get; set; }
+        public int? ResolveAt { get; set; }
         public string FeedbackText { get; set; }
         public decimal? FeedbackRating { get; set; }
         public int? AgentId { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        public DateTime? FeedbackCreatedAt { get; set; }
         public int? AssignedTicketId { get; set; }
-        public int? ResolveAt { get; set; }
     }
 }
