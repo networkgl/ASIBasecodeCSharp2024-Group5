@@ -7,6 +7,8 @@ using ASI.Basecode.WebApp.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using static ASI.Basecode.Resources.Constants.Enums;
 
@@ -176,9 +178,7 @@ namespace ASI.Basecode.Services.Controllers
         {
             var customUser = new CustomUser
             {
-                roleList = _db.Roles
-                    .Where(m => m.RoleName == "user" || m.RoleName == "support agent")
-                    .ToList(),
+                roleList = PopulateRoles(),
                 user = user
             };
 
@@ -204,24 +204,34 @@ namespace ASI.Basecode.Services.Controllers
                     {
                         customUser.userRole = userRole;
 
-                        if (!string.IsNullOrEmpty(expertise) || !string.IsNullOrEmpty(otherExpertise))
+                        if (roleId == 2)
                         {
-                            UserAgent userAgent = new UserAgent()
+                            if (!string.IsNullOrEmpty(expertise) || !string.IsNullOrEmpty(otherExpertise))
                             {
-                                AgentId = user.UserId,
-                                Expertise = string.IsNullOrEmpty(expertise) ? (string.IsNullOrEmpty(otherExpertise) ? "Technical Support" : otherExpertise) : expertise
-                            };
-
-                            if(_userAgentRepo.Create(userAgent) == ErrorCode.Success)
-                            {
-                                return new AlertMessageContent
+                                UserAgent userAgent = new UserAgent()
                                 {
-                                    Status = ErrorCode.Success,
-                                    Message = $"New user is created successfully."
+                                    AgentId = user.UserId,
+                                    Expertise = string.IsNullOrEmpty(expertise) ? (string.IsNullOrEmpty(otherExpertise) ? "Technical Support" : otherExpertise) : expertise
                                 };
+
+                                if (_userAgentRepo.Create(userAgent) == ErrorCode.Success)
+                                {
+                                    return new AlertMessageContent
+                                    {
+                                        Status = ErrorCode.Success,
+                                        Message = $"New user is created successfully."
+                                    };
+                                }
+                                _userRoleRepo.Delete(userRole);
                             }
-                            _userRoleRepo.Delete(userRole);
                         }
+                    } else
+                    {
+                        return new AlertMessageContent
+                        {
+                            Status = ErrorCode.Success,
+                            Message = $"New user is created successfully."
+                        };
                     }
                     _userRepo.Delete(user.UserId);
                     return new AlertMessageContent
@@ -251,6 +261,26 @@ namespace ASI.Basecode.Services.Controllers
             TimeZoneInfo phTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
             DateTime dateTimeToday = TimeZoneInfo.ConvertTime(DateTime.Now, phTimeZone);
             return dateTimeToday;
+        }
+
+        private List<Role> PopulateRoles()
+        {
+            var roleList = new List<Role>();
+
+            switch (User.FindFirst("UserRole").Value.ToLower())
+            {
+                case "adminstrator":
+                    roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
+                    break;
+                case "superadmin":
+                default:
+                    roleList = _db.Roles.ToList();
+                    break;
+            }
+
+            roleList.ForEach(role => role.RoleName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.RoleName.ToLower()));
+
+            return roleList;
         }
     }
 }

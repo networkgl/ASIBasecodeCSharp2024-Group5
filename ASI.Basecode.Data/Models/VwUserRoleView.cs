@@ -14,5 +14,6 @@ namespace ASI.Basecode.Data.Models
         public int RoleId { get; set; }
         public string RoleName { get; set; }
         public int UserRoleId { get; set; }
+        public string Expertise { get; set; }
     }
 }

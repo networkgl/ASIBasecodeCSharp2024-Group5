@@ -240,12 +240,20 @@ namespace ASI.Basecode.WebApp.Controllers
         [HttpPost]
         public async Task<IActionResult> EditProfile(CustomUser customUser, string confirmPassword)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
             ViewData["UserType"] = "User";
+
+            var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
             var roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
             customUser.roleList = roleList;
             if (customUser.user == null || customUser.userRole == null)
             {
-                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Error,
                     Message = "An error has occured when updating user."
@@ -253,59 +261,73 @@ namespace ASI.Basecode.WebApp.Controllers
                 return View(customUser);
             }
 
-            var user = customUser.user;
-            var userRole = customUser.userRole;
-
-            
-
-            var oldPassword = _db.Users.Where(m => m.UserId == user.UserId).Select(m => m.Password).FirstOrDefault();
-
-            if (oldPassword != confirmPassword)
+            if ((!string.IsNullOrEmpty(customUser.user.Password)) && customUser.user.Password != confirmPassword)
             {
-                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
                 {
                     Status = ErrorCode.Error,
-                    Message = "Old password is incorrect."
+                    Message = "Password mismatched."
                 });
                 return View(customUser);
             }
 
-            if (string.IsNullOrEmpty(customUser.user.Password))
-            {
-                customUser.user.Password = oldPassword;
-            }
+            var user = customUser.user;
+            var userRole = customUser.userRole;
 
-            if (customUser.formFile != null)
-            {
-                var imageFile = customUser.formFile;
-                var root = Path.Combine(_webHostEnvironment.WebRootPath, "profilepics");
+            var oldPassword = _db.Users.Where(m => m.UserId == userId).Select(m => m.Password).FirstOrDefault();
 
-                if (!Directory.Exists(root))
+            if (!string.IsNullOrEmpty(user.Password))
+            {
+                if (user.Password.Length < 8 ||
+                    !user.Password.Any(char.IsUpper) ||  
+                    !user.Password.Any(char.IsLower) || 
+                    !user.Password.Any(char.IsDigit) || 
+                    !(user.Password.Any(char.IsSymbol) || user.Password.Any(char.IsPunctuation)))
                 {
-                    Directory.CreateDirectory(root);
-                }
-                if (imageFile != null)
-                {
-                    var uniqueFileName = GetUniqueFileName(root, imageFile.FileName);
-                    var filePath = Path.Combine(root, uniqueFileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
                     {
-                        await imageFile.CopyToAsync(stream);
-                    }
-                    var relativePath = Path.Combine("/profilepics", uniqueFileName).Replace("\\", "/");
-                    customUser.user.ProfilePicturePath = relativePath;
+                        Status = ErrorCode.Error,
+                        Message = "Password must be at least 8 characters long and include uppercase and lowercase letters, numbers, and symbols."
+                    });
+                    return View(customUser);
                 }
             }
+            else
+            {
+                user.Password = oldPassword; // use old password if no new password provided
+            }
+
+            //if (customUser.formFile != null)
+            //{
+            //    var imageFile = customUser.formFile;
+            //    var root = Path.Combine(_webHostEnvironment.WebRootPath, "profilepics");
+
+            //    if (!Directory.Exists(root))
+            //    {
+            //        Directory.CreateDirectory(root);
+            //    }
+            //    if (imageFile != null)
+            //    {
+            //        var uniqueFileName = GetUniqueFileName(root, imageFile.FileName);
+            //        var filePath = Path.Combine(root, uniqueFileName);
+            //        using (var stream = new FileStream(filePath, FileMode.Create))
+            //        {
+            //            await imageFile.CopyToAsync(stream);
+            //        }
+            //        var relativePath = Path.Combine("/profilepics", uniqueFileName).Replace("\\", "/");
+            //        customUser.user.ProfilePicturePath = relativePath;
+            //    }
+            //}
             if (_userRepo.Update(user.UserId, user) == ErrorCode.Success)
             {
-                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Success,
                     Message = "Updated Profile Successfully!"
                 });
                 return View(customUser);
             }
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+            ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
             {
                 Status = ErrorCode.Error,
                 Message = "An error has occured when updating user."

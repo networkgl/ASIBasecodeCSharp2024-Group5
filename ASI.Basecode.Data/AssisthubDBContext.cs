@@ -812,6 +812,10 @@ namespace ASI.Basecode.Data
                     .HasMaxLength(10)
                     .IsUnicode(false);
 
+                entity.Property(e => e.Expertise)
+                    .HasMaxLength(255)
+                    .IsUnicode(false);
+
                 entity.Property(e => e.Name)
                     .HasMaxLength(100)
                     .IsUnicode(false);
