@@ -152,21 +152,30 @@ namespace ASI.Basecode.WebApp.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            //if (expertiseList.Select(m => m.ExpertiseName).Contains(userAgent.Expertise))
-            //{
-
-            //}
-
-            var customUserModel = new CustomUser()
+            var customUserModel = new CustomUser();
+            if (userAgent is not null)
             {
-                user = userModel,
-                userRole = userRole,
-                role = role,
-                roleList = roleList,
-                expertiseList = expertiseList,
-                Expertise = userAgent is null ? null : userAgent.Expertise,
-                OtherExpertise = expertiseList.Select(m => m.ExpertiseName).Contains(userAgent.Expertise) ? null : userAgent.Expertise
-            };
+                customUserModel = new CustomUser()
+                {
+                    user = userModel,
+                    userRole = userRole,
+                    role = role,
+                    roleList = roleList,
+                    expertiseList = expertiseList,
+                    Expertise = userAgent is null ? "" : userAgent.Expertise,
+                    OtherExpertise = expertiseList.Select(m => m.ExpertiseName).Contains(userAgent.Expertise) ? null : userAgent.Expertise
+                };
+            }
+            else
+            {
+                customUserModel = new CustomUser()
+                {
+                    user = userModel,
+                    userRole = userRole,
+                    role = role,
+                    roleList = roleList,
+                };
+            }
             return View(customUserModel);
         }
 
@@ -200,6 +209,7 @@ namespace ASI.Basecode.WebApp.Controllers
             }
 
             var user = customUser.user;
+            
             var oldPassword = _db.Users
                 .Where(m => m.UserId == user.UserId)
                 .Select(m => m.Password)
@@ -227,28 +237,14 @@ namespace ASI.Basecode.WebApp.Controllers
                 user.Password = oldPassword; // use old password if no new password provided
             }
 
-            var role = _db.Roles.FirstOrDefault(m => m.RoleId == customUser.userRole.RoleId);
-            if (role == null)
-            {
-                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-                {
-                    Status = ErrorCode.Error,
-                    Message = "Invalid role selected. Please choose a valid role."
-                });
-                return View(customUser);
-            }
-
             if (_userRepo.Update(user.UserId, user) == ErrorCode.Success)
             {
-                if (_userRoleRepo.Update(customUser.userRole.UserRoleId, customUser.userRole) == ErrorCode.Success)
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-                    {
-                        Status = ErrorCode.Success,
-                        Message = "User updated successfully!"
-                    });
-                    return RedirectToAction("Index");
-                }
+                    Status = ErrorCode.Success,
+                    Message = "User updated successfully!"
+                });
+                return RedirectToAction("Index");
             }
 
             ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
