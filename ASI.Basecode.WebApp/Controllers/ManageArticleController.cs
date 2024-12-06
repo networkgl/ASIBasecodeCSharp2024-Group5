@@ -579,13 +579,14 @@ namespace ASI.Basecode.WebApp.Controllers
         public IActionResult Edit(Article article)
         {
             var userRole = User.FindFirst("UserRole")?.Value;
+            var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
+                
+            article.DateCreated = existingArticle.DateCreated;
+
             if (userRole == "support agent")
             {
-                var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
-
                 if (existingArticle != null)
                 {
-                    article.DateCreated = existingArticle.DateCreated;
                     article.PreviousTitle = existingArticle.Title;
                     article.PreviousContent = existingArticle.Content;
                 }
