@@ -72,6 +72,31 @@
                                 </select>
                             </div> *@
                             <div class="mb-20">
+                                <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Change Password?
+                                </label>
+                                <div class="d-flex align-items-center">
+                                    <input type="checkbox" id="changePasswordToggle" class="me-2" onclick="togglePasswordFields()" />
+                                    <label for="changePasswordToggle" id="changePasswordLabel" class="mb-0" style="cursor: pointer; color: #007bff; text-decoration: underline;">
+                                        Yes, I want to change the password
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="passwordFieldsContainer" style="display: none;">
+                                <div class="mb-20">
+                                    <label for="password" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        New Password
+                                    </label>
+                                    <input type="password" asp-for="user.Password" id="password" class="form-control radius-8" placeholder="Enter new password" />
+                                </div>
+                                <div class="mb-20">
+                                    <label for="confirmPassword" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        Confirm New Password
+                                    </label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control radius-8" placeholder="Confirm new password" />
+                                </div>
+                            </div>
+                            @* <div class="mb-20">
                                 <label for="password" class="form-label fw-semibold text-primary-light text-sm mb-8">
                                     Enter new password (just leave blank if you will not change your password)<span class="text-danger-600">*</span>
                                 </label>
@@ -83,11 +108,33 @@
                                     Enter your old password to confirm changes<span class="text-danger-600">*</span>
                                 </label>
                                 <input name="confirmPassword" type="password" class="form-control radius-8" id="confirmPassword" placeholder="Enter password" required>
-                            </div>
+                            </div> *@
                             <div class="d-flex align-items-center justify-content-center gap-3">
-                                <button onclick="goBack()" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
-                                    Go back
-                                </button>
+                                @switch (User.FindFirst("UserRole").Value.ToLower())
+                                {
+                                    case "support agent":
+                                        <a asp-action="AgentDashboard" asp-controller="Dashboard" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
+                                            Go back
+                                        </a>
+                                        break;
+                                    case "administrator":
+                                        <a asp-action="AdminDashboard" asp-controller="Dashboard" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
+                                            Go back
+                                        </a>
+                                        break;
+                                    case "user":
+                                        <a asp-action="UserDashboard" asp-controller="Dashboard" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
+                                            Go back
+                                        </a>
+                                        break;
+                                    case "superadmin":
+                                        <a asp-action="SuperAdminDashboard" asp-controller="Dashboard" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
+                                            Go back
+                                        </a>
+                                        break;
+                                    default:
+                                        break;
+                                }
                                 <button type="submit" class="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8">
                                     Save
                                 </button>
@@ -147,6 +194,23 @@
             confirmPasswordContainer.style.display = 'block';
         } else {
             confirmPasswordContainer.style.display = 'none';
+        }
+    }
+
+    function togglePasswordFields() {
+        const toggle = document.getElementById('changePasswordToggle');
+        const fieldsContainer = document.getElementById('passwordFieldsContainer');
+        const label = document.getElementById('changePasswordLabel');
+
+        // Show or hide the password fields based on the toggle's state
+        if (toggle.checked) {
+            fieldsContainer.style.display = 'block';
+            label.textContent = "No, I don't want to change the password";
+        } else {
+            fieldsContainer.style.display = 'none';
+            label.textContent = "Yes, I want to change the password";
+            document.getElementById('password').value = '';
+            document.getElementById('confirmPassword').value = '';
         }
     }
 </script>

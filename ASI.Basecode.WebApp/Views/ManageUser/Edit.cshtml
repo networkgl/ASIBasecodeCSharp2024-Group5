@@ -62,7 +62,7 @@
                             <!-- Role -->
                             <div class="form-group pb-3">
                                 <label asp-for="userRole.RoleId" class="form-label fw-semibold text-primary-light text-sm mb-8">Role <span class="text-danger-600">*</span></label>
-                                <select id="roleSelect" class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="userRole.RoleId">
+                                <select disabled id="roleSelect" class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="userRole.RoleId">
                                     @foreach (var item in Model.roleList)
                                     {
                                         <option value="@item.RoleId">@item.RoleName</option>
@@ -105,17 +105,31 @@
                             }
                             <!--Password-->
                             <div class="mb-20">
-                                <label asp-for="user.Password" for="password" class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                    Enter new password (just leave blank if you will not change your password)<span class="text-danger-600">*</span>
+                                <label class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                    Change Password?
                                 </label>
-                                <input asp-for="user.Password" type="password" class="form-control radius-8" id="password" placeholder="Enter password" oninput="toggleConfirmPassword()">
+                                <div class="d-flex align-items-center">
+                                    <input type="checkbox" id="changePasswordToggle" class="me-2" onclick="togglePasswordFields()" />
+                                    <label for="changePasswordToggle" id="changePasswordLabel" class="mb-0" style="cursor: pointer; color: #007bff; text-decoration: underline;">
+                                        Yes, I want to change the password
+                                    </label>
+                                </div>
                             </div>
-                            <div class="mb-20" id="confirmPasswordContainer" style="display: none;">
-                                <label for="confirmPassword" class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                    Enter your current password to confirm changes<span class="text-danger-600">*</span>
-                                </label>
-                                <input name="confirmPassword" type="password" class="form-control radius-8" id="confirmPassword" placeholder="Enter password" required>
+                            <div id="passwordFieldsContainer" style="display: none;">
+                                <div class="mb-20">
+                                    <label for="password" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        New Password
+                                    </label>
+                                    <input type="password" asp-for="user.Password" id="password" class="form-control radius-8" placeholder="Enter new password" />
+                                </div>
+                                <div class="mb-20">
+                                    <label for="confirmPassword" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        Confirm New Password
+                                    </label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control radius-8" placeholder="Confirm new password" />
+                                </div>
                             </div>
+
                             <div class="d-flex align-items-center justify-content-center gap-3">
                                 <a asp-action="Index" class="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8">
                                     Cancel
@@ -166,7 +180,7 @@
         }
     }
 
-    function toggleConfirmPassword() {
+    @* function toggleConfirmPassword() {
         const passwordInput = document.getElementById('password');
         const confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
 
@@ -176,7 +190,24 @@
         } else {
             confirmPasswordContainer.style.display = 'none';
         }
-    }
+    } *@
+        function togglePasswordFields() {
+            const toggle = document.getElementById('changePasswordToggle');
+            const fieldsContainer = document.getElementById('passwordFieldsContainer');
+            const label = document.getElementById('changePasswordLabel');
+
+            // Show or hide the password fields based on the toggle's state
+            if (toggle.checked) {
+                fieldsContainer.style.display = 'block';
+                label.textContent = "No, I don't want to change the password";
+            } else {
+                fieldsContainer.style.display = 'none';
+                label.textContent = "Yes, I want to change the password";
+                document.getElementById('password').value = '';
+                document.getElementById('confirmPassword').value = '';
+            }
+        }
+
 </script>
 
 @* @section Scripts {

@@ -156,9 +156,9 @@
                 <li>
                     @if (@User.IsInRole("superadmin"))
                     {
-                        <a asp-controller="ManageAdmin" asp-action="Index">
+                        <a asp-controller="ManageUser" asp-action="Index">
                             <iconify-icon icon="flowbite:users-group-outline" class="menu-icon"></iconify-icon>
-                            <span>Manage Admin Users</span>
+                            <span>Manage Users</span>
                         </a>
                     }
                     else if (@User.IsInRole("administrator"))

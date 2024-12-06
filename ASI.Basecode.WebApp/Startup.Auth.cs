@@ -61,12 +61,19 @@ namespace ASI.Basecode.WebApp
 
                 options.AddPolicy("UserPolicy", policy =>
                     policy.RequireRole("user"));
+
                 options.AddPolicy("SuperAdminAndAdminPolicy", policy =>
                     policy.RequireRole("superadmin", "administrator"));
+
+                options.AddPolicy("SuperAdmin_Admin_AgentPolicy", policy =>
+                    policy.RequireRole("superadmin", "administrator", "support agent"));
+
                 options.AddPolicy("AdminAndAgentPolicy", policy =>
                     policy.RequireRole("administrator", "support agent"));
+
                 options.AddPolicy("AdminAgentUserPolicy", policy =>
                     policy.RequireRole("administrator", "support agent", "user"));
+
                 options.AddPolicy("AllRoleTypePolicy", policy =>
                     policy.RequireRole("administrator", "support agent", "superadmin", "user"));
             });

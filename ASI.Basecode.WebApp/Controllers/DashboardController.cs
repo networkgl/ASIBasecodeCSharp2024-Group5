@@ -67,7 +67,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 return BadRequest();
             }
             @ViewData["Title"] = "Dashboard";
-            int agentId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+            int? agentId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
             var ticketsResolvedCount = new SqlParameter("@result", SqlDbType.Int)
             {
                 Direction = ParameterDirection.Output
@@ -82,12 +82,18 @@ namespace ASI.Basecode.WebApp.Controllers
 
             await _db.Database.ExecuteSqlRawAsync("exec GetTotalTicketsYouAssigned @AssignerId = {0}, @result = {1} output", agentId, ticketAssignByMeCount);
 
+            var avgResolutionTime = _db.VwAverageResolutionTimes.Where(m => m.AgentId == agentId).FirstOrDefault()?.AvgResolutionTime ?? 0;
+
+            int hours = (int)avgResolutionTime;
+            int minutes = (int)((avgResolutionTime - hours) * 60);
+
             var customAdminDashoardViewModel = new CustomDashoardViewModel()
             {
                 UserCount = _db.VwUserRoleViews.Where(m => m.RoleId == 1).ToList().Count,
                 AgentCount = _db.VwAgentCounts.Select(m => m.TotalAgentCount).FirstOrDefault(),
                 TicketsAssignedByMeCount = Convert.ToInt32(ticketAssignByMeCount.Value),
                 TicketsResolvedCount = Convert.ToInt32(ticketsResolvedCount.Value),
+                YourAverageResolutionTime = $"{hours} hr/s and {minutes} min/s",
             };
 
             return View(customAdminDashoardViewModel);
@@ -127,7 +133,10 @@ namespace ASI.Basecode.WebApp.Controllers
             var role = User.FindFirst("UserRole")?.Value;
             var customAdminDashoardViewModel = new CustomDashoardViewModel()
             {
-                UserCount = _db.VwAdminCounts.Select(m => m.TotalAdminCount).FirstOrDefault(),
+                UserCount = _db.VwUserRoleViews.Where(m => m.RoleId == 1).ToList().Count,
+                AgentCount = _db.VwAgentCounts.Select(m => m.TotalAgentCount).FirstOrDefault(),
+                AdminCount = _db.VwUserRoleViews.Where(m => m.RoleId == 3).ToList().Count,
+                SuperAdminCount = _db.VwUserRoleViews.Where(m => m.RoleId == 4).ToList().Count,
                 TicketsResolvedCount = _db.VwTotalTicketsResolveds.Select(m => m.TotalTicketsResolved).FirstOrDefault()
             };
             return View(customAdminDashoardViewModel);

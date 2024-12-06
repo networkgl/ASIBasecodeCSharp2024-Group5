@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace ASI.Basecode.WebApp.Controllers
 {
-    [Authorize(Policy = "AdminAndAgentPolicy")]
+    [Authorize(Policy = "SuperAdmin_Admin_AgentPolicy")]
     public class ManageUserController:BaseController
     {
         public ManageUserController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
@@ -27,14 +28,19 @@ namespace ASI.Basecode.WebApp.Controllers
             HandleTempDataMessages();
 
             var userId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
-            var users = new List<VwUsersAndAgentsView>();
+            var users = new List<VwUserRoleView>();
 
             if (User.FindFirst("UserRole")?.Value == "support agent")
             {
-                users = _db.VwUsersAndAgentsViews.Where(m => m.RoleId == 1 || m.RoleId == 2 ).OrderByDescending(m => m.UserId).ToList();
-            } else
+                users = _db.VwUserRoleViews.Where(m => m.RoleId == 1 || m.RoleId == 2).OrderByDescending(m => m.UserId).ToList();
+            }
+            else if (User.FindFirst("UserRole")?.Value == "superadmin") 
             {
-                users = _db.VwUsersAndAgentsViews.OrderByDescending(m => m.UserId).ToList();
+                users = _db.VwUserRoleViews.OrderByDescending(m => m.UserId).ToList();
+            }
+            else
+            {
+                users = _db.VwUserRoleViews.OrderByDescending(m => m.UserId).ToList();
             }
             ViewData["TableId"] = "manageUsersTable";
             return View(users.OrderByDescending(m => m.UserId));
@@ -45,21 +51,19 @@ namespace ASI.Basecode.WebApp.Controllers
         {
             ViewData["UserType"] = "User";
             CustomUser customUser = new CustomUser();
-            var roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
+
             var expertiseList = _db.Expertises.ToList();
-            customUser.roleList = roleList;
+            customUser.roleList = PopulateRoles();
             customUser.expertiseList = expertiseList;
             return View(customUser);
         }
 
         [HttpPost]
-        public IActionResult Create(CustomUser customUser) //string ConfirmPassword
+        public IActionResult Create(CustomUser customUser)
         {
             string[] AllowedDomains = { "gmail.com", "yahoo.com", "outlook.com" };
 
-            customUser.roleList = _db.Roles
-                .Where(m => m.RoleName == "user" || m.RoleName == "support agent")
-                .ToList();
+            customUser.roleList = PopulateRoles();
 
             if (string.IsNullOrWhiteSpace(customUser.user.Name) ||
                 string.IsNullOrWhiteSpace(customUser.user.Email) ||
@@ -118,6 +122,10 @@ namespace ASI.Basecode.WebApp.Controllers
             ViewData["UserType"] = "User";
             var user = _db.VwUsersAndAgentsViews.Where(m => m.UserId == id).FirstOrDefault();
 
+            var roleList = PopulateRoles();
+            var expertiseList = _db.Expertises.ToList();
+            var userAgent = _db.UserAgents.Where(m => m.AgentId == id).FirstOrDefault();
+
             if (user == null)
             {
                 return RedirectToAction("Index", "Home");
@@ -144,14 +152,10 @@ namespace ASI.Basecode.WebApp.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
-            var expertiseList = _db.Expertises.ToList();
-            var userAgent = _db.UserAgents.Where(m => m.AgentId == id).FirstOrDefault();
+            //if (expertiseList.Select(m => m.ExpertiseName).Contains(userAgent.Expertise))
+            //{
 
-            if (expertiseList.Select(m => m.ExpertiseName).Contains(userAgent.Expertise))
-            {
-
-            }
+            //}
 
             var customUserModel = new CustomUser()
             {
@@ -172,15 +176,25 @@ namespace ASI.Basecode.WebApp.Controllers
             TempData["temp"] = "update";
             ViewData["UserType"] = "User";
 
-            var roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
-            customUser.roleList = roleList;
+            customUser.roleList = PopulateRoles();
+            customUser.expertiseList = _db.Expertises.ToList();
 
             if (customUser?.user == null || customUser.userRole == null)
             {
-                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
                 {
                     Status = ErrorCode.Error,
                     Message = "An error occurred while updating the user. Please try again."
+                });
+                return View(customUser);
+            }
+
+            if ((!string.IsNullOrEmpty(customUser.user.Password)) && customUser.user.Password != confirmPassword)
+            {
+                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                {
+                    Status = ErrorCode.Error,
+                    Message = "Password mismatched."
                 });
                 return View(customUser);
             }
@@ -191,24 +205,19 @@ namespace ASI.Basecode.WebApp.Controllers
                 .Select(m => m.Password)
                 .FirstOrDefault();
 
+
             if (!string.IsNullOrEmpty(user.Password))
             {
-                if (string.IsNullOrEmpty(confirmPassword) || oldPassword != confirmPassword)
+                if (user.Password.Length < 8 ||
+                    !user.Password.Any(char.IsUpper) ||
+                    !user.Password.Any(char.IsLower) ||
+                    !user.Password.Any(char.IsDigit) ||
+                    !(customUser.user.Password.Any(char.IsSymbol) || user.Password.Any(char.IsPunctuation)))
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                    ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
                     {
                         Status = ErrorCode.Error,
-                        Message = "Invalid current password."
-                    });
-                    return View(customUser);
-                }
-
-                if (user.Password.Length < 8 || !user.Password.Any(char.IsDigit) || !user.Password.Any(char.IsLetter))
-                {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
-                    {
-                        Status = ErrorCode.Error,
-                        Message = "Password must be at least 8 characters long and include both letters and numbers."
+                        Message = "Password must be at least 8 characters long and include uppercase and lowercase letters, numbers, and symbols."
                     });
                     return View(customUser);
                 }
@@ -221,7 +230,7 @@ namespace ASI.Basecode.WebApp.Controllers
             var role = _db.Roles.FirstOrDefault(m => m.RoleId == customUser.userRole.RoleId);
             if (role == null)
             {
-                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
                 {
                     Status = ErrorCode.Error,
                     Message = "Invalid role selected. Please choose a valid role."
@@ -242,7 +251,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 }
             }
 
-            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+            ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
             {
                 Status = ErrorCode.Error,
                 Message = "An error occurred while updating the user. Please try again later."
@@ -303,6 +312,26 @@ namespace ASI.Basecode.WebApp.Controllers
                     });
                 }
             }
+        }
+
+        private List<Role> PopulateRoles()
+        {
+            var roleList = new List<Role>();
+
+            switch (User.FindFirst("UserRole").Value.ToLower())
+            {
+                case "adminstrator":
+                    roleList = _db.Roles.Where(m => m.RoleName == "user" || m.RoleName == "support agent").ToList();
+                    break;
+                case "superadmin":
+                default:
+                    roleList = _db.Roles.ToList();
+                    break;
+            }
+
+            roleList.ForEach(role => role.RoleName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(role.RoleName.ToLower()));
+
+            return roleList;
         }
     }
 }
