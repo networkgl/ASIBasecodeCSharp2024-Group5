@@ -87,14 +87,17 @@ namespace ASI.Basecode.WebApp.Controllers
             int hours = (int)avgResolutionTime;
             int minutes = (int)((avgResolutionTime - hours) * 60);
 
+            var avgFeedbackRating = _db.VwCustomerSatisfactionRatings.Where(m => m.AgentId == agentId).FirstOrDefault()?.AvgFeedbackRating ?? 0;
+
             var customAdminDashoardViewModel = new CustomDashoardViewModel()
             {
-                UserCount = _db.VwUserRoleViews.Where(m => m.RoleId == 1).ToList().Count,
+                UserCount = _db.VwUserRoleViews.Count(m => m.RoleId == 1),
                 AgentCount = _db.VwAgentCounts.Select(m => m.TotalAgentCount).FirstOrDefault(),
-                TicketsAssignedByMeCount = Convert.ToInt32(ticketAssignByMeCount.Value),
-                TicketsResolvedCount = Convert.ToInt32(ticketsResolvedCount.Value),
+                TicketsAssignedByMeCount = Convert.ToInt32(ticketAssignByMeCount?.Value ?? 0),
+                TicketsResolvedCount = Convert.ToInt32(ticketsResolvedCount?.Value ?? 0),
                 YourAverageResolutionTimeHours = hours,
                 YourAverageResolutionTimeMins = minutes,
+                YourCustomerSatisfactoryRating = avgFeedbackRating.ToString("F2"),
             };
 
             return View(customAdminDashoardViewModel);

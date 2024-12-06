@@ -18,7 +18,7 @@ namespace ASI.Basecode.Data.Models
         public string FeedbackText { get; set; }
         public decimal? FeedbackRating { get; set; }
         public int? AgentId { get; set; }
-        public DateTime? FeedbackCreatedAt { get; set; }
+        public DateTime? Feedback_CreatedAt { get; set; }
         public int? AssignedTicketId { get; set; }
     }
 }
