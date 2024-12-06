@@ -501,9 +501,9 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.AttachmentPath).IsUnicode(false);
 
-                entity.Property(e => e.CreatedAt)
-                    .HasColumnType("datetime")
-                    .HasColumnName("created_at");
+                //entity.Property(e => e.CreatedAt)
+                //    .HasColumnType("datetime")
+                //    .HasColumnName("created_at");
 
                 entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
 

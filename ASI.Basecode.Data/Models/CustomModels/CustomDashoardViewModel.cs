@@ -14,5 +14,6 @@
         public int? ResolvedTicketForReporterCount { get; set; }
         public int? YourAverageResolutionTimeHours { get; set; }
         public int? YourAverageResolutionTimeMins { get; set; }
+        public string YourCustomerSatisfactoryRating { get; set; }
     }
 }

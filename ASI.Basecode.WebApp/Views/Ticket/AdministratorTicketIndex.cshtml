@@ -140,12 +140,12 @@
             </div>
         </div>
 
-        <!-- Create Ticket Button -->
+        @* <!-- Create Ticket Button -->
         <div>
             <a asp-action="Create" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i>&nbsp; Create Ticket
             </a>
-        </div>
+        </div> *@
     </div>
 
     <!-- Admin Manage Tickets Table View -->
@@ -204,7 +204,7 @@
                             }
                         </td>
                         <td class="text-center">
-                            <a asp-action="Edit" asp-route-id="@item.TicketId" title="Edit Ticket">
+                            <a asp-action="AgentUpdateTicket" asp-route-id="@item.TicketId" title="Edit Ticket">
                                 <i class="bi bi-pencil-square" style="color:#0d6efd"></i>
                             </a>
                             &nbsp;|&nbsp;
@@ -223,31 +223,58 @@
     </div>
 
     <!-- Admin Manage Tickets Card View -->
+    <!-- Card View -->
     <div id="cardView" style="display: none;">
         <div class="row" id="cardContainer">
             @foreach (var item in Model)
             {
-                <div class="col-md-4 mb-3">
+                <div class="col-md-4 mb-3 ticket-card"
+                     data-ticket-id="@item.TicketId"
+                     data-category="@item.CategoryName"
+                     data-description="@item.IssueDescription"
+                     data-priority="@(!string.IsNullOrEmpty(item.PriorityName) ? item.PriorityName : "Not Set")"
+                     data-status="@item.StatusName"
+                     data-assigned-to="@item.AgentId"
+                     data-assigned-to-me="@((item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value)) ? "assignedToMe" : "")">
                     <div class="card" style="border-color: @GetCardBorderColor(item.StatusId);">
-                        <div class="card-header text-white" style="background-color: @GetCardBackgroundColor(item.StatusId);">
-                            <strong>Ticket ID:</strong> @item.TicketId
+                        <div class="card-header text-white"
+                             style="background-color: @GetCardBackgroundColor(item.StatusId);">
+                            <strong>Ticket ID:</strong> @Html.DisplayFor(modelItem => item.TicketId)
                         </div>
-                        <div class="card-body">
-                            <p><strong>Category:</strong> @item.CategoryName</p>
-                            <p><strong>Description:</strong> @item.IssueDescription</p>
-                            <p><strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)</p>
-                            <p><strong>Status:</strong> @item.StatusName</p>
-                            <p><strong>Reporter:</strong> @item.Reporter</p>
-                            <p><strong>Assigned to:</strong> @(string.IsNullOrEmpty(item.AgentName) ? "No agent assigned" : item.AgentName)</p>
-                            <p><strong>Assigned by:</strong> @(string.IsNullOrEmpty(item.AssignerName) ? "None" : item.AssignerName)</p>
+                        <div class="card-body" style="max-height: 432px; overflow: hidden; text-overflow: ellipsis;">
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Category:</strong> @Html.DisplayFor(modelItem => item.CategoryName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Description:</strong> @Html.DisplayFor(modelItem => item.IssueDescription)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Priority:</strong> @(string.IsNullOrEmpty(item.PriorityName) ? "Not Set" : item.PriorityName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Status:</strong> @Html.DisplayFor(modelItem => item.StatusName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Reporter:</strong> @Html.DisplayFor(modelItem => item.Reporter)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Assigned to:</strong> @(string.IsNullOrEmpty(item.AgentName) ? "No agent assigned" : item.AgentName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Assigned by:</strong> @(string.IsNullOrEmpty(item.AssignerName) ? "None" : item.AssignerName)
+                            </p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>Date Submitted:</strong> @(!string.IsNullOrEmpty(item.CreateAt.Value.ToShortDateString())
+                            ? item.CreateAt.Value.ToLongDateString() : "N/A")
+                            </p>
                         </div>
-                        <div class="card-footer text-center">
+                        <div class="d-flex justify-content-evenly card-footer text-center">
                             <a asp-action="AgentTicketDetails" asp-route-id="@item.TicketId" class="text-info">
                                 <i class="bi bi-info-circle"></i> Details
                             </a>
                             @if (item.StatusId == 1 || (item.AgentId == Convert.ToInt32(User.FindFirst("UserId")?.Value) && item.StatusId != 3))
                             {
-                                <a asp-action="AdminUpdateTicket" asp-route-id="@item.TicketId" class="text-primary">
+                                <a asp-action="AgentUpdateTicket" asp-route-id="@item.TicketId" class="text-primary">
                                     <i class="bi bi-pencil-square"></i> Update
                                 </a>
                             }
@@ -257,17 +284,12 @@
                                     <i class="bi bi-trash"></i> Delete
                                 </a>
                             }
-@*                             <a asp-action="Details" asp-route-id="@item.TicketId" class="btn btn-info">Details</a>
-                            <a asp-action="Edit" asp-route-id="@item.TicketId" class="btn btn-primary">Edit</a>
-                            <a href="#" onclick="confirmDelete('@item.TicketId'); return false;" class="btn btn-danger">Delete</a> *@
                         </div>
                     </div>
                 </div>
             }
         </div>
     </div>
-
-
 </div>
 
 <script src="~/assets/js/lib/jquery-3.7.1.min.js"></script>
