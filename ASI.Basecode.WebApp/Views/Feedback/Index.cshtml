@@ -178,10 +178,11 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="d-flex">
-                                        <div class="me-3">
-                                            <img src="@Url.Content("~" + feedback.AttachmentPath)" alt="Attachment" class="img-thumbnail" style="width: 120px; height: 120px; object-fit: cover;">
-                                        </div>
+                                        
                                         <div>
+                                            <div class="text-center">
+                                                <p style="align-content: center;"><img src="@Url.Content("~" + feedback.AttachmentPath)" alt="Attachment" class="img-thumbnail" style="width: 350px; height: 250px; object-fit: cover;"></p>
+                                            </div>
                                             <p><strong>Ticket ID:</strong> @feedback.UserTicketId</p>
                                             <p><strong>Category:</strong> @feedback.TicketCategory</p>
                                             <p><strong>Description:</strong> @feedback.IssueDescription</p>
