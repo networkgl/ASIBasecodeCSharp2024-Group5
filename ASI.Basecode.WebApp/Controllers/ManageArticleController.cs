@@ -396,6 +396,12 @@ namespace ASI.Basecode.WebApp.Controllers
                 return RedirectToAction("PendingList");
             }
 
+            var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
+            if (existingArticle != null)
+            {
+                article.DateCreated = existingArticle.DateCreated;
+            }
+
             article.Approved = "Yes";
 
             var result = _articleRepo.Update(id, article);
@@ -482,6 +488,12 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 article.Title = article.PreviousTitle;
                 article.Content = article.PreviousContent;
+
+                var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
+                if (existingArticle != null)
+                {
+                    article.DateCreated = existingArticle.DateCreated;
+                }
 
                 article.Approved = "Yes";
 
@@ -573,11 +585,13 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 if (existingArticle != null)
                 {
+                    article.DateCreated = existingArticle.DateCreated;
                     article.PreviousTitle = existingArticle.Title;
                     article.PreviousContent = existingArticle.Content;
                 }
 
             }
+
             article.DateUpdated = DateTimeToday();
             if (userRole == "administrator")
             {
