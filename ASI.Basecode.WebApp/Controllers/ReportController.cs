@@ -174,7 +174,6 @@ namespace ASI.Basecode.WebApp.Controllers
                     }
                 }
 
-
                 var summaryModel = new ReportingAndAnalyticsModel
                 {
                     TicketSummaryWithCategory = TicketsByCategory,
@@ -196,7 +195,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 if (startDate == null && endDate == null)
                 {
                     TicketsByCategoryAgent = _db.VwTicketsByCategories
-                        .Where(m => m.UserId == userId)
+                        .Where(x => x.UserId == userId)
                         .GroupBy(x => x.CategoryName)
                         .Select(g => new VwTicketsByCategory
                         {
@@ -206,7 +205,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         .ToList();
 
                     TicketsByStatusAgent = _db.VwTicketsByStatuses
-                            .Where(m => m.UserId == userId)
+                            .Where(x => x.UserId == userId)
                             .GroupBy(x => x.StatusName)
                             .Select(g => new VwTicketsByStatus
                             {
@@ -216,7 +215,7 @@ namespace ASI.Basecode.WebApp.Controllers
                             .ToList();
 
                     TicketsByPriorityAgent = _db.VwTicketsByPriorities
-                            .Where(m => m.UserId == userId)
+                            .Where(x => x.UserId == userId)
                             .GroupBy(x => x.PriorityName)
                             .Select(g => new VwTicketsByPriority
                             {
@@ -228,7 +227,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 else
                 {
                     TicketsByCategoryAgent = _db.VwTicketsByCategories
-                        .Where(m => m.UserId == userId)
+                        .Where(x => x.UserId == userId)
                         .Where(x => x.AssignedDate >= startDate && x.AssignedDate <= endDate)
                         .GroupBy(x => x.CategoryName)
                         .Select(g => new VwTicketsByCategory
@@ -239,7 +238,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         .ToList();
 
                     TicketsByStatusAgent = _db.VwTicketsByStatuses
-                            .Where(m => m.UserId == userId)
+                            .Where(x => x.UserId == userId)
                             .Where(x => x.AssignedDate >= startDate && x.AssignedDate <= endDate)
                             .GroupBy(x => x.StatusName)
                             .Select(g => new VwTicketsByStatus
@@ -249,8 +248,8 @@ namespace ASI.Basecode.WebApp.Controllers
                             })
                             .ToList();
 
-                    TicketsByPriorityAgent = _db.VwTicketsByPriorities       
-                            .Where(m => m.UserId == userId)
+                    TicketsByPriorityAgent = _db.VwTicketsByPriorities
+                            .Where(x => x.UserId == userId)
                             .Where(x => x.AssignedDate >= startDate && x.AssignedDate <= endDate)
                             .GroupBy(x => x.PriorityName)
                             .Select(g => new VwTicketsByPriority
@@ -269,13 +268,13 @@ namespace ASI.Basecode.WebApp.Controllers
                 };
                 foreach (var collection in dataCollections)
                 {
-                    if (collection.Value == null)
+                    if (collection.Value != null)
                     {
                         ViewData[collection.Key] = $"No {collection.Key.Split('D')[1].ToLower()} data for the selected time period.";
                     }
                     else
                     {
-                        ViewData[collection.Key] = null;  // Clear if there's data
+                        ViewData[collection.Key] = null;  
                     }
                 }
 
