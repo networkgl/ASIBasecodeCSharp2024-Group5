@@ -24,7 +24,7 @@ namespace ASI.Basecode.WebApp.Controllers
         {
         }
         [Authorize(Policy = "AllRoleTypePolicy")]
-        public IActionResult Index(string searchTerm, string sortBy, int? ArticleId)
+        public IActionResult Index(string searchTerm, string sortBy, int? ArticleId, int? NotificationId)
         {
             if (TempData["temp"] is not null)
             {
@@ -102,6 +102,27 @@ namespace ASI.Basecode.WebApp.Controllers
                 if (getArticleId != null)
                 {
                     articles = articles.Where(m => m.ArticleId == ArticleId).ToList();
+
+                    if (articles != null)
+                    {
+                        //update notif mark as read if this route is visited from notification view
+                        if (NotificationId != null)
+                        {
+                            var getNotifById = _notifRepo.Get(NotificationId);
+
+                            if (getNotifById != null)
+                            {
+                                getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                                if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                                {
+                                    //Possible error internal upon updating if there is
+                                    return BadRequest();//temporary return...
+                                };
+                            }
+
+                        }
+                    }
                 }
             }
 
@@ -206,37 +227,33 @@ namespace ASI.Basecode.WebApp.Controllers
 
                     do
                     {
-                        //Notify administrator...
+                        // Notify administrator...
                         var notifAdmin = new Notification()
                         {
                             FromUserId = article.UserId,
                             ToUserId = getAllAdminId[i],
                             ArticleId = article.ArticleId,
-                            Content = $"Support Agent created a new article. Article ID: {article.ArticleId}. Please review it and take necessarry actions.",
+                            Content = $"Support Agent created a new article. Article ID: {article.ArticleId}. Please review it and take necessary actions.",
                             CreatedAt = DateTimeToday()
                         };
 
                         if (_notifRepo.Create(notifAdmin) == ErrorCode.Success)
                         {
-                            i++;
+                            i++; 
                         }
                         else
                         {
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                             {
                                 Status = ErrorCode.Error,
-                                Message = "An error occured while inserting notification for notify supp agent create article"
+                                Message = "An error occurred while inserting notification to notify the admin about the new article."
                             });
 
                             return RedirectToAction("Index");
                         }
 
-                        if ((i + 1) == getAllAdminId.Length)
-                        {
-                            break;
-                        }
+                    } while (i < getAllAdminId.Length);
 
-                    } while (true);
 
 
                     //Notify Supp Agent who created...
@@ -619,7 +636,13 @@ namespace ASI.Basecode.WebApp.Controllers
                         break;
                     }
 
-                } while (true);
+                } while (i < getAllAdminId.Length);
+
+
+
+
+
+
 
                 //Notify Supp Agent who trigger the article either being updated or just newly created...
                 var notifSuppAgent = new Notification()

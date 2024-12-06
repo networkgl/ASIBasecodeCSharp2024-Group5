@@ -119,7 +119,7 @@
                                 {
                                     if (notif.Approved == "Yes")
                                     {
-                                        <a href="@Url.Action("Index","ManageArticle", new { ArticleId = articleId } )" class="text-decoration-underline">View article here</a>
+                                        <a href="@Url.Action("Index","ManageArticle", new { ArticleId = articleId, NotificationId = notif.NotificationId } )" class="text-decoration-underline">View article here</a>
                                     }
                                     else
                                     {
@@ -177,7 +177,7 @@
                                 {
                                     if (notif.Approved == "Yes")
                                     {
-                                        <a href="@Url.Action("Index","ManageArticle", new { ArticleId = articleId } )" class="text-decoration-underline">View article here</a>
+                                        <a href="@Url.Action("Index","ManageArticle", new { ArticleId = articleId, NotificationId = notif.NotificationId } )" class="text-decoration-underline">View article here</a>
                                     }
                                     else
                                     {
