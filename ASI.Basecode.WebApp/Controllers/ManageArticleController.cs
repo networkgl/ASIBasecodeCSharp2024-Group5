@@ -604,11 +604,6 @@ namespace ASI.Basecode.WebApp.Controllers
                 } while (i < getAllAdminId.Length);
 
 
-
-
-
-
-
                 //Notify Supp Agent who trigger the article either being updated or just newly created...
                 var notifSuppAgent = new Notification()
                 {
@@ -624,6 +619,29 @@ namespace ASI.Basecode.WebApp.Controllers
                     {
                         Status = ErrorCode.Error,
                         Message = "An error occured while inserting notification for notify supp agent update article"
+                    });
+                }
+            }
+            else if (User.IsInRole("administrator"))
+            {
+                //Holds the userId of Admin who currently login
+                int.TryParse(User.FindFirstValue("UserId"), out int userId);
+
+                //Notify Administrator who updated the existing article...
+                var notifAdministrator = new Notification()
+                {
+                    ToUserId = userId,
+                    ArticleId = article.ArticleId,
+                    Content = $"You've updated an existing article. Article ID: {article.ArticleId}.",
+                    CreatedAt = DateTimeToday()
+                };
+
+                if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    {
+                        Status = ErrorCode.Error,
+                        Message = "An error occured while inserting notification for notify administrator update article"
                     });
                 }
             }
@@ -676,58 +694,72 @@ namespace ASI.Basecode.WebApp.Controllers
       
             if (result == ErrorCode.Success)
             {
-                var toUserId = article.UserId;
-                string content = null;
 
-                if (article.UpdatedBy == null && (article.Approved == null || article.Approved == "No")) //still to be reviewed
+                //Check who currently logged since it depends who will be notified.
+                if (User.IsInRole("support agent"))
                 {
-                    content = $"The article you've been created has been deleted by the administrator. Article ID: {id}.";
+                    var toUserId = article.UserId;
+                    string content = null;
+
+                    if (article.UpdatedBy == null && (article.Approved == null || article.Approved == "No")) //still to be reviewed
+                    {
+                        content = $"The article you've been created has been deleted by the administrator. Article ID: {id}.";
+                    }
+
+                    //Notify Supp Agent who trigger the article either being updated or just newly created...
+                    var notifSuppAgent = new Notification()
+                    {
+                        ToUserId = toUserId,
+                        ArticleId = null, //since deleted
+                        Content = content,
+                        CreatedAt = DateTimeToday()
+                    };
+
+                    if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
+                    {
+                        SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
+                    }
+
+                    //Holds the userId of Admin who currently login
+                    int.TryParse(User.FindFirstValue("UserId"), out int userId);
+
+                    //Notify Administrator perform action.
+                    var notifAdministrator = new Notification()
+                    {
+                        ToUserId = userId,
+                        ArticleId = null, //since deleted
+                        Content = $"You've deleted the article that has been created by support agent. Article ID: {article.ArticleId}.",
+                        CreatedAt = DateTimeToday()
+                    };
+
+                    if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
+                    {
+                        SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
+                    }
+                    SetTempDataMessage(ErrorCode.Success, "Article deleted successfully!");
+                }
+                else if (User.IsInRole("administrator"))
+                {
+                    //Holds the userId of Admin who currently login
+                    int.TryParse(User.FindFirstValue("UserId"), out int userId);
+
+                    //Notify Administrator perform action.
+                    var notifAdministrator = new Notification()
+                    {
+                        ToUserId = userId,
+                        ArticleId = null, //since deleted
+                        Content = $"You've deleted the article that has been created by support agent. Article ID: {article.ArticleId}.",
+                        CreatedAt = DateTimeToday()
+                    };
+
+                    if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
+                    {
+                        SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
+                    }
+
+                    SetTempDataMessage(ErrorCode.Success, "Article deleted successfully!");
                 }
 
-                //Notify Supp Agent who trigger the article either being updated or just newly created...
-                var notifSuppAgent = new Notification()
-                {
-                    ToUserId = toUserId,
-                    ArticleId = null, //since deleted
-                    Content = content,
-                    CreatedAt = DateTimeToday()
-                };
-
-                if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
-                {
-                    SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
-                    //TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                    //{
-                    //    Status = ErrorCode.Error,
-                    //    Message = "An error occured while inserting notification for notify supp agent delete article"
-                    //});
-                }
-
-
-                //Holds the userId of Admin who currently login
-                int.TryParse(User.FindFirstValue("UserId"), out int userId);
-
-                //Notify Administrator perform action.
-                var notifAdministrator = new Notification()
-                {
-                    ToUserId = userId,
-                    ArticleId = null, //since deleted
-                    Content = $"You've deleted the article that has been created by support agent. Article ID: {article.ArticleId}.",
-                    CreatedAt = DateTimeToday()
-                };
-
-                if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
-                {
-                    SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
-                    //TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                    //{
-                    //    Status = ErrorCode.Error,
-                    //    Message = "An error occured while inserting notification for notify supp agent delete article"
-                    //});
-                }
-                SetTempDataMessage(ErrorCode.Success, "Article deleted successfully!");
-                //TempData["ResMsg"] = "Article deleted successfully!";
-                //TempData["ResStatus"] = "success";
             }
             else
             {
@@ -738,8 +770,8 @@ namespace ASI.Basecode.WebApp.Controllers
             //var currentUrl = HttpContext.Request.Path + HttpContext.Request.QueryString;
             //return Redirect(currentUrl);
 
-            //return RedirectToAction("Index","ManageArticle");
-            return Ok();
+            return RedirectToAction("Index", "ManageArticle");
+            //return Ok();
         }
 
         private void HandleTempDataMessages()

@@ -6,7 +6,7 @@
 @using ASI.Basecode.WebApp.Functions
 @using ASI.Basecode.Resources.Constants;
 @using ASI.Basecode.Data;
-
+@using ASI.Basecode.Services.Repository;
 @{
     var tableId = string.Empty;
 
@@ -255,8 +255,11 @@
                                 class="w-40-px h-40-px bg-neutral-200 rounded-circle d-flex justify-content-center align-items-center"></button>
 
                         @if (!User.IsInRole("superadmin"))
-                        {                       
-                            List<Notification> _userNotif = _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
+                        {
+                            @*                             List<Notification> _userNotif = _notifRepo.Table.Where(m => m.ToUserId == userId).OrderByDescending(m => m.CreatedAt).ToList();
+ *@
+                            NotificationManager _nManager = new NotificationManager();
+                            var _userNotif = _nManager.GetUserAssociatedNotif(userId);
                             UserManager _userManager = new UserManager();
 
 
@@ -310,8 +313,17 @@
                                             }
                                             else if (User.IsInRole("support agent"))
                                             {
-                                                actionRoute = Url.Action("AgentTicketDetails", "Ticket", new { id = ticketOrArticleId, NotificationId = notif.NotificationId });
-                                            }
+                                                if (notif.AssignedTicketId == null) //if no assigned then redirect to Update View
+                                                {
+                                                    actionRoute = Url.Action("AgentUpdateTicket", "Ticket", new { id = ticketOrArticleId, NotificationId = notif.NotificationId });
+                                                }
+                                                else //then just see the details of it...
+                                                {
+                                                    actionRoute = Url.Action("AgentTicketDetails", "Ticket", new { id = ticketOrArticleId, NotificationId = notif.NotificationId });
+                                                }
+
+@*                                                 actionRoute = Url.Action("AgentTicketDetails", "Ticket", new { id = ticketOrArticleId, NotificationId = notif.NotificationId });
+ *@                                            }
                                             else if(User.IsInRole("administrator"))
                                             {
                                                 actionRoute = Url.Action("PendingList","ManageArticle", new { ArticleId = ticketOrArticleId, NotificationId = notif.NotificationId });
