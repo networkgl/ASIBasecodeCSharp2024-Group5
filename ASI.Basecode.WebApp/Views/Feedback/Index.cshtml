@@ -180,6 +180,7 @@
                                     <p><strong>Ticket ID:</strong> @feedback.UserTicketId</p>
                                     <p><strong>Category:</strong> @feedback.TicketCategory</p>
                                     <p><strong>Description:</strong> @feedback.IssueDescription</p>
+                                    <p><strong>Reported On:</strong> @feedback.CreateAt</p>
                                     <p><strong>Resolved On:</strong> @feedback.ResolveAt</p>
                                 </div>
                                 <div class="modal-footer bg-light text-dark" style="flex-direction: column; align-items: start;">
@@ -289,7 +290,7 @@
                                         <span>(@feedback.FeedbackRating.ToString())</span>
                                     </span>
                                 </td>
-                                <td>@feedback.CreatedAt?.ToString("MM/dd/yyyy")</td>
+                                <td>@feedback.CreateAt?.ToString("MM/dd/yyyy")</td>
                             </tr>
                         }
                     }

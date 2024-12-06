@@ -224,14 +224,14 @@ namespace ASI.Basecode.Services.Controllers
                                 }
                                 _userRoleRepo.Delete(userRole);
                             }
-                        }
-                    } else
-                    {
-                        return new AlertMessageContent
+                        } else
                         {
-                            Status = ErrorCode.Success,
-                            Message = $"New user is created successfully."
-                        };
+                            return new AlertMessageContent
+                            {
+                                Status = ErrorCode.Success,
+                                Message = $"New user is created successfully."
+                            };
+                        }
                     }
                     _userRepo.Delete(user.UserId);
                     return new AlertMessageContent

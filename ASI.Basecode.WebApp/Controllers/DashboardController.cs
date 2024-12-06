@@ -93,7 +93,8 @@ namespace ASI.Basecode.WebApp.Controllers
                 AgentCount = _db.VwAgentCounts.Select(m => m.TotalAgentCount).FirstOrDefault(),
                 TicketsAssignedByMeCount = Convert.ToInt32(ticketAssignByMeCount.Value),
                 TicketsResolvedCount = Convert.ToInt32(ticketsResolvedCount.Value),
-                YourAverageResolutionTime = $"{hours} hr/s and {minutes} min/s",
+                YourAverageResolutionTimeHours = hours,
+                YourAverageResolutionTimeMins = minutes,
             };
 
             return View(customAdminDashoardViewModel);

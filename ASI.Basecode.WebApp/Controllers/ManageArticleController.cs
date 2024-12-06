@@ -26,59 +26,9 @@ namespace ASI.Basecode.WebApp.Controllers
         [Authorize(Policy = "AllRoleTypePolicy")]
         public IActionResult Index(string searchTerm, string sortBy, int? ArticleId, int? NotificationId)
         {
-            if (TempData["temp"] is not null)
-            {
-                if ((string)TempData["temp"] == "create")
-                {
-                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-
-                    if (resMsg is not null)
-                    {
-                        if (User.Identity.IsAuthenticated)
-                        {
-                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                            {
-                                Status = resMsg.Status,
-                                Message = resMsg.Message
-                            });
-                        }
-                    }
-                }
-                if ((string)TempData["temp"] == "delete")
-                {
-                    if (TempData["status"] as int? == 0)
-                    {
-                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                        {
-                            Status = ErrorCode.Success,
-                            Message = "A ticket has deleted successfully!"
-                        });
-                    }
-                    else
-                    {
-                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                        {
-                            Status = ErrorCode.Error,
-                            Message = "An error has occured upon deleting the ticket."
-                        });
-                    }
-                }
-
-                if ((string)TempData["temp"] == "update")
-                {
-                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-
-                    if (resMsg is not null)
-                    {
-                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                        {
-                            Status = resMsg.Status,
-                            Message = resMsg.Message
-                        });
-                    }
-                }
-            }
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortBy) ? "title_desc" : "";
+
+            HandleTempDataMessages();
         
             var articles = _db.VwApprovedArticles.ToList();
             switch (sortBy)
@@ -745,11 +695,12 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                    {
-                        Status = ErrorCode.Error,
-                        Message = "An error occured while inserting notification for notify supp agent delete article"
-                    });
+                    SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
+                    //TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    //{
+                    //    Status = ErrorCode.Error,
+                    //    Message = "An error occured while inserting notification for notify supp agent delete article"
+                    //});
                 }
 
 
@@ -767,27 +718,53 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                    {
-                        Status = ErrorCode.Error,
-                        Message = "An error occured while inserting notification for notify supp agent delete article"
-                    });
+                    SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
+                    //TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    //{
+                    //    Status = ErrorCode.Error,
+                    //    Message = "An error occured while inserting notification for notify supp agent delete article"
+                    //});
                 }
-
-
-                TempData["ResMsg"] = "Article deleted successfully!";
-                TempData["ResStatus"] = "success";
+                SetTempDataMessage(ErrorCode.Success, "Article deleted successfully!");
+                //TempData["ResMsg"] = "Article deleted successfully!";
+                //TempData["ResStatus"] = "success";
             }
             else
             {
-                TempData["ResMsg"] = "Failed to delete the article. Please try again.";
-                TempData["ResStatus"] = "error";
+                //TempData["ResMsg"] = "Failed to delete the article. Please try again.";
+                //TempData["ResStatus"] = "error";
             }
 
             //var currentUrl = HttpContext.Request.Path + HttpContext.Request.QueryString;
             //return Redirect(currentUrl);
 
-            return RedirectToAction("Index","ManageArticle");
+            //return RedirectToAction("Index","ManageArticle");
+            return Ok();
+        }
+
+        private void HandleTempDataMessages()
+        {
+            if (TempData["ResMsg"] is not null)
+            {
+                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+                if (resMsg is not null && User.Identity.IsAuthenticated)
+                {
+                    ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                    {
+                        Status = resMsg.Status,
+                        Message = resMsg.Message
+                    });
+                }
+            }
+        }
+
+        private void SetTempDataMessage(ErrorCode status, string message)
+        {
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+            {
+                Status = status,
+                Message = message
+            });
         }
     }
 }

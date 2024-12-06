@@ -4,6 +4,7 @@
 @{
     if (ViewData["ResMsg"] != null)
     {
+        ViewData["ResMsg"] = ViewData["ResMsg"];
         var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(ViewData["ResMsg"].ToString());
 
         if (resMsg != null)
