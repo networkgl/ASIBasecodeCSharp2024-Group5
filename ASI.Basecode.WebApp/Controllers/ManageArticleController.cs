@@ -24,61 +24,11 @@ namespace ASI.Basecode.WebApp.Controllers
         {
         }
         [Authorize(Policy = "AllRoleTypePolicy")]
-        public IActionResult Index(string searchTerm, string sortBy, int? ArticleId)
+        public IActionResult Index(string searchTerm, string sortBy, int? ArticleId, int? NotificationId)
         {
-            if (TempData["temp"] is not null)
-            {
-                if ((string)TempData["temp"] == "create")
-                {
-                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-
-                    if (resMsg is not null)
-                    {
-                        if (User.Identity.IsAuthenticated)
-                        {
-                            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                            {
-                                Status = resMsg.Status,
-                                Message = resMsg.Message
-                            });
-                        }
-                    }
-                }
-                if ((string)TempData["temp"] == "delete")
-                {
-                    if (TempData["status"] as int? == 0)
-                    {
-                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                        {
-                            Status = ErrorCode.Success,
-                            Message = "A ticket has deleted successfully!"
-                        });
-                    }
-                    else
-                    {
-                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                        {
-                            Status = ErrorCode.Error,
-                            Message = "An error has occured upon deleting the ticket."
-                        });
-                    }
-                }
-
-                if ((string)TempData["temp"] == "update")
-                {
-                    var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
-
-                    if (resMsg is not null)
-                    {
-                        TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                        {
-                            Status = resMsg.Status,
-                            Message = resMsg.Message
-                        });
-                    }
-                }
-            }
             ViewData["TitleSortParm"] = String.IsNullOrEmpty(sortBy) ? "title_desc" : "";
+
+            HandleTempDataMessages();
         
             var articles = _db.VwApprovedArticles.ToList();
             switch (sortBy)
@@ -102,6 +52,27 @@ namespace ASI.Basecode.WebApp.Controllers
                 if (getArticleId != null)
                 {
                     articles = articles.Where(m => m.ArticleId == ArticleId).ToList();
+
+                    if (articles != null)
+                    {
+                        //update notif mark as read if this route is visited from notification view
+                        if (NotificationId != null)
+                        {
+                            var getNotifById = _notifRepo.Get(NotificationId);
+
+                            if (getNotifById != null)
+                            {
+                                getNotifById.IsRead = (byte)Enums.NotifStatus.HasRead;
+
+                                if (_notifRepo.Update(getNotifById.NotificationId, getNotifById) == ErrorCode.Error)
+                                {
+                                    //Possible error internal upon updating if there is
+                                    return BadRequest();//temporary return...
+                                };
+                            }
+
+                        }
+                    }
                 }
             }
 
@@ -206,37 +177,33 @@ namespace ASI.Basecode.WebApp.Controllers
 
                     do
                     {
-                        //Notify administrator...
+                        // Notify administrator...
                         var notifAdmin = new Notification()
                         {
                             FromUserId = article.UserId,
                             ToUserId = getAllAdminId[i],
                             ArticleId = article.ArticleId,
-                            Content = $"Support Agent created a new article. Article ID: {article.ArticleId}. Please review it and take necessarry actions.",
+                            Content = $"Support Agent created a new article. Article ID: {article.ArticleId}. Please review it and take necessary actions.",
                             CreatedAt = DateTimeToday()
                         };
 
                         if (_notifRepo.Create(notifAdmin) == ErrorCode.Success)
                         {
-                            i++;
+                            i++; 
                         }
                         else
                         {
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                             {
                                 Status = ErrorCode.Error,
-                                Message = "An error occured while inserting notification for notify supp agent create article"
+                                Message = "An error occurred while inserting notification to notify the admin about the new article."
                             });
 
                             return RedirectToAction("Index");
                         }
 
-                        if ((i + 1) == getAllAdminId.Length)
-                        {
-                            break;
-                        }
+                    } while (i < getAllAdminId.Length);
 
-                    } while (true);
 
 
                     //Notify Supp Agent who created...
@@ -379,6 +346,12 @@ namespace ASI.Basecode.WebApp.Controllers
                 return RedirectToAction("PendingList");
             }
 
+            var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
+            if (existingArticle != null)
+            {
+                article.DateCreated = existingArticle.DateCreated;
+            }
+
             article.Approved = "Yes";
 
             var result = _articleRepo.Update(id, article);
@@ -466,6 +439,12 @@ namespace ASI.Basecode.WebApp.Controllers
                 article.Title = article.PreviousTitle;
                 article.Content = article.PreviousContent;
 
+                var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
+                if (existingArticle != null)
+                {
+                    article.DateCreated = existingArticle.DateCreated;
+                }
+
                 article.Approved = "Yes";
 
                 if(_articleRepo.Update(id, article) == ErrorCode.Success)
@@ -550,10 +529,12 @@ namespace ASI.Basecode.WebApp.Controllers
         public IActionResult Edit(Article article)
         {
             var userRole = User.FindFirst("UserRole")?.Value;
+            var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
+                
+            article.DateCreated = existingArticle.DateCreated;
+
             if (userRole == "support agent")
             {
-                var existingArticle = _db.Articles.FirstOrDefault(a => a.ArticleId == article.ArticleId);
-
                 if (existingArticle != null)
                 {
                     article.PreviousTitle = existingArticle.Title;
@@ -561,6 +542,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 }
 
             }
+
             article.DateUpdated = DateTimeToday();
             if (userRole == "administrator")
             {
@@ -619,7 +601,13 @@ namespace ASI.Basecode.WebApp.Controllers
                         break;
                     }
 
-                } while (true);
+                } while (i < getAllAdminId.Length);
+
+
+
+
+
+
 
                 //Notify Supp Agent who trigger the article either being updated or just newly created...
                 var notifSuppAgent = new Notification()
@@ -707,11 +695,12 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 if (_notifRepo.Create(notifSuppAgent) == ErrorCode.Error)
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                    {
-                        Status = ErrorCode.Error,
-                        Message = "An error occured while inserting notification for notify supp agent delete article"
-                    });
+                    SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
+                    //TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    //{
+                    //    Status = ErrorCode.Error,
+                    //    Message = "An error occured while inserting notification for notify supp agent delete article"
+                    //});
                 }
 
 
@@ -729,27 +718,53 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 if (_notifRepo.Create(notifAdministrator) == ErrorCode.Error)
                 {
-                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
-                    {
-                        Status = ErrorCode.Error,
-                        Message = "An error occured while inserting notification for notify supp agent delete article"
-                    });
+                    SetTempDataMessage(ErrorCode.Error, "An error occured while inserting notification for notify supp agent delete article");
+                    //TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    //{
+                    //    Status = ErrorCode.Error,
+                    //    Message = "An error occured while inserting notification for notify supp agent delete article"
+                    //});
                 }
-
-
-                TempData["ResMsg"] = "Article deleted successfully!";
-                TempData["ResStatus"] = "success";
+                SetTempDataMessage(ErrorCode.Success, "Article deleted successfully!");
+                //TempData["ResMsg"] = "Article deleted successfully!";
+                //TempData["ResStatus"] = "success";
             }
             else
             {
-                TempData["ResMsg"] = "Failed to delete the article. Please try again.";
-                TempData["ResStatus"] = "error";
+                //TempData["ResMsg"] = "Failed to delete the article. Please try again.";
+                //TempData["ResStatus"] = "error";
             }
 
             //var currentUrl = HttpContext.Request.Path + HttpContext.Request.QueryString;
             //return Redirect(currentUrl);
 
-            return RedirectToAction("Index","ManageArticle");
+            //return RedirectToAction("Index","ManageArticle");
+            return Ok();
+        }
+
+        private void HandleTempDataMessages()
+        {
+            if (TempData["ResMsg"] is not null)
+            {
+                var resMsg = JsonConvert.DeserializeObject<AlertMessageContent>(TempData["ResMsg"].ToString());
+                if (resMsg is not null && User.Identity.IsAuthenticated)
+                {
+                    ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+                    {
+                        Status = resMsg.Status,
+                        Message = resMsg.Message
+                    });
+                }
+            }
+        }
+
+        private void SetTempDataMessage(ErrorCode status, string message)
+        {
+            TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent
+            {
+                Status = status,
+                Message = message
+            });
         }
     }
 }

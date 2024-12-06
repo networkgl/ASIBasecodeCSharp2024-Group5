@@ -12,6 +12,7 @@
         public int? TotalTicketCreatedByMe { get; set; }
         public int? UnresolvedTicketForReporterCount { get; set; }
         public int? ResolvedTicketForReporterCount { get; set; }
-        public string YourAverageResolutionTime { get; set; }
+        public int? YourAverageResolutionTimeHours { get; set; }
+        public int? YourAverageResolutionTimeMins { get; set; }
     }
 }
