@@ -41,18 +41,21 @@
                                 </select>
                             </div>
                             @* @if(Model.AssignedTicket is not null){ *@
-                            <div class="mb-20">
-                                <label asp-for="Ticket.PriorityId" class="form-label fw-semibold text-primary-light text-sm mb-8">Priority Level <span class="text-danger-600"></span></label>
-                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Ticket.PriorityId">
-                                    <option class="form-control radius-8" Model.Ticket.PriorityId is null ? selected : value="@null">Not Set</option>
-                                    @foreach (var item in Model.Priority)
-                                    {
-                                        <option class="form-control radius-8" value="@item.PriorityId">@item.PriorityName</option>
-                                        @*                                             <script>@item.PriorityId</script>
+                            @if (User.FindFirst("UserRole")?.Value != "user")
+                            {
+                                <div class="mb-20">
+                                    <label asp-for="Ticket.PriorityId" class="form-label fw-semibold text-primary-light text-sm mb-8">Priority Level <span class="text-danger-600"></span></label>
+                                    <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Ticket.PriorityId">
+                                        <option class="form-control radius-8" Model.Ticket.PriorityId is null ? selected : value="@null">Not Set</option>
+                                        @foreach (var item in Model.Priority)
+                                        {
+                                            <option class="form-control radius-8" value="@item.PriorityId">@item.PriorityName</option>
+                                            @*                                             <script>@item.PriorityId</script>
                                     *@                                        }
 
-                                </select>
-                            </div>
+                                    </select>
+                                </div>
+                            }
                             @* } else
                             {
                             <div class="mb-20">
@@ -70,73 +73,79 @@
                             </select>
                             </div>
                             } *@
-                            <div class="mb-20">
-                                <label asp-for="AssignedTicket.AgentId" class="form-label fw-semibold text-primary-light text-sm mb-8">
-                                    Assign to <span class="text-danger-600"></span>
-                                </label>
-                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px"
-                                id="chooseAgent" asp-for="AssignedTicket.AgentId">
-                                    @if (Model.Agent is null)
-                                    {
-                                        <option class="form-control radius-8" selected>Not Set</option>
-                                    }
-                                    @foreach (var item in Model.Agents)
-                                    {
-
-                                        if ((!string.IsNullOrEmpty(item.Name) && Model.Agent is not null) && Model.Agent.Name == item.Name)
+                            @if (User.FindFirst("UserRole")?.Value != "user")
+                            {
+                                <div class="mb-20">
+                                    <label asp-for="AssignedTicket.AgentId" class="form-label fw-semibold text-primary-light text-sm mb-8">
+                                        Assign to <span class="text-danger-600"></span>
+                                    </label>
+                                    <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px"
+                                            id="chooseAgent" asp-for="AssignedTicket.AgentId">
+                                        @if (Model.Agent is null)
                                         {
-                                            <option class="form-control radius-8" value="@item.UserId" selected>
-                                                @item.Name
-                                                @foreach (var agent in Model.ticketCountForAgent)
-                                                {
-                                                    if (agent.AgentId == item.UserId)
-                                                    {
-                                                        <span>@($"({agent.NoOfTickets})")</span> @($"| {item.Expertise}")
-                                                    }
-                                                }
-                                            </option>
+                                            <option class="form-control radius-8" selected>Not Set</option>
                                         }
-                                        else
+                                        @foreach (var item in Model.Agents)
                                         {
-                                            <option class="form-control radius-8" value="@item.UserId">
-                                                @item.Name
-                                                @foreach (var agent in Model.ticketCountForAgent)
-                                                {
-                                                    if (agent.AgentId == item.UserId)
-                                                    {
-                                                        <span>@($"({agent.NoOfTickets})")</span> @($"| {item.Expertise}")
-                                                    }
-                                                }
-                                            </option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-                            <div class="mb-20">
-                                <label asp-for="AssignedTicket.AgentId" class="form-label fw-semibold text-primary-light text-sm mb-8">Status <span class="text-danger-600"></span></label>
-                                <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Ticket.StatusId">
 
-                                    @foreach (var item in Model.Status)
-                                    {
-
-                                        if (item.StatusId == 1)
-                                        {
-                                            if (Model.Ticket.StatusId == 2)
+                                            if ((!string.IsNullOrEmpty(item.Name) && Model.Agent is not null) && Model.Agent.Name == item.Name)
                                             {
-                                                continue;
+                                                <option class="form-control radius-8" value="@item.UserId" selected>
+                                                    @item.Name
+                                                    @foreach (var agent in Model.ticketCountForAgent)
+                                                    {
+                                                        if (agent.AgentId == item.UserId)
+                                                        {
+                                                            <span>@($"({agent.NoOfTickets})")</span> @($"| {item.Expertise}")
+                                                        }
+                                                    }
+                                                </option>
+                                            }
+                                            else
+                                            {
+                                                <option class="form-control radius-8" value="@item.UserId">
+                                                    @item.Name
+                                                    @foreach (var agent in Model.ticketCountForAgent)
+                                                    {
+                                                        if (agent.AgentId == item.UserId)
+                                                        {
+                                                            <span>@($"({agent.NoOfTickets})")</span> @($"| {item.Expertise}")
+                                                        }
+                                                    }
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            }
+                            @if (User.FindFirst("UserRole")?.Value != "user")
+                            {
+                                <div class="mb-20">
+                                    <label asp-for="AssignedTicket.AgentId" class="form-label fw-semibold text-primary-light text-sm mb-8">Status <span class="text-danger-600"></span></label>
+                                    <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Ticket.StatusId">
+
+                                        @foreach (var item in Model.Status)
+                                        {
+
+                                            if (item.StatusId == 1)
+                                            {
+                                                if (Model.Ticket.StatusId == 2)
+                                                {
+                                                    continue;
+                                                }
+                                                else
+                                                {
+                                                    <option class="form-control radius-8" value="@item.StatusId">@item.StatusName</option>
+                                                }
                                             }
                                             else
                                             {
                                                 <option class="form-control radius-8" value="@item.StatusId">@item.StatusName</option>
                                             }
                                         }
-                                        else
-                                        {
-                                            <option class="form-control radius-8" value="@item.StatusId">@item.StatusName</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
+                                    </select>
+                                </div>
+                            }
                             @* @if (Model.Ticket.StatusId == 3 ||  Model.Ticket.StatusId == 4)
                             {
                             <input type="hidden" asp-for="@Model.Ticket.StatusId" />
@@ -144,7 +153,14 @@
                             { }*@
                             <div class="mb-20">
                                 <label asp-for="Ticket.IssueDescription" class="form-label fw-semibold text-primary-light text-sm mb-8">Issue Description <span class="text-danger-600">*</span></label>
-                                <textarea id="editor" asp-for="Ticket.IssueDescription" class="form-control radius-8" maxlength="255" rows="4" readonly></textarea>
+                                @if (User.FindFirst("UserRole")?.Value == "user")
+                                {
+                                    <textarea id="editor" asp-for="Ticket.IssueDescription" class="form-control radius-8" maxlength="255" rows="4"></textarea>
+
+                                } else {
+                                    <textarea id="editor" asp-for="Ticket.IssueDescription" class="form-control radius-8" maxlength="255" rows="4" readonly></textarea>
+
+                                }
                             </div>
                             <label asp-for="Ticket.IssueDescription" class="form-label fw-semibold text-primary-light text-sm mb-8">File Attached<span class="text-danger-600"></span></label>
                             @if (!string.IsNullOrEmpty(Model.Ticket.AttachmentPath))

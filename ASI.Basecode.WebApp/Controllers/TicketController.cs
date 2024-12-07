@@ -363,6 +363,19 @@ namespace ASI.Basecode.WebApp.Controllers
             customTicket.Status = status;
             customTicket.Agents = agents;
 
+            if (User.FindFirst("UserRole")?.Value == "user")
+            {
+                if (_ticketRepo.Update(customTicket.Ticket.TicketId, customTicket.Ticket) == ErrorCode.Success)
+                {
+                    TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                    {
+                        Status = ErrorCode.Success,
+                        Message = $"Ticket is successfully updated",
+                    });
+                    return RedirectToAction("UserTicketIndex");
+                }
+            }
+
             //check if there is a chosen priority. if none then set priority to null, otherwise set to selected value   
             if (customTicket.Ticket.PriorityId is null || customTicket.Ticket.PriorityId == 0)
             {

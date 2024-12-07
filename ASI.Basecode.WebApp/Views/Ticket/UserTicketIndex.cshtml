@@ -220,6 +220,12 @@
                             </p>
                         </div>
                         <div class="d-flex justify-content-evenly card-footer text-center">
+                            @if (item.StatusId == 1)
+                            { 
+                                <a asp-action="AgentUpdateTicket" asp-route-id="@item.TicketId" class="text-primary">
+                                    <i class="bi bi-pencil-square"></i> Update
+                                </a>
+                             }
                             <a asp-action="UserTicketDetails" asp-route-id="@item.TicketId" class="text-info">
                                 <i class="bi bi-info-circle"></i> Details
                             </a>

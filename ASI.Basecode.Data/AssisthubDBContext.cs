@@ -65,7 +65,7 @@ namespace ASI.Basecode.Data
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("workstation id=AssisthubDB.mssql.somee.com;packet size=4096;user id=XAssistHubX_SQLLogin_1;pwd=tpu83eivqf;data source=AssisthubDB.mssql.somee.com;persist security info=False;initial catalog=AssisthubDB;TrustServerCertificate=True");
+                optionsBuilder.UseSqlServer("Data Source=.\\sqlexpress;Initial Catalog=AssisthubDB;Integrated Security=True;Trust Server Certificate=True");
             }
         }
 
@@ -501,9 +501,11 @@ namespace ASI.Basecode.Data
 
                 entity.Property(e => e.AttachmentPath).IsUnicode(false);
 
-                //entity.Property(e => e.CreatedAt)
-                //    .HasColumnType("datetime")
-                //    .HasColumnName("created_at");
+                entity.Property(e => e.CreateAt).HasColumnType("datetime");
+
+                entity.Property(e => e.FeedbackCreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("Feedback_CreatedAt");
 
                 entity.Property(e => e.FeedbackRating).HasColumnType("decimal(3, 2)");
 
