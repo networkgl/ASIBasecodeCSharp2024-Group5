@@ -87,7 +87,7 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpGet("AgentManageTickets")]
-        [Authorize(Policy = "SupportAgentPolicy")]
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult AgentTicketIndex()
         {
             HandleTempDataMessages();
@@ -96,7 +96,14 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 try
                 {
-                    return View(SupportAgentTicketIndex());
+                    var userId = GetLoggedInUserId();
+
+                    var myTickets = _db.VwTicketDetailsViews.OrderByDescending(m => m.TicketId).ToList();
+                    ViewData["TableId"] = "agentManageTicketsTable";
+                    ViewData["Priorities"] = _db.Priorities.ToList();
+                    ViewData["Categories"] = _db.Categories.ToList();
+                    ViewData["Statuses"] = _db.Statuses.ToList();
+                    return View(myTickets);
                 }
                 catch (Exception ex)
                 {
@@ -107,7 +114,7 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpGet("AgentManageTickets/{id}")]
-        [Authorize(Policy = "SupportAgentPolicy")]
+        [Authorize(Policy = "AdminAndAgentPolicy")]
         public IActionResult AgentTicketIndex(int id)
         {
             HandleTempDataMessages();
@@ -137,7 +144,7 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 try
                 {
-                    return View(AdminTicketIndex());
+                    return View();
                 }
                 catch (Exception ex)
                 {
@@ -157,7 +164,7 @@ namespace ASI.Basecode.WebApp.Controllers
             {
                 try
                 {
-                    return View(AdminTicketIndex());
+                    return View();
                 }
                 catch (Exception ex)
                 {
@@ -275,26 +282,28 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 customTicket.Ticket = ticket;
                 customTicket.AssignedTicket = assignedTicket;
-                // Match ticket category with agents' expertise
                 var ticketCategory = _db.Categories.Where(m => m.CategoryId == ticket.CategoryId).FirstOrDefault();
-                var filteredAgents = agents.Where(agent => expertise.Any(exp =>
-                    exp.AgentId == agent.UserId && ticketCategory.CategoryName.Contains(exp.Expertise))).ToList();
 
-                // Add workload information to each agent
-                var agentsWithWorkload = filteredAgents.Select(agent => new
+                // add workload and expertise match information to each agent
+                var agentsWithAttributes = agents.Select(agent => new
                 {
                     Agent = agent,
-                    Workload = ticketCount.FirstOrDefault(tc => tc.AgentId == agent.UserId)?.NoOfTickets ?? 0
+                    Workload = ticketCount.FirstOrDefault(tc => tc.AgentId == agent.UserId)?.NoOfTickets ?? 0,
+                    IsExpertInCategory = expertise.Any(exp =>
+                        exp.AgentId == agent.UserId && ticketCategory.CategoryName.Contains(exp.Expertise))
                 }).ToList();
 
-                // Sort by workload (ascending) and prioritize matched expertise
-                var sortedAgents = agentsWithWorkload.OrderBy(a => a.Workload).Select(a => a.Agent).ToList();
+                // sort agents: prioritize expertise match, then workload (ascending)
+                var sortedAgents = agentsWithAttributes
+                    .OrderByDescending(a => a.IsExpertInCategory) 
+                    .ThenBy(a => a.Workload) 
+                    .Select(a => a.Agent)
+                    .ToList();
 
                 customTicket.Agents = sortedAgents;
                 customTicket.Agent = agent;
-                //ticket.Category is match with customTicket.Agents expertise (customTicket.Agents[9].expertise) then list it on first also consider its workload, first on list should be with less workload (icketCount[i].NoOfTickets)
                 customTicket.ticketCountForAgent = ticketCount;
-                
+
 
 
                 //update notif mark as read if this route is visited from notification view
@@ -398,7 +407,7 @@ namespace ASI.Basecode.WebApp.Controllers
                     return View(customTicket);
                 }
             }
-            var AssignerId = Convert.ToInt32(assignedTicket.AssignerId.Value);
+            var AssignerId = 0;
 
             //if assignedTicket is null then we create new AssignedTicket, otherwise update existing assignedTicket
 
@@ -476,12 +485,21 @@ namespace ASI.Basecode.WebApp.Controllers
                         customTicket.Agent = userAgent;
                         customTicket.Category = categories;
                         TempData["status"] = ErrorCode.Success;
-                        return RedirectToAction("AgentTicketIndex");
+
+                        if(User.FindFirst("UserRole")?.Value.ToLower() == "support agent")
+                        {
+                            return RedirectToAction("AgentTicketIndex");
+
+                        } else
+                        {
+                            return RedirectToAction("AdministratorTicketIndex");
+                        }
                     }
                 }
             }
             else
             {
+                AssignerId = Convert.ToInt32(assignedTicket.AssignerId);
                 //RE ASSIGN..
                 //the assigned agent of the current ticket before updating the assignedticket (which the agent will be possibly updated/changed)
                 var previousAssignedAgent = assignedTicket.AgentId;
@@ -547,7 +565,7 @@ namespace ASI.Basecode.WebApp.Controllers
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                             {
                                 Status = ErrorCode.Success,
-                                Message = assignedTicket.AgentId == previousAssignedAgent ? successMsg : $"Ticket is successfully reassigned to Agent: {userAgent.Name}",
+                                Message = assignedTicket.AgentId == previousAssignedAgent ? successMsg : $"Ticket is successfully assigned to Agent: {userAgent.Name}",
                             });
 
                         }
