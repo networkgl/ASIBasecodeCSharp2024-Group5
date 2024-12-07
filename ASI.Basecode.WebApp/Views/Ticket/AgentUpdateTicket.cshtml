@@ -75,13 +75,14 @@
                                     Assign to <span class="text-danger-600"></span>
                                 </label>
                                 <select class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px"
-                                        id="chooseAgent" asp-for="AssignedTicket.AgentId">
+                                id="chooseAgent" asp-for="AssignedTicket.AgentId">
                                     @if (Model.Agent is null)
                                     {
                                         <option class="form-control radius-8" selected>Not Set</option>
                                     }
                                     @foreach (var item in Model.Agents)
                                     {
+
                                         if ((!string.IsNullOrEmpty(item.Name) && Model.Agent is not null) && Model.Agent.Name == item.Name)
                                         {
                                             <option class="form-control radius-8" value="@item.UserId" selected>
@@ -90,7 +91,7 @@
                                                 {
                                                     if (agent.AgentId == item.UserId)
                                                     {
-                                                        <span>@($"({agent.NoOfTickets})")</span>
+                                                        <span>@($"({agent.NoOfTickets})")</span> @($"| {item.Expertise}")
                                                     }
                                                 }
                                             </option>
@@ -103,7 +104,7 @@
                                                 {
                                                     if (agent.AgentId == item.UserId)
                                                     {
-                                                        <span>@($"({agent.NoOfTickets})")</span>
+                                                        <span>@($"({agent.NoOfTickets})")</span> @($"| {item.Expertise}")
                                                     }
                                                 }
                                             </option>

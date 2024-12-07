@@ -236,6 +236,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 var userTicket = _db.UserTickets.Where(m => m.UserTicketId == ticketAssignment.UserTicketId).FirstOrDefault();
                 var assignedTicket = _db.AssignedTickets.Where(m => m.AssignedTicketId == ticketAssignment.AssignedTicketId).FirstOrDefault();
                 var ticketCount = _db.VwTicketCountForAgents.ToList();
+                var expertise = _db.UserAgents.ToList();
 
                 var agent = new User();
 
@@ -274,9 +275,26 @@ namespace ASI.Basecode.WebApp.Controllers
 
                 customTicket.Ticket = ticket;
                 customTicket.AssignedTicket = assignedTicket;
-                customTicket.Agents = agents;
+                // Match ticket category with agents' expertise
+                var ticketCategory = _db.Categories.Where(m => m.CategoryId == ticket.CategoryId).FirstOrDefault();
+                var filteredAgents = agents.Where(agent => expertise.Any(exp =>
+                    exp.AgentId == agent.UserId && ticketCategory.CategoryName.Contains(exp.Expertise))).ToList();
+
+                // Add workload information to each agent
+                var agentsWithWorkload = filteredAgents.Select(agent => new
+                {
+                    Agent = agent,
+                    Workload = ticketCount.FirstOrDefault(tc => tc.AgentId == agent.UserId)?.NoOfTickets ?? 0
+                }).ToList();
+
+                // Sort by workload (ascending) and prioritize matched expertise
+                var sortedAgents = agentsWithWorkload.OrderBy(a => a.Workload).Select(a => a.Agent).ToList();
+
+                customTicket.Agents = sortedAgents;
                 customTicket.Agent = agent;
+                //ticket.Category is match with customTicket.Agents expertise (customTicket.Agents[9].expertise) then list it on first also consider its workload, first on list should be with less workload (icketCount[i].NoOfTickets)
                 customTicket.ticketCountForAgent = ticketCount;
+                
 
 
                 //update notif mark as read if this route is visited from notification view
@@ -380,13 +398,14 @@ namespace ASI.Basecode.WebApp.Controllers
                     return View(customTicket);
                 }
             }
-
-            var AssignerId = User.FindFirst("UserId")?.Value;
+            var AssignerId = Convert.ToInt32(assignedTicket.AssignerId.Value);
 
             //if assignedTicket is null then we create new AssignedTicket, otherwise update existing assignedTicket
 
             if (assignedTicket is null)
             {
+                AssignerId = Convert.ToInt32(User.FindFirst("UserId")?.Value);
+
                 ticket.StatusId = 2;
 
                 assignedTicket = new AssignedTicket()
@@ -431,7 +450,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
                         if (customTicket.Ticket.StatusId == 3)
                         {
-                            if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, int.Parse(AssignerId), out errorMsg, out successMsg) == ErrorCode.Success)
+                            if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, AssignerId, out errorMsg, out successMsg) == ErrorCode.Success)
                             {
                                 TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                                 {
@@ -440,7 +459,7 @@ namespace ASI.Basecode.WebApp.Controllers
                                 });
                             }
                         }
-                        else if (_notificationManger.AssignOrReAssignTicketNotif(hasChangedPriorityId, true, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, fromUserName, toUserName, out errorMsg, out successMsg) == ErrorCode.Success)
+                        else if (_notificationManger.AssignOrReAssignTicketNotif(hasChangedPriorityId, true, (int)assignedTicket.UserTicketId, AssignerId, (int)customTicket.AssignedTicket.AgentId, fromUserName, toUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
@@ -468,7 +487,7 @@ namespace ASI.Basecode.WebApp.Controllers
                 var previousAssignedAgent = assignedTicket.AgentId;
 
                 assignedTicket.LastModified = Utilities.TimeZoneConverter.ConvertTimeZone(DateTime.UtcNow);
-                assignedTicket.AssignerId = Convert.ToInt32(AssignerId);
+                //assignedTicket.AssignerId = Convert.ToInt32(AssignerId);
                 assignedTicket.AgentId = customTicket.AssignedTicket.AgentId;
                 var userAgent = _db.Users.Where(m => m.UserId == assignedTicket.AgentId).FirstOrDefault();
 
@@ -513,7 +532,7 @@ namespace ASI.Basecode.WebApp.Controllers
 
                         if (customTicket.Ticket.StatusId == 3)
                         {
-                            if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, int.Parse(AssignerId), out errorMsg, out successMsg) == ErrorCode.Success)
+                            if (_notificationManger.ResolveTicketNotif((int)assignedTicket.UserTicketId, AssignerId, out errorMsg, out successMsg) == ErrorCode.Success)
                             {
                                 TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                                 {
@@ -522,7 +541,7 @@ namespace ASI.Basecode.WebApp.Controllers
                                 });
                             }
                         }
-                        else if (_notificationManger.AssignOrReAssignTicketNotif(hasChangedPriorityId, false, (int)assignedTicket.UserTicketId, int.Parse(AssignerId), (int)customTicket.AssignedTicket.AgentId, toUserName, fromUserName, out errorMsg, out successMsg) == ErrorCode.Success)
+                        else if (_notificationManger.AssignOrReAssignTicketNotif(hasChangedPriorityId, false, (int)assignedTicket.UserTicketId, AssignerId, (int)customTicket.AssignedTicket.AgentId, toUserName, fromUserName, out errorMsg, out successMsg) == ErrorCode.Success)
                         {
 
                             TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
@@ -534,7 +553,7 @@ namespace ASI.Basecode.WebApp.Controllers
                         }
                         TempData["status"] = ErrorCode.Success;
                         TempData["TicketId"] = ticket.TicketId;
-                        return RedirectToAction("Index");
+                        return RedirectToAction("AgentTicketIndex");
                     }
                 }
             }
