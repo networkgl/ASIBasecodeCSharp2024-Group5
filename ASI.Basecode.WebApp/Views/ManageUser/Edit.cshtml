@@ -70,39 +70,46 @@
                                 </select>
                             </div>
 
-                            <!-- Expertise List -->
-                            <div id="expertiseContainer" class="form-group pb-3" style="display: @(Model.userRole.RoleId == 1 ? "none" : "block");">
-                                <label asp-for="Expertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Expertise <span class="text-danger-600">*</span></label>
-                                <select id="expertiseSelect" class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Expertise" onchange="toggleOtherInput()">
-                                    @foreach (var item in Model.expertiseList)
-                                    {
-                                        <option value="@item.ExpertiseName">@item.ExpertiseName</option>
-                                    }
-                                    @if(!string.IsNullOrEmpty(Model.OtherExpertise))
-                                    {
-                                        <option value="Other" selected>Other</option>
-                                    } else
-                                    {
-                                        <option value="Other">Other</option>
-                                    }
-                                </select>
-                            </div>
 
-                            @if (!string.IsNullOrEmpty(Model.OtherExpertise))
-                            {
-                                <!-- Other Expertise Input -->
-                                <div id="otherExpertiseContainer" class="form-group pb-3" style="display: block;">
-                                    <label asp-for="OtherExpertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Specify Other Expertise <span class="text-danger-600">*</span></label>
-                                    <input id="otherExpertise" name="OtherExpertise" type="text" asp-for="OtherExpertise" class="form-control radius-8" placeholder="Specify other expertise">
+                            @* @if(Model.role.RoleId == 2)
+                            { *@
+                                <!-- Expertise List -->
+                                <div id="expertiseContainer" class="form-group pb-3" style="display: @(Model.userRole.RoleId == 1 ? "none" : "block");">
+                                    <label asp-for="Expertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Expertise <span class="text-danger-600">*</span></label>
+                                    <select id="expertiseSelect" class="form-control radius-8 form-select form-select-sm w-auto ps-12 py-6 radius-12 h-40-px" asp-for="Expertise" onchange="toggleOtherInput()">
+                                        @foreach (var item in Model.expertiseList)
+                                        {
+                                            <option value="@item.ExpertiseName">@item.ExpertiseName</option>
+                                        }
+                                        @if (!string.IsNullOrEmpty(Model.OtherExpertise))
+                                        {
+                                            <option value="Other" selected>Other</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="Other">Other</option>
+                                        }
+                                    </select>
                                 </div>
-                            } else
-                            {
-                                <!-- Other Expertise Input -->
-                                <div id="otherExpertiseContainer" class="form-group pb-3" style="display: none;">
-                                    <label asp-for="OtherExpertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Specify Other Expertise <span class="text-danger-600">*</span></label>
-                                    <input id="otherExpertise" name="OtherExpertise" type="text" asp-for="OtherExpertise" class="form-control radius-8" placeholder="Specify other expertise">
-                                </div>
-                            }
+
+                                @if (!string.IsNullOrEmpty(Model.OtherExpertise))
+                                {
+                                    <!-- Other Expertise Input -->
+                                    <div id="otherExpertiseContainer" class="form-group pb-3" style="display: block;">
+                                        <label asp-for="OtherExpertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Specify Other Expertise <span class="text-danger-600">*</span></label>
+                                        <input id="otherExpertise" name="OtherExpertise" type="text" asp-for="OtherExpertise" class="form-control radius-8" placeholder="Specify other expertise">
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Other Expertise Input -->
+                                    <div id="otherExpertiseContainer" class="form-group pb-3" style="display: none;">
+                                        <label asp-for="OtherExpertise" class="form-label fw-semibold text-primary-light text-sm mb-8">Specify Other Expertise <span class="text-danger-600">*</span></label>
+                                        <input id="otherExpertise" name="OtherExpertise" type="text" asp-for="OtherExpertise" class="form-control radius-8" placeholder="Specify other expertise">
+                                    </div>
+                                }
+                            @* } *@
+                            
                             <!--Password-->
                             <div class="mb-20">
                                 <label class="form-label fw-semibold text-primary-light text-sm mb-8">

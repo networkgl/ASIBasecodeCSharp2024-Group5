@@ -153,7 +153,7 @@ namespace ASI.Basecode.WebApp.Controllers
             }
 
             var customUserModel = new CustomUser();
-            if (userAgent is not null)
+            if (userAgent != null)
             {
                 customUserModel = new CustomUser()
                 {
@@ -162,7 +162,7 @@ namespace ASI.Basecode.WebApp.Controllers
                     role = role,
                     roleList = roleList,
                     expertiseList = expertiseList,
-                    Expertise = userAgent is null ? "" : userAgent.Expertise,
+                    Expertise = userAgent.Expertise,
                     OtherExpertise = expertiseList.Select(m => m.ExpertiseName).Contains(userAgent.Expertise) ? null : userAgent.Expertise
                 };
             }
@@ -174,10 +174,14 @@ namespace ASI.Basecode.WebApp.Controllers
                     userRole = userRole,
                     role = role,
                     roleList = roleList,
+                    expertiseList = expertiseList,
+                    Expertise = "",
+                    OtherExpertise = null
                 };
             }
             return View(customUserModel);
         }
+
 
         [HttpPost]
         public IActionResult Edit(CustomUser customUser, string confirmPassword)
@@ -255,7 +259,6 @@ namespace ASI.Basecode.WebApp.Controllers
 
             return View(customUser);
         }
-
 
         public IActionResult Details(int id)
         {

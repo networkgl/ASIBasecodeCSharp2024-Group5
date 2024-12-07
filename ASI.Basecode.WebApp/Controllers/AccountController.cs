@@ -297,35 +297,28 @@ namespace ASI.Basecode.WebApp.Controllers
                 user.Password = oldPassword; // use old password if no new password provided
             }
 
-            //if (customUser.formFile != null)
-            //{
-            //    var imageFile = customUser.formFile;
-            //    var root = Path.Combine(_webHostEnvironment.WebRootPath, "profilepics");
-
-            //    if (!Directory.Exists(root))
-            //    {
-            //        Directory.CreateDirectory(root);
-            //    }
-            //    if (imageFile != null)
-            //    {
-            //        var uniqueFileName = GetUniqueFileName(root, imageFile.FileName);
-            //        var filePath = Path.Combine(root, uniqueFileName);
-            //        using (var stream = new FileStream(filePath, FileMode.Create))
-            //        {
-            //            await imageFile.CopyToAsync(stream);
-            //        }
-            //        var relativePath = Path.Combine("/profilepics", uniqueFileName).Replace("\\", "/");
-            //        customUser.user.ProfilePicturePath = relativePath;
-            //    }
-            //}
             if (_userRepo.Update(user.UserId, user) == ErrorCode.Success)
             {
-                ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
+                TempData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
                 {
                     Status = ErrorCode.Success,
                     Message = "Updated Profile Successfully!"
                 });
-                return View(customUser);
+                switch (User.FindFirst("UserRole").Value.ToLower())
+                {
+                    case "superadmin":
+                        return RedirectToAction("SuperAdminDashboard", "Dashboard");
+                    case "administrator":
+                        return RedirectToAction("AdminDashboard", "Dashboard");
+                    case "user":
+                        return RedirectToAction("UserDashboard", "Dashboard");
+                    case "support agent":
+                        return RedirectToAction("AgentDashboard", "Dashboard");
+                    default:
+                        // 認証NG
+                        TempData["ErrorMsg"] = "An error has occured, please try again";
+                        return View();
+                }
             }
             ViewData["ResMsg"] = JsonConvert.SerializeObject(new AlertMessageContent()
             {
